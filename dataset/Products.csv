@@ -1,0 +1,17 @@
+﻿product_id,product_code,product_name,product_category,uom,standard_cost,selling_price,status
+1,PRD-001,Nile X1 Phone,Smartphone,Piece,23614.93,31644.01,Active
+2,PRD-002,Nile X1 Pro Phone,Smartphone,Piece,18827.23,25228.49,Active
+3,PRD-003,Canal S2 Phone,Smartphone,Piece,14741.67,19753.84,Active
+4,PRD-004,Canal S2 Max Phone,Smartphone,Piece,29386.99,39378.57,Active
+5,PRD-005,Sina Air 14 Laptop,Laptop,Piece,22462.35,28751.81,Active
+6,PRD-006,Sina Pro 15 Laptop,Laptop,Piece,19782.23,25321.25,Active
+7,PRD-007,Delta Work 14 Laptop,Laptop,Piece,15706.61,20104.46,Active
+8,PRD-008,Delta Creator 16 Laptop,Laptop,Piece,25526.58,32674.03,Active
+9,PRD-009,Nile Fit Watch,Smartwatch,Piece,21333.23,29439.85,Active
+10,PRD-010,Nile Active Watch,Smartwatch,Piece,16900.27,23322.37,Active
+11,PRD-011,Canal Watch Pro,Smartwatch,Piece,19873.45,27425.36,Active
+12,PRD-012,Sina Health Watch,Smartwatch,Piece,15526.63,21426.74,Active
+13,PRD-013,Nile Buds Lite,Earbuds,Piece,14460.88,20534.44,Active
+14,PRD-014,Nile Buds Pro,Earbuds,Piece,28827.24,40934.68,Active
+15,PRD-015,Canal Pods,Earbuds,Piece,23094.78,32794.59,Active
+16,PRD-016,Delta Sound Pro,Earbuds,Piece,21957.67,31179.89,Active

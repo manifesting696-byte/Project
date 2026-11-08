@@ -1,0 +1,15 @@
+runtime/
+__pycache__/
+*.pyc
+*.docx
+*.md
+!docs/电子供应链数据表说明.md
+runtime_import.log
+.env
+.git/
+
+.venv/
+!query.md
+!Agent.md
+!memory.md
+!context.md

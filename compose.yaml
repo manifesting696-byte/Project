@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: supply_chain
+      POSTGRES_USER: supply_admin
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supply_admin -d supply_chain"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://supply_chain_reader:${POSTGRES_READONLY_PASSWORD}@postgres:5432/supply_chain
+      SESSION_HOURS: 12
+      LLM_URL: ${LLM_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - app_data:/app/runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+  init:
+    build: .
+    profiles: [setup]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_DSN: postgresql://supply_admin:${POSTGRES_ADMIN_PASSWORD}@postgres:5432/supply_chain
+      PG_ADMIN_DSN: postgresql://supply_admin:${POSTGRES_ADMIN_PASSWORD}@postgres:5432/supply_chain
+      PG_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD:?set POSTGRES_READONLY_PASSWORD}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?set INITIAL_ADMIN_PASSWORD}
+    command: ["sh", "-c", "python -m enterprise_agent.application.bootstrap && python -m enterprise_agent.profile.postgres_import && python -m enterprise_agent.profile.provision_readonly"]
+    volumes:
+      - app_data:/app/runtime
+volumes:
+  pg_data:
+  app_data:

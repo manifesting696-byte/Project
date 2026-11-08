@@ -1,0 +1,500 @@
+{
+  "binding": {
+    "intent": "explore",
+    "start": "2025-01-01",
+    "end": "2025-07-01",
+    "limit": 20,
+    "metric_version": "demo-1",
+    "status": "provisional",
+    "grain": null,
+    "dimension": null,
+    "ir": {
+      "mode": "demo",
+      "catalog_version": "demo-1",
+      "metrics": [
+        {
+          "id": "on_time_rate",
+          "version": "demo-1",
+          "fact_grain": "SupplierShipments.shipment_id",
+          "date_field": "SupplierShipments.expected_arrival_date",
+          "definition_hash": "de3de6cc24d257cf",
+          "join_path": [
+            "shipments_to_suppliers"
+          ],
+          "relation_hashes": {
+            "shipments_to_suppliers": "358d275a74f592f8"
+          }
+        },
+        {
+          "id": "shipment_cohort_rejection_rate",
+          "version": "demo-1",
+          "fact_grain": "GoodsReceiptDetails.gr_detail_id",
+          "date_field": "SupplierShipments.expected_arrival_date",
+          "definition_hash": "6649adfb66d19f13",
+          "join_path": [
+            "details_to_receipts",
+            "receipts_to_shipments",
+            "shipments_to_suppliers"
+          ],
+          "relation_hashes": {
+            "details_to_receipts": "4c9265214a2e6ee1",
+            "receipts_to_shipments": "4cb03536f76d0f51",
+            "shipments_to_suppliers": "358d275a74f592f8"
+          }
+        }
+      ],
+      "dimensions": [],
+      "time": {
+        "start_inclusive": "2025-01-01",
+        "end_exclusive": "2025-07-01"
+      },
+      "authorization_snapshot": "single_tenant_demo",
+      "unresolved_ambiguities": [],
+      "output": "report"
+    }
+  },
+  "task_dag": {
+    "screen": {
+      "task_id": "screen",
+      "branch_id": "screen",
+      "agent": "query_agent",
+      "kind": "delivery_screen",
+      "supplier_id": null,
+      "depends_on": [],
+      "trigger_result_ref": null,
+      "plan_version": 1,
+      "reason": "先筛查交付趋势及样本量",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "estimated_tool_calls": 1,
+      "status": "completed"
+    },
+    "quality_probe:11": {
+      "task_id": "quality_probe:11",
+      "branch_id": "quality_probe:11",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 11,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+      "plan_version": 2,
+      "reason": "交付准时率降幅最大，需核查质量是否同步恶化",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "estimated_tool_calls": 1,
+      "status": "completed"
+    },
+    "quality_probe:14": {
+      "task_id": "quality_probe:14",
+      "branch_id": "quality_probe:14",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 14,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+      "plan_version": 2,
+      "reason": "交付准时率明显下降，需核查质量风险",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "estimated_tool_calls": 1,
+      "status": "completed"
+    },
+    "quality_probe:13": {
+      "task_id": "quality_probe:13",
+      "branch_id": "quality_probe:13",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 13,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+      "plan_version": 2,
+      "reason": "交付准时率下降，需核查质量风险",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "estimated_tool_calls": 1,
+      "status": "completed"
+    },
+    "quality_probe:3": {
+      "task_id": "quality_probe:3",
+      "branch_id": "quality_probe:3",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 3,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+      "plan_version": 2,
+      "reason": "交付准时率下降，需核查质量风险",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "estimated_tool_calls": 1,
+      "status": "completed"
+    },
+    "quality_probe:21": {
+      "task_id": "quality_probe:21",
+      "branch_id": "quality_probe:21",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 21,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+      "plan_version": 2,
+      "reason": "交付准时率下降，需核查质量风险",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "estimated_tool_calls": 1,
+      "status": "completed"
+    }
+  },
+  "branch_results": {
+    "screen": {
+      "task_id": "screen",
+      "branch_id": "screen",
+      "status": "completed",
+      "summary": "delivery_screen: 25 rows",
+      "artifacts": [
+        "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1"
+      ],
+      "evidence": {
+        "result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+        "sql_sha256": "39bb6bdb5d685237eb54c746f4434014c17e84c39474426535e794a2116667c1",
+        "metric_version": "demo-1"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:11": {
+      "task_id": "quality_probe:11",
+      "branch_id": "quality_probe:11",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56"
+      ],
+      "evidence": {
+        "result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:14": {
+      "task_id": "quality_probe:14",
+      "branch_id": "quality_probe:14",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864"
+      ],
+      "evidence": {
+        "result_ref": "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:13": {
+      "task_id": "quality_probe:13",
+      "branch_id": "quality_probe:13",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f"
+      ],
+      "evidence": {
+        "result_ref": "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:3": {
+      "task_id": "quality_probe:3",
+      "branch_id": "quality_probe:3",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903"
+      ],
+      "evidence": {
+        "result_ref": "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:21": {
+      "task_id": "quality_probe:21",
+      "branch_id": "quality_probe:21",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7"
+      ],
+      "evidence": {
+        "result_ref": "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    }
+  },
+  "observations": {
+    "screen": {
+      "candidates": [
+        11,
+        14,
+        13,
+        3,
+        21
+      ],
+      "result_ref": "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+      "total_suppliers": 25
+    },
+    "quality_probe:11": {
+      "trend": "not_worsened",
+      "result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+      "q1": {
+        "details": 30,
+        "quarter": "Q1",
+        "received_quantity": 4052552,
+        "received_shipments": 10,
+        "rejected_quantity": 118626,
+        "rejection_rate": 0.029272,
+        "supplier_id": 11
+      },
+      "q2": {
+        "details": 30,
+        "quarter": "Q2",
+        "received_quantity": 4524521,
+        "received_shipments": 10,
+        "rejected_quantity": 90102,
+        "rejection_rate": 0.019914,
+        "supplier_id": 11
+      },
+      "coverage": {
+        "Q1": {
+          "received": 10,
+          "shipments": 10
+        },
+        "Q2": {
+          "received": 10,
+          "shipments": 10
+        }
+      }
+    },
+    "quality_probe:14": {
+      "trend": "not_worsened",
+      "result_ref": "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+      "q1": {
+        "details": 45,
+        "quarter": "Q1",
+        "received_quantity": 905612,
+        "received_shipments": 15,
+        "rejected_quantity": 1278,
+        "rejection_rate": 0.001411,
+        "supplier_id": 14
+      },
+      "q2": {
+        "details": 33,
+        "quarter": "Q2",
+        "received_quantity": 675648,
+        "received_shipments": 11,
+        "rejected_quantity": 260,
+        "rejection_rate": 0.000385,
+        "supplier_id": 14
+      },
+      "coverage": {
+        "Q1": {
+          "received": 15,
+          "shipments": 15
+        },
+        "Q2": {
+          "received": 11,
+          "shipments": 11
+        }
+      }
+    },
+    "quality_probe:13": {
+      "trend": "not_worsened",
+      "result_ref": "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+      "q1": {
+        "details": 42,
+        "quarter": "Q1",
+        "received_quantity": 532003,
+        "received_shipments": 14,
+        "rejected_quantity": 2101,
+        "rejection_rate": 0.003949,
+        "supplier_id": 13
+      },
+      "q2": {
+        "details": 30,
+        "quarter": "Q2",
+        "received_quantity": 374314,
+        "received_shipments": 10,
+        "rejected_quantity": 812,
+        "rejection_rate": 0.002169,
+        "supplier_id": 13
+      },
+      "coverage": {
+        "Q1": {
+          "received": 14,
+          "shipments": 14
+        },
+        "Q2": {
+          "received": 10,
+          "shipments": 10
+        }
+      }
+    },
+    "quality_probe:3": {
+      "trend": "worsened",
+      "result_ref": "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+      "q1": {
+        "details": 33,
+        "quarter": "Q1",
+        "received_quantity": 1171654,
+        "received_shipments": 11,
+        "rejected_quantity": 2037,
+        "rejection_rate": 0.001739,
+        "supplier_id": 3
+      },
+      "q2": {
+        "details": 42,
+        "quarter": "Q2",
+        "received_quantity": 1458689,
+        "received_shipments": 14,
+        "rejected_quantity": 3947,
+        "rejection_rate": 0.002706,
+        "supplier_id": 3
+      },
+      "coverage": {
+        "Q1": {
+          "received": 11,
+          "shipments": 11
+        },
+        "Q2": {
+          "received": 14,
+          "shipments": 14
+        }
+      }
+    },
+    "quality_probe:21": {
+      "trend": "worsened",
+      "result_ref": "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+      "q1": {
+        "details": 39,
+        "quarter": "Q1",
+        "received_quantity": 970418,
+        "received_shipments": 13,
+        "rejected_quantity": 2156,
+        "rejection_rate": 0.002222,
+        "supplier_id": 21
+      },
+      "q2": {
+        "details": 45,
+        "quarter": "Q2",
+        "received_quantity": 2325139,
+        "received_shipments": 15,
+        "rejected_quantity": 9943,
+        "rejection_rate": 0.004276,
+        "supplier_id": 21
+      },
+      "coverage": {
+        "Q1": {
+          "received": 13,
+          "shipments": 13
+        },
+        "Q2": {
+          "received": 15,
+          "shipments": 15
+        }
+      }
+    }
+  },
+  "plan_version": 2,
+  "budget": {
+    "max_tool_calls": 12,
+    "used_tool_calls": 6,
+    "remaining_tool_calls": 6,
+    "max_parallel": 3,
+    "max_candidates": 5,
+    "max_additional_rounds": 2,
+    "max_model_attempts": 4,
+    "used_model_attempts": 1,
+    "remaining_model_attempts": 3
+  },
+  "decisions": [
+    {
+      "plan_version": 1,
+      "added": [
+        "screen"
+      ],
+      "reason": "initial_screen",
+      "trigger_result_ref": null
+    },
+    {
+      "plan_version": 2,
+      "added": [
+        "quality_probe:11",
+        "quality_probe:14",
+        "quality_probe:13",
+        "quality_probe:3",
+        "quality_probe:21"
+      ],
+      "reason": "质量阶段需对交付筛查出的全部候选执行质量探针，才能判断交付恶化是否伴随质量同步下降。",
+      "stage": "quality",
+      "planner": "llm",
+      "model": "deepseek-flash",
+      "config_version": "e0ce5be4a0a5",
+      "latency_ms": 19797,
+      "structured_output_valid": true,
+      "usage": {
+        "prompt_tokens": 611,
+        "completion_tokens": 414,
+        "total_tokens": 1025,
+        "prompt_tokens_details": {
+          "cached_tokens": 384
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 220
+        },
+        "prompt_cache_hit_tokens": 384,
+        "prompt_cache_miss_tokens": 227
+      },
+      "attempts": 1,
+      "trigger_result_refs": [
+        "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+        "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+        "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+        "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1",
+        "7e9b7111dd04f17646891fae961f299164a6d0caf60c02ad0efc7ec431496ae1"
+      ]
+    },
+    {
+      "plan_version": 2,
+      "added": [],
+      "reason": "planner_failed",
+      "stage": "material",
+      "safe_message": "大模型规划失败（ValueError）"
+    }
+  ],
+  "status": "partial",
+  "stop_reason": "planner_failed",
+  "report": "大模型规划未完成；以下仅展示已核验的结果，后续探查未执行。\nAl Sharqia Industrial Electronics（ID 11）：准时率 8/10 → 4/10，下降 40.0 个百分点。同队列来料拒收率 2.93% → 1.99%。收货覆盖 Q1 10/10、Q2 10/10。总体质量代理指标未上升；覆盖或材料分层证据未齐，双域恶化假设仍待核查。\nEgypt Power Modules（ID 14）：准时率 15/15 → 9/11，下降 18.18 个百分点。同队列来料拒收率 0.14% → 0.04%。收货覆盖 Q1 15/15、Q2 11/11。总体质量代理指标未上升；覆盖或材料分层证据未齐，双域恶化假设仍待核查。\nMansoura Sensor Technologies（ID 13）：准时率 12/14 → 7/10，下降 15.71 个百分点。同队列来料拒收率 0.39% → 0.22%。收货覆盖 Q1 14/14、Q2 10/10。总体质量代理指标未上升；覆盖或材料分层证据未齐，双域恶化假设仍待核查。\nSuez Tech Supplies（ID 3）：准时率 10/11 → 11/14，下降 12.34 个百分点。同队列来料拒收率 0.17% → 0.27%。收货覆盖 Q1 11/11、Q2 14/14。交付与质量代理指标同向恶化；现有数据不能证明原因。\nUpper Egypt Technology Supplies（ID 21）：准时率 12/13 → 12/15，下降 12.31 个百分点。同队列来料拒收率 0.22% → 0.43%。收货覆盖 Q1 13/13、Q2 15/15。交付与质量代理指标同向恶化；现有数据不能证明原因。\n口径：预计到货日分季度；来料拒收率为拒收量/收货量。阈值和指标均为演示口径，非统计显著性或因果结论。",
+  "validation": {
+    "status": "passed",
+    "checked_results": 6
+  },
+  "snapshot_id": "bc507973f100da89",
+  "run_id": "real-model-current:run:9dcbc60db07e47c09570d8cbd7ff695c",
+  "question": "2025 年上半年哪些供应商交付恶化，质量是否同步下降？"
+}

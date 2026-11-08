@@ -1,0 +1,81 @@
+﻿material_id,material_code,material_name,material_category,material_type,uom,unit_weight,status
+1,MAT-001,Mobile Processor A,Processing,Electronic Component,Piece,0.014,Active
+2,MAT-002,Mobile Processor B,Processing,Electronic Component,Piece,0.01,Active
+3,MAT-003,Laptop Processor A,Processing,Electronic Component,Piece,0.015,Active
+4,MAT-004,Laptop Processor B,Processing,Electronic Component,Piece,0.016,Active
+5,MAT-005,Smartwatch Controller A,Processing,Electronic Component,Piece,0.012,Active
+6,MAT-006,Smartwatch Controller B,Processing,Electronic Component,Piece,0.01,Active
+7,MAT-007,Audio Controller A,Processing,Electronic Component,Piece,0.008,Active
+8,MAT-008,Audio Controller B,Processing,Electronic Component,Piece,0.014,Active
+9,MAT-009,Power Management Controller,Processing,Electronic Component,Piece,0.01,Active
+10,MAT-010,Security Controller,Processing,Electronic Component,Piece,0.016,Active
+11,MAT-011,OLED Phone Display 6.1,Display,Display Module,Piece,0.117,Active
+12,MAT-012,OLED Phone Display 6.7,Display,Display Module,Piece,0.083,Active
+13,MAT-013,LCD Phone Display 6.5,Display,Display Module,Piece,0.127,Active
+14,MAT-014,Laptop IPS Display 14,Display,Display Module,Piece,0.065,Active
+15,MAT-015,Laptop IPS Display 15.6,Display,Display Module,Piece,0.12,Active
+16,MAT-016,Laptop OLED Display 14,Display ,Display Module,Piece,0.117,Active
+17,MAT-017,Smartwatch AMOLED Display 1.8,Display,Display Module,Piece,0.097,Active
+18,MAT-018,Smartwatch AMOLED Display 2.0,Display,Display Module,Piece,0.086,Active
+19,MAT-019,Touch Control Panel,display,Display Module,Piece,0.118,Active
+20,MAT-020,Display Driver Module,Display,Display Module,Piece,0.121,Active
+21,MAT-021,RAM Module 4GB,Memory and Storage,Electronic Component,Piece,0.012,Active
+22,MAT-022,RAM Module 8GB,Memory and Storage,Electronic Component,Piece,0.008,Active
+23,MAT-023,RAM Module 16GB,Memory and Storage,Electronic Component,Piece,0.007,Active
+24,MAT-024,RAM Module 32GB,Memory and Storage,Electronic Component,Piece,0.007,Active
+25,MAT-025,Storage Module 64GB,Memory and Storage,Electronic Component,Piece,0.012,Active
+26,MAT-026,Storage Module 128GB,Memory and Storage,Electronic Component,Piece,0.009,Active
+27,MAT-027,Storage Module 256GB,Memory and Storage,Electronic Component,Piece,0.009,Active
+28,MAT-028,SSD Module 512GB,Memory and Storage,Electronic Component,Piece,0.012,Active
+29,MAT-029,SSD Module 1TB,Memory and Storage,Electronic Component,Piece,0.008,Active
+30,MAT-030,Flash Memory Controller,memory and storage,Electronic Component,Piece,0.008,Active
+31,MAT-031,Main PCB Phone,PCB and Connectivity,Assembly Component,Piece,0.058,Active
+32,MAT-032,Main PCB Laptop,PCB and Connectivity,Assembly Component,Piece,0.044,Active
+33,MAT-033,Main PCB Smartwatch,PCB and Connectivity,Assembly Component,Piece,0.053,Active
+34,MAT-034,Main PCB Earbuds,PCB and Connectivity,Assembly Component,Piece,0.033,Active
+35,MAT-035,WiFi Bluetooth Module,PCB and Connectivity,Assembly Component,Piece,0.036,Active
+36,MAT-036,5G Communication Module,PCB and Connectivity,Assembly Component,Piece,0.033,Active
+37,MAT-037,USB Type C Connector,PCB and Connectivity,Assembly Component,Piece,0.054,Active
+38,MAT-038,Laptop IO Board,PCB and Connectivity,Assembly Component,Piece,0.047,Active
+39,MAT-039,Flexible PCB Cable,PCB and Connectivity,Assembly Component,Piece,0.055,Active
+40,MAT-040,Antenna Module,PCB and Connectivity,Assembly Component,Piece,0.034,Active
+41,MAT-041,Phone Battery 4500mAh,Battery and Power,Power Component,Piece,0.132,Active
+42,MAT-042,Phone Battery 5000mAh,Battery and Power,Power Component,Piece,0.134,Active
+43,MAT-043,Laptop Battery 50Wh,Battery and Power,Power Component,Piece,0.116,Active
+44,MAT-044,Laptop Battery 65Wh,Battery and Power,Power Component,Piece,0.174,Active
+45,MAT-045,Smartwatch Battery 300mAh,Battery and Power,Power Component,Piece,0.087,Active
+46,MAT-046,Smartwatch Battery 450mAh,Battery and Power,Power Component,Piece,0.089,Active
+47,MAT-047,Earbud Battery Cell,Battery and Power,Power Component,Piece,0.154,Active
+48,MAT-048,Charging Case Battery,Battery and Power,Power Component,Piece,0.084,Active
+49,MAT-049,Fast Charger 33W,Battery and Power,Power Component,Piece,0.174,Active
+50,MAT-050,Laptop Charger 65W,Battery and Power,Power Component,Piece,0.171,Active
+51,MAT-051,Main Camera Module 50MP,Camera Audio and Sensors,Functional Module,Piece,0.016,Active
+52,MAT-052,Wide Camera Module 12MP,Camera Audio and Sensors,Functional Module,Piece,0.03,Active
+53,MAT-053,Front Camera Module 16MP,Camera Audio and Sensors,Functional Module,Piece,0.022,Active
+54,MAT-054,Laptop Webcam Module,Camera Audio and Sensors,Functional Module,Piece,0.018,Active
+55,MAT-055,Speaker Module,Camera Audio and Sensors,Functional Module,Piece,0.025,Active
+56,MAT-056,Microphone Module,Camera Audio and Sensors,Functional Module,Piece,0.034,Active
+57,MAT-057,Heart Rate Sensor,Camera Audio and Sensors,Functional Module,Piece,0.026,Active
+58,MAT-058,Motion Sensor,Camera Audio and Sensors,Functional Module,Piece,0.035,Active
+59,MAT-059,Noise Cancellation Microphone,camera audio and sensors,Functional Module,Piece,0.022,Active
+60,MAT-060,Fingerprint Sensor,Camera Audio and Sensors,Functional Module,Piece,0.028,Active
+61,MAT-061,Phone Aluminum Frame,Enclosure and Mechanical ,Mechanical Component,Piece,0.202,Active
+62,MAT-062,Phone Back Cover,Enclosure and Mechanical ,Mechanical Component,Piece,0.204,Active
+63,MAT-063,Laptop Aluminum Chassis,Enclosure and Mechanical,Mechanical Component,Piece,0.104,Active
+64,MAT-064,Laptop Keyboard Assembly,Enclosure and Mechanical,Mechanical Component,Piece,0.106,Active
+65,MAT-065,Smartwatch Aluminum Case,Enclosure and Mechanical,Mechanical Component,Piece,0.216,Active
+66,MAT-066,Smartwatch Strap,Enclosure and Mechanical,Mechanical Component,Piece,0.143,Active
+67,MAT-067,Earbud Plastic Shell,Enclosure and Mechanical,Mechanical Component,Piece,0.216,Active
+68,MAT-068,Charging Case Shell,Enclosure and Mechanical,Mechanical Component,Piece,0.115,Active
+69,MAT-069,Protective Glass,Enclosure and Mechanical,Mechanical Component,Piece,0.113,Active
+70,MAT-070,Precision Screw Set,Enclosure and Mechanical,Mechanical Component,Piece,0.202,Active
+71,MAT-071,Phone Retail Box,Packaging and Accessories,Packaging Material,Piece,0.082,Active
+72,MAT-072,Laptop Retail Box,Packaging and Accessories,Packaging Material,Piece,0.069,Active
+73,MAT-073,Smartwatch Retail Box,Packaging and Accessories,Packaging Material,Piece,0.079,Active
+74,MAT-074,Earbuds Retail Box,Packaging and Accessories,Packaging Material,Piece,0.087,Active
+75,MAT-075,USB Type C Cable,Packaging and Accessories,Packaging Material,Piece,0.065,Active
+76,MAT-076,Laptop Power Cable,Packaging and Accessories,Packaging Material,Piece,0.116,Active
+77,MAT-077,User Manual Arabic English,Packaging and Accessories,Packaging Material,Piece,0.08,Active
+78,MAT-078,Protective Packaging Insert,Packaging and Accessories,Packaging Material,Piece,0.06,Active
+79,MAT-079,Warranty Card,Packaging and Accessories,Packaging Material,Piece,0.074,Active
+80,MAT-080,Product Label Set,Packaging and Accessories,Packaging Material,Piece,0.067,Active

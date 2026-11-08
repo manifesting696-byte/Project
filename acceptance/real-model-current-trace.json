@@ -1,0 +1,2944 @@
+{
+  "status": "completed",
+  "binding": {
+    "intent": "explore",
+    "start": "2025-01-01",
+    "end": "2025-07-01",
+    "limit": 20,
+    "metric_version": "demo-1",
+    "status": "provisional",
+    "grain": null,
+    "dimension": "quarter",
+    "ir": {
+      "mode": "demo",
+      "catalog_version": "demo-1",
+      "metrics": [
+        {
+          "id": "on_time_rate",
+          "version": "demo-1",
+          "fact_grain": "SupplierShipments.shipment_id",
+          "date_field": "SupplierShipments.expected_arrival_date",
+          "definition_hash": "f3867064e73ff673",
+          "join_path": [
+            "shipments_to_suppliers"
+          ],
+          "relation_hashes": {
+            "shipments_to_suppliers": "22ea3c0d37c2a47c"
+          }
+        },
+        {
+          "id": "average_delay_days",
+          "version": "demo-1",
+          "fact_grain": "SupplierShipments.shipment_id",
+          "date_field": "SupplierShipments.expected_arrival_date",
+          "definition_hash": "a59c9e5c8639ba47",
+          "join_path": [
+            "shipments_to_suppliers"
+          ],
+          "relation_hashes": {
+            "shipments_to_suppliers": "22ea3c0d37c2a47c"
+          }
+        },
+        {
+          "id": "shipment_cohort_rejection_rate",
+          "version": "demo-1",
+          "fact_grain": "GoodsReceiptDetails.gr_detail_id",
+          "date_field": "SupplierShipments.expected_arrival_date",
+          "definition_hash": "8e376544a11a2d38",
+          "join_path": [
+            "details_to_receipts",
+            "receipts_to_shipments",
+            "shipments_to_suppliers"
+          ],
+          "relation_hashes": {
+            "details_to_receipts": "995722227505481b",
+            "receipts_to_shipments": "f0f12886e9c0926e",
+            "shipments_to_suppliers": "22ea3c0d37c2a47c"
+          }
+        }
+      ],
+      "dimensions": [
+        "quarter"
+      ],
+      "dimension_hashes": {
+        "quarter": "4234849c6e9c8c54"
+      },
+      "time": {
+        "start_inclusive": "2025-01-01",
+        "end_exclusive": "2025-07-01"
+      },
+      "filters": [],
+      "authorization_snapshot": "single_tenant_demo",
+      "unresolved_ambiguities": [],
+      "output": "report"
+    }
+  },
+  "steps": [
+    "delivery_screen",
+    "quality_probe",
+    "material_probe",
+    "delivery_stage_probe",
+    "report"
+  ],
+  "report": "Al Sharqia Industrial Electronics（ID 11）：准时率 8/10 → 4/10，下降 40.0 个百分点；平均延期 1.4 → 3.6 天。同队列来料拒收率 2.93% → 1.99%。收货覆盖 Q1 10/10、Q2 10/10。材料类别分层复核：battery and power 0.66%→5.03%；display 1.68%→4.71%。按 Q2 材料构成重加权，Q1 拒收率为 2.29%，Q2 为 1.99%。收货覆盖与材料分层已核查；总体质量代理指标未上升，不支持双重恶化结论。已追加交付日期拆解，但现有数据不能证明原因。已比较发运至预计及实际到货的时间差；这些日期不能区分运输、排程等具体原因。\nEgypt Power Modules（ID 14）：准时率 15/15 → 9/11，下降 18.18 个百分点；平均延期 0.0 → 0.45 天。同队列来料拒收率 0.14% → 0.04%。收货覆盖 Q1 15/15、Q2 11/11。材料类别分层复核：enclosure and mechanical 0.00%→0.14%；pcb and connectivity 0.16%→0.00%。按 Q2 材料构成重加权，Q1 拒收率为 0.14%，Q2 为 0.04%。收货覆盖与材料分层已核查；总体质量代理指标未上升，不支持双重恶化结论。可继续拆解交付阶段，但现有数据不能证明原因。\nMansoura Sensor Technologies（ID 13）：准时率 12/14 → 7/10，下降 15.71 个百分点；平均延期 0.79 → 1.6 天。同队列来料拒收率 0.39% → 0.22%。收货覆盖 Q1 14/14、Q2 10/10。材料类别分层复核：pcb and connectivity 0.40%→0.83%；display 0.20%→0.00%。按 Q2 材料构成重加权，Q1 拒收率为 0.39%，Q2 为 0.22%。收货覆盖与材料分层已核查；总体质量代理指标未上升，不支持双重恶化结论。可继续拆解交付阶段，但现有数据不能证明原因。\nSuez Tech Supplies（ID 3）：准时率 10/11 → 11/14，下降 12.34 个百分点；平均延期 0.64 → 1.0 天。同队列来料拒收率 0.17% → 0.27%。收货覆盖 Q1 11/11、Q2 14/14。材料类别分层复核：memory and storage 0.40%→0.83%；camera audio and sensors 0.00%→0.16%。按 Q2 材料构成重加权，Q1 拒收率为 0.18%，Q2 为 0.27%。类别内加权拒收率上升，构成变化可能掩盖了该信号；不据总体改善推断各类均改善。交付与质量代理指标同向恶化；现有数据不能证明原因。\nUpper Egypt Technology Supplies（ID 21）：准时率 12/13 → 12/15，下降 12.31 个百分点；平均延期 0.46 → 1.0 天。同队列来料拒收率 0.22% → 0.43%。收货覆盖 Q1 13/13、Q2 15/15。材料类别分层复核：display 0.28%→1.09%；packaging and accessories 0.00%→0.73%。按 Q2 材料构成重加权，Q1 拒收率为 0.43%，Q2 为 0.43%。交付与质量代理指标同向恶化；现有数据不能证明原因。\n口径：预计到货日分季度；来料拒收率为拒收量/收货量。阈值和指标均为演示口径，非统计显著性或因果结论。",
+  "report_markdown": "# 供应商交付与来料质量探查\n\n数据快照：`bc507973f100da89`；语义版本：`demo-1`；区间：2025-01-01 至 2025-07-01（不含结束日）。\n\n## 已核验事实\n\n- Al Sharqia Industrial Electronics（ID 11）：准时率 8/10 → 4/10，下降 40.0 个百分点；平均延期 1.4 → 3.6 天。（证据：screen）\n- 供应商 11 同队列拒收率 2.93% → 1.99%；收货覆盖 Q1 10/10、Q2 10/10。（证据：quality_probe:11、screen）\n- 供应商 11 材料类别分层：battery and power 0.66%→5.03%；display 1.68%→4.71%。（证据：material_probe:11）\n- 供应商 11 按 Q2 构成重加权：Q1 2.29%，Q2 1.99%。（证据：material_probe:11）\n- 供应商 11 发运至预计到货平均 26.6 → 27.8 天；发运至实际到货平均 26.9 → 30.7 天。（证据：delivery_stage_probe:11）\n- Egypt Power Modules（ID 14）：准时率 15/15 → 9/11，下降 18.18 个百分点；平均延期 0.0 → 0.45 天。（证据：screen）\n- 供应商 14 同队列拒收率 0.14% → 0.04%；收货覆盖 Q1 15/15、Q2 11/11。（证据：quality_probe:14、screen）\n- 供应商 14 材料类别分层：enclosure and mechanical 0.00%→0.14%；pcb and connectivity 0.16%→0.00%。（证据：material_probe:14）\n- 供应商 14 按 Q2 构成重加权：Q1 0.14%，Q2 0.04%。（证据：material_probe:14）\n- Mansoura Sensor Technologies（ID 13）：准时率 12/14 → 7/10，下降 15.71 个百分点；平均延期 0.79 → 1.6 天。（证据：screen）\n- 供应商 13 同队列拒收率 0.39% → 0.22%；收货覆盖 Q1 14/14、Q2 10/10。（证据：quality_probe:13、screen）\n- 供应商 13 材料类别分层：pcb and connectivity 0.40%→0.83%；display 0.20%→0.00%。（证据：material_probe:13）\n- 供应商 13 按 Q2 构成重加权：Q1 0.39%，Q2 0.22%。（证据：material_probe:13）\n- Suez Tech Supplies（ID 3）：准时率 10/11 → 11/14，下降 12.34 个百分点；平均延期 0.64 → 1.0 天。（证据：screen）\n- 供应商 3 同队列拒收率 0.17% → 0.27%；收货覆盖 Q1 11/11、Q2 14/14。（证据：quality_probe:3、screen）\n- 供应商 3 材料类别分层：memory and storage 0.40%→0.83%；camera audio and sensors 0.00%→0.16%。（证据：material_probe:3）\n- 供应商 3 按 Q2 构成重加权：Q1 0.18%，Q2 0.27%。（证据：material_probe:3）\n- Upper Egypt Technology Supplies（ID 21）：准时率 12/13 → 12/15，下降 12.31 个百分点；平均延期 0.46 → 1.0 天。（证据：screen）\n- 供应商 21 同队列拒收率 0.22% → 0.43%；收货覆盖 Q1 13/13、Q2 15/15。（证据：quality_probe:21、screen）\n- 供应商 21 材料类别分层：display 0.28%→1.09%；packaging and accessories 0.00%→0.73%。（证据：material_probe:21）\n- 供应商 21 按 Q2 构成重加权：Q1 0.43%，Q2 0.43%。（证据：material_probe:21）\n\n## 关联判断\n\n- 供应商 11 交付准时率下降，但总体来料拒收率未上升；当前证据不支持双域恶化。\n- 供应商 14 交付准时率下降，但总体来料拒收率未上升；当前证据不支持双域恶化。\n- 供应商 13 交付准时率下降，但总体来料拒收率未上升；当前证据不支持双域恶化。\n- 供应商 3 的交付准时率与来料质量代理指标同向恶化；这是关联，不能据此判断原因。\n- 供应商 21 的交付准时率与来料质量代理指标同向恶化；这是关联，不能据此判断原因。\n\n## 待验证假设\n\n- 供应商 3 的材料构成变化可能掩盖类别内拒收率上升，需进一步核对类别样本量。\n\n## 建议\n\n- 优先核对高降幅供应商的发货日、预计到货日和实际到货日，并结合业务记录检查交付环节。\n\n## 证据缺口\n\n- 数据没有运输异常原因和生产工序记录，不能据现有表证明交付或质量变化的根因。\n\n## 证据引用\n\n- delivery_stage_probe:11: `c51930dcf1a8f620a267abdbf127e71085b2be245108c78551fe8c89426cbd4a`；SQL `7593e7d5dca40d6037161401c41f780e61980fe97f857c9786ddd005a2a37a46`\n- material_probe:11: `b70684f4aa6161cf8c63c8983bff9d74e6a9cda1b4346fce113bc0aa0436d7da`；SQL `fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb`\n- material_probe:13: `83b771a8a4a32a3aecb7320cd0c1dc381cfc4c93379c174065d3a1b9b8f74cd4`；SQL `fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb`\n- material_probe:14: `aa02bdb25716df4da058fa8da3944b8e40cfa493422bb531e564a050ea01405b`；SQL `fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb`\n- material_probe:21: `b5eed9bcaf4b5ac0aabe2262b3a93e3c3eed0cbf6d70b4c1bbde704af5d63724`；SQL `fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb`\n- material_probe:3: `529d1f5bdd3e6c5d90ca69f0bf8db488900e4fa996c68a74d972a54442abe67b`；SQL `fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb`\n- quality_probe:11: `e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56`；SQL `cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e`\n- quality_probe:13: `294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f`；SQL `cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e`\n- quality_probe:14: `ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864`；SQL `cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e`\n- quality_probe:21: `282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7`；SQL `cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e`\n- quality_probe:3: `5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903`；SQL `cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e`\n- screen: `0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75`；SQL `911212f70c8a7545dea5926169ab377f528328e29cfa6763f1973a53a7728d39`\n",
+  "report_sections": {
+    "facts": [
+      "Al Sharqia Industrial Electronics（ID 11）：准时率 8/10 → 4/10，下降 40.0 个百分点；平均延期 1.4 → 3.6 天。（证据：screen）",
+      "供应商 11 同队列拒收率 2.93% → 1.99%；收货覆盖 Q1 10/10、Q2 10/10。（证据：quality_probe:11、screen）",
+      "供应商 11 材料类别分层：battery and power 0.66%→5.03%；display 1.68%→4.71%。（证据：material_probe:11）",
+      "供应商 11 按 Q2 构成重加权：Q1 2.29%，Q2 1.99%。（证据：material_probe:11）",
+      "供应商 11 发运至预计到货平均 26.6 → 27.8 天；发运至实际到货平均 26.9 → 30.7 天。（证据：delivery_stage_probe:11）",
+      "Egypt Power Modules（ID 14）：准时率 15/15 → 9/11，下降 18.18 个百分点；平均延期 0.0 → 0.45 天。（证据：screen）",
+      "供应商 14 同队列拒收率 0.14% → 0.04%；收货覆盖 Q1 15/15、Q2 11/11。（证据：quality_probe:14、screen）",
+      "供应商 14 材料类别分层：enclosure and mechanical 0.00%→0.14%；pcb and connectivity 0.16%→0.00%。（证据：material_probe:14）",
+      "供应商 14 按 Q2 构成重加权：Q1 0.14%，Q2 0.04%。（证据：material_probe:14）",
+      "Mansoura Sensor Technologies（ID 13）：准时率 12/14 → 7/10，下降 15.71 个百分点；平均延期 0.79 → 1.6 天。（证据：screen）",
+      "供应商 13 同队列拒收率 0.39% → 0.22%；收货覆盖 Q1 14/14、Q2 10/10。（证据：quality_probe:13、screen）",
+      "供应商 13 材料类别分层：pcb and connectivity 0.40%→0.83%；display 0.20%→0.00%。（证据：material_probe:13）",
+      "供应商 13 按 Q2 构成重加权：Q1 0.39%，Q2 0.22%。（证据：material_probe:13）",
+      "Suez Tech Supplies（ID 3）：准时率 10/11 → 11/14，下降 12.34 个百分点；平均延期 0.64 → 1.0 天。（证据：screen）",
+      "供应商 3 同队列拒收率 0.17% → 0.27%；收货覆盖 Q1 11/11、Q2 14/14。（证据：quality_probe:3、screen）",
+      "供应商 3 材料类别分层：memory and storage 0.40%→0.83%；camera audio and sensors 0.00%→0.16%。（证据：material_probe:3）",
+      "供应商 3 按 Q2 构成重加权：Q1 0.18%，Q2 0.27%。（证据：material_probe:3）",
+      "Upper Egypt Technology Supplies（ID 21）：准时率 12/13 → 12/15，下降 12.31 个百分点；平均延期 0.46 → 1.0 天。（证据：screen）",
+      "供应商 21 同队列拒收率 0.22% → 0.43%；收货覆盖 Q1 13/13、Q2 15/15。（证据：quality_probe:21、screen）",
+      "供应商 21 材料类别分层：display 0.28%→1.09%；packaging and accessories 0.00%→0.73%。（证据：material_probe:21）",
+      "供应商 21 按 Q2 构成重加权：Q1 0.43%，Q2 0.43%。（证据：material_probe:21）"
+    ],
+    "associations": [
+      "供应商 11 交付准时率下降，但总体来料拒收率未上升；当前证据不支持双域恶化。",
+      "供应商 14 交付准时率下降，但总体来料拒收率未上升；当前证据不支持双域恶化。",
+      "供应商 13 交付准时率下降，但总体来料拒收率未上升；当前证据不支持双域恶化。",
+      "供应商 3 的交付准时率与来料质量代理指标同向恶化；这是关联，不能据此判断原因。",
+      "供应商 21 的交付准时率与来料质量代理指标同向恶化；这是关联，不能据此判断原因。"
+    ],
+    "hypotheses": [
+      "供应商 3 的材料构成变化可能掩盖类别内拒收率上升，需进一步核对类别样本量。"
+    ],
+    "recommendations": [
+      "优先核对高降幅供应商的发货日、预计到货日和实际到货日，并结合业务记录检查交付环节。"
+    ],
+    "evidence_gaps": [
+      "数据没有运输异常原因和生产工序记录，不能据现有表证明交付或质量变化的根因。"
+    ]
+  },
+  "chart": {
+    "type": "bar",
+    "x": "supplier_name",
+    "y": "on_time_rate",
+    "unit": "ratio",
+    "data": [
+      {
+        "supplier_name": "Al Sharqia Industrial Electronics Q1",
+        "on_time_rate": 0.8
+      },
+      {
+        "supplier_name": "Al Sharqia Industrial Electronics Q2",
+        "on_time_rate": 0.4
+      },
+      {
+        "supplier_name": "Egypt Power Modules Q1",
+        "on_time_rate": 1.0
+      },
+      {
+        "supplier_name": "Egypt Power Modules Q2",
+        "on_time_rate": 0.8181818181818182
+      },
+      {
+        "supplier_name": "Mansoura Sensor Technologies Q1",
+        "on_time_rate": 0.8571428571428571
+      },
+      {
+        "supplier_name": "Mansoura Sensor Technologies Q2",
+        "on_time_rate": 0.7
+      },
+      {
+        "supplier_name": "Suez Tech Supplies Q1",
+        "on_time_rate": 0.9090909090909091
+      },
+      {
+        "supplier_name": "Suez Tech Supplies Q2",
+        "on_time_rate": 0.7857142857142857
+      },
+      {
+        "supplier_name": "Upper Egypt Technology Supplies Q1",
+        "on_time_rate": 0.9230769230769231
+      },
+      {
+        "supplier_name": "Upper Egypt Technology Supplies Q2",
+        "on_time_rate": 0.8
+      }
+    ],
+    "data_sha256": "9715ba7d76ab436bf9c5c8453ebf7309e91f1f51ecf500d6961e482d66ebd685"
+  },
+  "validation": {
+    "status": "passed",
+    "checked_results": 12,
+    "failed_results": 0
+  },
+  "queries": [
+    {
+      "task_id": "screen",
+      "sql": "SELECT sh.supplier_id,s.supplier_name,\nSUM(CASE WHEN sh.expected_arrival_date < ? THEN 1 ELSE 0 END) AS q1_n,\nSUM(CASE WHEN sh.expected_arrival_date < ? AND sh.actual_arrival_date <= sh.expected_arrival_date THEN 1 ELSE 0 END) AS q1_on,\nSUM(CASE WHEN sh.expected_arrival_date >= ? THEN 1 ELSE 0 END) AS q2_n,\nSUM(CASE WHEN sh.expected_arrival_date >= ? AND sh.actual_arrival_date <= sh.expected_arrival_date THEN 1 ELSE 0 END) AS q2_on,\nROUND(AVG(CASE WHEN sh.expected_arrival_date < ? THEN CASE WHEN sh.actual_arrival_date > sh.expected_arrival_date THEN (JULIANDAY(sh.actual_arrival_date) - JULIANDAY(sh.expected_arrival_date)) ELSE 0 END END),2) AS q1_avg_delay_days,\nROUND(AVG(CASE WHEN sh.expected_arrival_date >= ? THEN CASE WHEN sh.actual_arrival_date > sh.expected_arrival_date THEN (JULIANDAY(sh.actual_arrival_date) - JULIANDAY(sh.expected_arrival_date)) ELSE 0 END END),2) AS q2_avg_delay_days\nFROM SupplierShipments sh JOIN Suppliers s ON s.supplier_id=sh.supplier_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.actual_arrival_date IS NOT NULL\nGROUP BY sh.supplier_id,s.supplier_name ORDER BY sh.supplier_id LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-04-01",
+        "2025-04-01",
+        "2025-04-01",
+        "2025-04-01",
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01"
+      ],
+      "sql_sha256": "911212f70c8a7545dea5926169ab377f528328e29cfa6763f1973a53a7728d39",
+      "result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75"
+    },
+    {
+      "task_id": "quality_probe:11",
+      "sql": "SELECT sh.supplier_id,CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nCOUNT(DISTINCT sh.shipment_id) AS received_shipments,COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter ORDER BY sh.supplier_id,quarter LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        11
+      ],
+      "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+      "result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56"
+    },
+    {
+      "task_id": "quality_probe:14",
+      "sql": "SELECT sh.supplier_id,CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nCOUNT(DISTINCT sh.shipment_id) AS received_shipments,COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter ORDER BY sh.supplier_id,quarter LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        14
+      ],
+      "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+      "result_ref": "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864"
+    },
+    {
+      "task_id": "quality_probe:13",
+      "sql": "SELECT sh.supplier_id,CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nCOUNT(DISTINCT sh.shipment_id) AS received_shipments,COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter ORDER BY sh.supplier_id,quarter LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        13
+      ],
+      "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+      "result_ref": "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f"
+    },
+    {
+      "task_id": "quality_probe:3",
+      "sql": "SELECT sh.supplier_id,CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nCOUNT(DISTINCT sh.shipment_id) AS received_shipments,COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter ORDER BY sh.supplier_id,quarter LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        3
+      ],
+      "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+      "result_ref": "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903"
+    },
+    {
+      "task_id": "quality_probe:21",
+      "sql": "SELECT sh.supplier_id,CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nCOUNT(DISTINCT sh.shipment_id) AS received_shipments,COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter ORDER BY sh.supplier_id,quarter LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        21
+      ],
+      "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+      "result_ref": "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7"
+    },
+    {
+      "task_id": "material_probe:11",
+      "sql": "SELECT sh.supplier_id, CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nLOWER(TRIM(m.material_category)) AS material_category, COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id JOIN Materials m ON m.material_id=d.material_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter,LOWER(TRIM(m.material_category)) ORDER BY sh.supplier_id,quarter,material_category LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        11
+      ],
+      "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+      "result_ref": "b70684f4aa6161cf8c63c8983bff9d74e6a9cda1b4346fce113bc0aa0436d7da"
+    },
+    {
+      "task_id": "material_probe:14",
+      "sql": "SELECT sh.supplier_id, CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nLOWER(TRIM(m.material_category)) AS material_category, COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id JOIN Materials m ON m.material_id=d.material_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter,LOWER(TRIM(m.material_category)) ORDER BY sh.supplier_id,quarter,material_category LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        14
+      ],
+      "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+      "result_ref": "aa02bdb25716df4da058fa8da3944b8e40cfa493422bb531e564a050ea01405b"
+    },
+    {
+      "task_id": "material_probe:13",
+      "sql": "SELECT sh.supplier_id, CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nLOWER(TRIM(m.material_category)) AS material_category, COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id JOIN Materials m ON m.material_id=d.material_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter,LOWER(TRIM(m.material_category)) ORDER BY sh.supplier_id,quarter,material_category LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        13
+      ],
+      "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+      "result_ref": "83b771a8a4a32a3aecb7320cd0c1dc381cfc4c93379c174065d3a1b9b8f74cd4"
+    },
+    {
+      "task_id": "material_probe:3",
+      "sql": "SELECT sh.supplier_id, CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nLOWER(TRIM(m.material_category)) AS material_category, COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id JOIN Materials m ON m.material_id=d.material_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter,LOWER(TRIM(m.material_category)) ORDER BY sh.supplier_id,quarter,material_category LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        3
+      ],
+      "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+      "result_ref": "529d1f5bdd3e6c5d90ca69f0bf8db488900e4fa996c68a74d972a54442abe67b"
+    },
+    {
+      "task_id": "material_probe:21",
+      "sql": "SELECT sh.supplier_id, CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nLOWER(TRIM(m.material_category)) AS material_category, COUNT(d.gr_detail_id) AS details,\nSUM(d.rejected_quantity) AS rejected_quantity,SUM(d.received_quantity) AS received_quantity,\nROUND(1.0*SUM(d.rejected_quantity)/NULLIF(SUM(d.received_quantity),0),6) AS rejection_rate\nFROM SupplierShipments sh JOIN GoodsReceipts gr ON gr.shipment_id=sh.shipment_id\nJOIN GoodsReceiptDetails d ON d.gr_id=gr.gr_id JOIN Materials m ON m.material_id=d.material_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter,LOWER(TRIM(m.material_category)) ORDER BY sh.supplier_id,quarter,material_category LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        21
+      ],
+      "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+      "result_ref": "b5eed9bcaf4b5ac0aabe2262b3a93e3c3eed0cbf6d70b4c1bbde704af5d63724"
+    },
+    {
+      "task_id": "delivery_stage_probe:11",
+      "sql": "SELECT sh.supplier_id, CASE WHEN sh.expected_arrival_date < ? THEN 'Q1' ELSE 'Q2' END AS quarter,\nCOUNT(sh.shipment_id) AS shipments,\nROUND(AVG((JULIANDAY(sh.expected_arrival_date) - JULIANDAY(sh.ship_date))),2) AS planned_ship_to_arrival_days,\nROUND(AVG((JULIANDAY(sh.actual_arrival_date) - JULIANDAY(sh.ship_date))),2) AS actual_ship_to_arrival_days\nFROM SupplierShipments sh\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ?\nAND sh.ship_date IS NOT NULL AND sh.actual_arrival_date IS NOT NULL AND sh.supplier_id IN (?)\nGROUP BY sh.supplier_id,quarter ORDER BY sh.supplier_id,quarter LIMIT 100",
+      "params": [
+        "2025-04-01",
+        "2025-01-01",
+        "2025-07-01",
+        11
+      ],
+      "sql_sha256": "7593e7d5dca40d6037161401c41f780e61980fe97f857c9786ddd005a2a37a46",
+      "result_ref": "c51930dcf1a8f620a267abdbf127e71085b2be245108c78551fe8c89426cbd4a"
+    }
+  ],
+  "screen": {
+    "candidates": [
+      {
+        "drop_pp": 40.0,
+        "q1_avg_delay_days": 1.4,
+        "q1_n": 10,
+        "q1_on": 8,
+        "q1_rate": 0.8,
+        "q2_avg_delay_days": 3.6,
+        "q2_n": 10,
+        "q2_on": 4,
+        "q2_rate": 0.4,
+        "supplier_id": 11,
+        "supplier_name": "Al Sharqia Industrial Electronics"
+      },
+      {
+        "drop_pp": 18.18,
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 15,
+        "q1_on": 15,
+        "q1_rate": 1.0,
+        "q2_avg_delay_days": 0.45,
+        "q2_n": 11,
+        "q2_on": 9,
+        "q2_rate": 0.8182,
+        "supplier_id": 14,
+        "supplier_name": "Egypt Power Modules"
+      },
+      {
+        "drop_pp": 15.71,
+        "q1_avg_delay_days": 0.79,
+        "q1_n": 14,
+        "q1_on": 12,
+        "q1_rate": 0.8571,
+        "q2_avg_delay_days": 1.6,
+        "q2_n": 10,
+        "q2_on": 7,
+        "q2_rate": 0.7,
+        "supplier_id": 13,
+        "supplier_name": "Mansoura Sensor Technologies"
+      },
+      {
+        "drop_pp": 12.34,
+        "q1_avg_delay_days": 0.64,
+        "q1_n": 11,
+        "q1_on": 10,
+        "q1_rate": 0.9091,
+        "q2_avg_delay_days": 1.0,
+        "q2_n": 14,
+        "q2_on": 11,
+        "q2_rate": 0.7857,
+        "supplier_id": 3,
+        "supplier_name": "Suez Tech Supplies"
+      },
+      {
+        "drop_pp": 12.31,
+        "q1_avg_delay_days": 0.46,
+        "q1_n": 13,
+        "q1_on": 12,
+        "q1_rate": 0.9231,
+        "q2_avg_delay_days": 1.0,
+        "q2_n": 15,
+        "q2_on": 12,
+        "q2_rate": 0.8,
+        "supplier_id": 21,
+        "supplier_name": "Upper Egypt Technology Supplies"
+      }
+    ],
+    "params": [
+      "2025-04-01",
+      "2025-04-01",
+      "2025-04-01",
+      "2025-04-01",
+      "2025-04-01",
+      "2025-04-01",
+      "2025-01-01",
+      "2025-07-01"
+    ],
+    "rows": [
+      {
+        "drop_pp": 5.88,
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 14,
+        "q1_on": 14,
+        "q1_rate": 1.0,
+        "q2_avg_delay_days": 0.24,
+        "q2_n": 17,
+        "q2_on": 16,
+        "q2_rate": 0.9412,
+        "supplier_id": 1,
+        "supplier_name": "Al Nile Electronic Components"
+      },
+      {
+        "drop_pp": 5.56,
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 16,
+        "q1_on": 16,
+        "q1_rate": 1.0,
+        "q2_avg_delay_days": 0.06,
+        "q2_n": 18,
+        "q2_on": 17,
+        "q2_rate": 0.9444,
+        "supplier_id": 2,
+        "supplier_name": "Misr Advanced Circuits"
+      },
+      {
+        "drop_pp": 12.34,
+        "q1_avg_delay_days": 0.64,
+        "q1_n": 11,
+        "q1_on": 10,
+        "q1_rate": 0.9091,
+        "q2_avg_delay_days": 1.0,
+        "q2_n": 14,
+        "q2_on": 11,
+        "q2_rate": 0.7857,
+        "supplier_id": 3,
+        "supplier_name": "Suez Tech Supplies"
+      },
+      {
+        "drop_pp": 2.48,
+        "q1_avg_delay_days": 1.43,
+        "q1_n": 23,
+        "q1_on": 17,
+        "q1_rate": 0.7391,
+        "q2_avg_delay_days": 2.07,
+        "q2_n": 14,
+        "q2_on": 10,
+        "q2_rate": 0.7143,
+        "supplier_id": 4,
+        "supplier_name": "Canal Microelectronics "
+      },
+      {
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 13,
+        "q1_on": 13,
+        "q2_avg_delay_days": 0.22,
+        "q2_n": 9,
+        "q2_on": 8,
+        "supplier_id": 5,
+        "supplier_name": "Delta Display Solutions"
+      },
+      {
+        "q1_avg_delay_days": 0.6,
+        "q1_n": 10,
+        "q1_on": 9,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 7,
+        "q2_on": 7,
+        "supplier_id": 6,
+        "supplier_name": "Cairo Battery Systems"
+      },
+      {
+        "drop_pp": -4.24,
+        "q1_avg_delay_days": 0.2,
+        "q1_n": 15,
+        "q1_on": 13,
+        "q1_rate": 0.8667,
+        "q2_avg_delay_days": 0.09,
+        "q2_n": 11,
+        "q2_on": 10,
+        "q2_rate": 0.9091,
+        "supplier_id": 7,
+        "supplier_name": "Alexandria Precision Parts"
+      },
+      {
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 13,
+        "q1_on": 13,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 5,
+        "q2_on": 5,
+        "supplier_id": 8,
+        "supplier_name": "Obour Connectivity Trading"
+      },
+      {
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 15,
+        "q1_on": 15,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 9,
+        "q2_on": 9,
+        "supplier_id": 9,
+        "supplier_name": "Sinai Semiconductor Distribution"
+      },
+      {
+        "drop_pp": 8.33,
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 19,
+        "q1_on": 19,
+        "q1_rate": 1.0,
+        "q2_avg_delay_days": 0.42,
+        "q2_n": 12,
+        "q2_on": 11,
+        "q2_rate": 0.9167,
+        "supplier_id": 10,
+        "supplier_name": "Nile Memory and Storage"
+      },
+      {
+        "drop_pp": 40.0,
+        "q1_avg_delay_days": 1.4,
+        "q1_n": 10,
+        "q1_on": 8,
+        "q1_rate": 0.8,
+        "q2_avg_delay_days": 3.6,
+        "q2_n": 10,
+        "q2_on": 4,
+        "q2_rate": 0.4,
+        "supplier_id": 11,
+        "supplier_name": "Al Sharqia Industrial Electronics"
+      },
+      {
+        "drop_pp": 2.88,
+        "q1_avg_delay_days": 0.5,
+        "q1_n": 16,
+        "q1_on": 14,
+        "q1_rate": 0.875,
+        "q2_avg_delay_days": 0.62,
+        "q2_n": 13,
+        "q2_on": 11,
+        "q2_rate": 0.8462,
+        "supplier_id": 12,
+        "supplier_name": "Giza Smart Components"
+      },
+      {
+        "drop_pp": 15.71,
+        "q1_avg_delay_days": 0.79,
+        "q1_n": 14,
+        "q1_on": 12,
+        "q1_rate": 0.8571,
+        "q2_avg_delay_days": 1.6,
+        "q2_n": 10,
+        "q2_on": 7,
+        "q2_rate": 0.7,
+        "supplier_id": 13,
+        "supplier_name": "Mansoura Sensor Technologies"
+      },
+      {
+        "drop_pp": 18.18,
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 15,
+        "q1_on": 15,
+        "q1_rate": 1.0,
+        "q2_avg_delay_days": 0.45,
+        "q2_n": 11,
+        "q2_on": 9,
+        "q2_rate": 0.8182,
+        "supplier_id": 14,
+        "supplier_name": "Egypt Power Modules"
+      },
+      {
+        "drop_pp": -18.18,
+        "q1_avg_delay_days": 0.45,
+        "q1_n": 11,
+        "q1_on": 9,
+        "q1_rate": 0.8182,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 14,
+        "q2_on": 14,
+        "q2_rate": 1.0,
+        "supplier_id": 15,
+        "supplier_name": "Borg El Arab PCB Solutions"
+      },
+      {
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 8,
+        "q1_on": 8,
+        "q2_avg_delay_days": 0.18,
+        "q2_n": 11,
+        "q2_on": 10,
+        "supplier_id": 16,
+        "supplier_name": "Tanta Packaging Industries"
+      },
+      {
+        "drop_pp": -9.09,
+        "q1_avg_delay_days": 0.18,
+        "q1_n": 11,
+        "q1_on": 10,
+        "q1_rate": 0.9091,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 13,
+        "q2_on": 13,
+        "q2_rate": 1.0,
+        "supplier_id": 17,
+        "supplier_name": "Ismailia Cable Systems"
+      },
+      {
+        "q1_avg_delay_days": 0.53,
+        "q1_n": 19,
+        "q1_on": 17,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 9,
+        "q2_on": 9,
+        "supplier_id": 18,
+        "supplier_name": "Red Sea Electronics Trading"
+      },
+      {
+        "drop_pp": -6.86,
+        "q1_avg_delay_days": 2.22,
+        "q1_n": 23,
+        "q1_on": 17,
+        "q1_rate": 0.7391,
+        "q2_avg_delay_days": 1.38,
+        "q2_n": 26,
+        "q2_on": 21,
+        "q2_rate": 0.8077,
+        "supplier_id": 19,
+        "supplier_name": "New Cairo Device Parts"
+      },
+      {
+        "drop_pp": 3.21,
+        "q1_avg_delay_days": 0.18,
+        "q1_n": 17,
+        "q1_on": 16,
+        "q1_rate": 0.9412,
+        "q2_avg_delay_days": 0.45,
+        "q2_n": 11,
+        "q2_on": 10,
+        "q2_rate": 0.9091,
+        "supplier_id": 20,
+        "supplier_name": "Damietta Plastics and Casings"
+      },
+      {
+        "drop_pp": 12.31,
+        "q1_avg_delay_days": 0.46,
+        "q1_n": 13,
+        "q1_on": 12,
+        "q1_rate": 0.9231,
+        "q2_avg_delay_days": 1.0,
+        "q2_n": 15,
+        "q2_on": 12,
+        "q2_rate": 0.8,
+        "supplier_id": 21,
+        "supplier_name": "Upper Egypt Technology Supplies"
+      },
+      {
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 8,
+        "q1_on": 8,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 7,
+        "q2_on": 7,
+        "supplier_id": 22,
+        "supplier_name": "Port Said Import Services "
+      },
+      {
+        "drop_pp": -0.43,
+        "q1_avg_delay_days": 2.48,
+        "q1_n": 23,
+        "q1_on": 16,
+        "q1_rate": 0.6957,
+        "q2_avg_delay_days": 2.2,
+        "q2_n": 20,
+        "q2_on": 14,
+        "q2_rate": 0.7,
+        "supplier_id": 23,
+        "supplier_name": " October Electronic Distribution"
+      },
+      {
+        "drop_pp": 1.59,
+        "q1_avg_delay_days": 0.39,
+        "q1_n": 18,
+        "q1_on": 17,
+        "q1_rate": 0.9444,
+        "q2_avg_delay_days": 0.36,
+        "q2_n": 14,
+        "q2_on": 13,
+        "q2_rate": 0.9286,
+        "supplier_id": 24,
+        "supplier_name": "Helwan Metal Frames"
+      },
+      {
+        "q1_avg_delay_days": 0.0,
+        "q1_n": 9,
+        "q1_on": 9,
+        "q2_avg_delay_days": 0.0,
+        "q2_n": 14,
+        "q2_on": 14,
+        "supplier_id": 25,
+        "supplier_name": "Al Ahram Accessories Manufacturing"
+      }
+    ],
+    "sql": "SELECT sh.supplier_id,s.supplier_name,\nSUM(CASE WHEN sh.expected_arrival_date < ? THEN 1 ELSE 0 END) AS q1_n,\nSUM(CASE WHEN sh.expected_arrival_date < ? AND sh.actual_arrival_date <= sh.expected_arrival_date THEN 1 ELSE 0 END) AS q1_on,\nSUM(CASE WHEN sh.expected_arrival_date >= ? THEN 1 ELSE 0 END) AS q2_n,\nSUM(CASE WHEN sh.expected_arrival_date >= ? AND sh.actual_arrival_date <= sh.expected_arrival_date THEN 1 ELSE 0 END) AS q2_on,\nROUND(AVG(CASE WHEN sh.expected_arrival_date < ? THEN CASE WHEN sh.actual_arrival_date > sh.expected_arrival_date THEN (JULIANDAY(sh.actual_arrival_date) - JULIANDAY(sh.expected_arrival_date)) ELSE 0 END END),2) AS q1_avg_delay_days,\nROUND(AVG(CASE WHEN sh.expected_arrival_date >= ? THEN CASE WHEN sh.actual_arrival_date > sh.expected_arrival_date THEN (JULIANDAY(sh.actual_arrival_date) - JULIANDAY(sh.expected_arrival_date)) ELSE 0 END END),2) AS q2_avg_delay_days\nFROM SupplierShipments sh JOIN Suppliers s ON s.supplier_id=sh.supplier_id\nWHERE sh.expected_arrival_date >= ? AND sh.expected_arrival_date < ? AND sh.actual_arrival_date IS NOT NULL\nGROUP BY sh.supplier_id,s.supplier_name ORDER BY sh.supplier_id LIMIT 100",
+    "sql_sha256": "911212f70c8a7545dea5926169ab377f528328e29cfa6763f1973a53a7728d39"
+  },
+  "quality": {
+    "rows": [
+      {
+        "details": 30,
+        "quarter": "Q1",
+        "received_quantity": 4052552,
+        "received_shipments": 10,
+        "rejected_quantity": 118626,
+        "rejection_rate": 0.029272,
+        "supplier_id": 11
+      },
+      {
+        "details": 30,
+        "quarter": "Q2",
+        "received_quantity": 4524521,
+        "received_shipments": 10,
+        "rejected_quantity": 90102,
+        "rejection_rate": 0.019914,
+        "supplier_id": 11
+      },
+      {
+        "details": 45,
+        "quarter": "Q1",
+        "received_quantity": 905612,
+        "received_shipments": 15,
+        "rejected_quantity": 1278,
+        "rejection_rate": 0.001411,
+        "supplier_id": 14
+      },
+      {
+        "details": 33,
+        "quarter": "Q2",
+        "received_quantity": 675648,
+        "received_shipments": 11,
+        "rejected_quantity": 260,
+        "rejection_rate": 0.000385,
+        "supplier_id": 14
+      },
+      {
+        "details": 42,
+        "quarter": "Q1",
+        "received_quantity": 532003,
+        "received_shipments": 14,
+        "rejected_quantity": 2101,
+        "rejection_rate": 0.003949,
+        "supplier_id": 13
+      },
+      {
+        "details": 30,
+        "quarter": "Q2",
+        "received_quantity": 374314,
+        "received_shipments": 10,
+        "rejected_quantity": 812,
+        "rejection_rate": 0.002169,
+        "supplier_id": 13
+      },
+      {
+        "details": 33,
+        "quarter": "Q1",
+        "received_quantity": 1171654,
+        "received_shipments": 11,
+        "rejected_quantity": 2037,
+        "rejection_rate": 0.001739,
+        "supplier_id": 3
+      },
+      {
+        "details": 42,
+        "quarter": "Q2",
+        "received_quantity": 1458689,
+        "received_shipments": 14,
+        "rejected_quantity": 3947,
+        "rejection_rate": 0.002706,
+        "supplier_id": 3
+      },
+      {
+        "details": 39,
+        "quarter": "Q1",
+        "received_quantity": 970418,
+        "received_shipments": 13,
+        "rejected_quantity": 2156,
+        "rejection_rate": 0.002222,
+        "supplier_id": 21
+      },
+      {
+        "details": 45,
+        "quarter": "Q2",
+        "received_quantity": 2325139,
+        "received_shipments": 15,
+        "rejected_quantity": 9943,
+        "rejection_rate": 0.004276,
+        "supplier_id": 21
+      }
+    ]
+  },
+  "material": {
+    "rows": [
+      {
+        "details": 3,
+        "material_category": "battery and power",
+        "quarter": "Q1",
+        "received_quantity": 128000,
+        "rejected_quantity": 848,
+        "rejection_rate": 0.006625,
+        "supplier_id": 11
+      },
+      {
+        "details": 2,
+        "material_category": "camera audio and sensors",
+        "quarter": "Q1",
+        "received_quantity": 1497350,
+        "rejected_quantity": 60611,
+        "rejection_rate": 0.040479,
+        "supplier_id": 11
+      },
+      {
+        "details": 5,
+        "material_category": "display",
+        "quarter": "Q1",
+        "received_quantity": 195867,
+        "rejected_quantity": 3281,
+        "rejection_rate": 0.016751,
+        "supplier_id": 11
+      },
+      {
+        "details": 4,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q1",
+        "received_quantity": 665305,
+        "rejected_quantity": 5010,
+        "rejection_rate": 0.00753,
+        "supplier_id": 11
+      },
+      {
+        "details": 6,
+        "material_category": "memory and storage",
+        "quarter": "Q1",
+        "received_quantity": 754502,
+        "rejected_quantity": 18104,
+        "rejection_rate": 0.023995,
+        "supplier_id": 11
+      },
+      {
+        "details": 1,
+        "material_category": "packaging and accessories",
+        "quarter": "Q1",
+        "received_quantity": 40800,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 11
+      },
+      {
+        "details": 5,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q1",
+        "received_quantity": 431090,
+        "rejected_quantity": 12546,
+        "rejection_rate": 0.029103,
+        "supplier_id": 11
+      },
+      {
+        "details": 4,
+        "material_category": "processing",
+        "quarter": "Q1",
+        "received_quantity": 339638,
+        "rejected_quantity": 18226,
+        "rejection_rate": 0.053663,
+        "supplier_id": 11
+      },
+      {
+        "details": 6,
+        "material_category": "battery and power",
+        "quarter": "Q2",
+        "received_quantity": 387907,
+        "rejected_quantity": 19496,
+        "rejection_rate": 0.050259,
+        "supplier_id": 11
+      },
+      {
+        "details": 3,
+        "material_category": "camera audio and sensors",
+        "quarter": "Q2",
+        "received_quantity": 1239205,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 11
+      },
+      {
+        "details": 7,
+        "material_category": "display",
+        "quarter": "Q2",
+        "received_quantity": 955458,
+        "rejected_quantity": 44987,
+        "rejection_rate": 0.047084,
+        "supplier_id": 11
+      },
+      {
+        "details": 3,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q2",
+        "received_quantity": 609258,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 11
+      },
+      {
+        "details": 4,
+        "material_category": "memory and storage",
+        "quarter": "Q2",
+        "received_quantity": 336963,
+        "rejected_quantity": 5268,
+        "rejection_rate": 0.015634,
+        "supplier_id": 11
+      },
+      {
+        "details": 2,
+        "material_category": "packaging and accessories",
+        "quarter": "Q2",
+        "received_quantity": 395150,
+        "rejected_quantity": 2076,
+        "rejection_rate": 0.005254,
+        "supplier_id": 11
+      },
+      {
+        "details": 3,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q2",
+        "received_quantity": 399830,
+        "rejected_quantity": 10236,
+        "rejection_rate": 0.025601,
+        "supplier_id": 11
+      },
+      {
+        "details": 2,
+        "material_category": "processing",
+        "quarter": "Q2",
+        "received_quantity": 200750,
+        "rejected_quantity": 8039,
+        "rejection_rate": 0.040045,
+        "supplier_id": 11
+      },
+      {
+        "details": 15,
+        "material_category": "display",
+        "quarter": "Q1",
+        "received_quantity": 151666,
+        "rejected_quantity": 347,
+        "rejection_rate": 0.002288,
+        "supplier_id": 14
+      },
+      {
+        "details": 15,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q1",
+        "received_quantity": 165929,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 14
+      },
+      {
+        "details": 15,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q1",
+        "received_quantity": 588017,
+        "rejected_quantity": 931,
+        "rejection_rate": 0.001583,
+        "supplier_id": 14
+      },
+      {
+        "details": 11,
+        "material_category": "display",
+        "quarter": "Q2",
+        "received_quantity": 116002,
+        "rejected_quantity": 76,
+        "rejection_rate": 0.000655,
+        "supplier_id": 14
+      },
+      {
+        "details": 11,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q2",
+        "received_quantity": 127849,
+        "rejected_quantity": 184,
+        "rejection_rate": 0.001439,
+        "supplier_id": 14
+      },
+      {
+        "details": 11,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q2",
+        "received_quantity": 431797,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 14
+      },
+      {
+        "details": 14,
+        "material_category": "display",
+        "quarter": "Q1",
+        "received_quantity": 180365,
+        "rejected_quantity": 368,
+        "rejection_rate": 0.00204,
+        "supplier_id": 13
+      },
+      {
+        "details": 14,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q1",
+        "received_quantity": 222247,
+        "rejected_quantity": 1213,
+        "rejection_rate": 0.005458,
+        "supplier_id": 13
+      },
+      {
+        "details": 14,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q1",
+        "received_quantity": 129391,
+        "rejected_quantity": 520,
+        "rejection_rate": 0.004019,
+        "supplier_id": 13
+      },
+      {
+        "details": 10,
+        "material_category": "display",
+        "quarter": "Q2",
+        "received_quantity": 130359,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 13
+      },
+      {
+        "details": 10,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q2",
+        "received_quantity": 159271,
+        "rejected_quantity": 112,
+        "rejection_rate": 0.000703,
+        "supplier_id": 13
+      },
+      {
+        "details": 10,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q2",
+        "received_quantity": 84684,
+        "rejected_quantity": 700,
+        "rejection_rate": 0.008266,
+        "supplier_id": 13
+      },
+      {
+        "details": 11,
+        "material_category": "camera audio and sensors",
+        "quarter": "Q1",
+        "received_quantity": 687885,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 3
+      },
+      {
+        "details": 11,
+        "material_category": "memory and storage",
+        "quarter": "Q1",
+        "received_quantity": 247002,
+        "rejected_quantity": 999,
+        "rejection_rate": 0.004045,
+        "supplier_id": 3
+      },
+      {
+        "details": 11,
+        "material_category": "packaging and accessories",
+        "quarter": "Q1",
+        "received_quantity": 236767,
+        "rejected_quantity": 1038,
+        "rejection_rate": 0.004384,
+        "supplier_id": 3
+      },
+      {
+        "details": 14,
+        "material_category": "camera audio and sensors",
+        "quarter": "Q2",
+        "received_quantity": 826861,
+        "rejected_quantity": 1293,
+        "rejection_rate": 0.001564,
+        "supplier_id": 3
+      },
+      {
+        "details": 14,
+        "material_category": "memory and storage",
+        "quarter": "Q2",
+        "received_quantity": 318156,
+        "rejected_quantity": 2654,
+        "rejection_rate": 0.008342,
+        "supplier_id": 3
+      },
+      {
+        "details": 14,
+        "material_category": "packaging and accessories",
+        "quarter": "Q2",
+        "received_quantity": 313672,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 3
+      },
+      {
+        "details": 4,
+        "material_category": "battery and power",
+        "quarter": "Q1",
+        "received_quantity": 87300,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 21
+      },
+      {
+        "details": 4,
+        "material_category": "camera audio and sensors",
+        "quarter": "Q1",
+        "received_quantity": 223386,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 21
+      },
+      {
+        "details": 4,
+        "material_category": "display",
+        "quarter": "Q1",
+        "received_quantity": 63000,
+        "rejected_quantity": 177,
+        "rejection_rate": 0.00281,
+        "supplier_id": 21
+      },
+      {
+        "details": 5,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q1",
+        "received_quantity": 99700,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 21
+      },
+      {
+        "details": 4,
+        "material_category": "memory and storage",
+        "quarter": "Q1",
+        "received_quantity": 129950,
+        "rejected_quantity": 1800,
+        "rejection_rate": 0.013851,
+        "supplier_id": 21
+      },
+      {
+        "details": 6,
+        "material_category": "packaging and accessories",
+        "quarter": "Q1",
+        "received_quantity": 150503,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 21
+      },
+      {
+        "details": 7,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q1",
+        "received_quantity": 117444,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 21
+      },
+      {
+        "details": 5,
+        "material_category": "processing",
+        "quarter": "Q1",
+        "received_quantity": 99135,
+        "rejected_quantity": 179,
+        "rejection_rate": 0.001806,
+        "supplier_id": 21
+      },
+      {
+        "details": 7,
+        "material_category": "battery and power",
+        "quarter": "Q2",
+        "received_quantity": 134129,
+        "rejected_quantity": 641,
+        "rejection_rate": 0.004779,
+        "supplier_id": 21
+      },
+      {
+        "details": 4,
+        "material_category": "camera audio and sensors",
+        "quarter": "Q2",
+        "received_quantity": 205143,
+        "rejected_quantity": 272,
+        "rejection_rate": 0.001326,
+        "supplier_id": 21
+      },
+      {
+        "details": 7,
+        "material_category": "display",
+        "quarter": "Q2",
+        "received_quantity": 138560,
+        "rejected_quantity": 1517,
+        "rejection_rate": 0.010948,
+        "supplier_id": 21
+      },
+      {
+        "details": 3,
+        "material_category": "enclosure and mechanical",
+        "quarter": "Q2",
+        "received_quantity": 115050,
+        "rejected_quantity": 0,
+        "rejection_rate": 0.0,
+        "supplier_id": 21
+      },
+      {
+        "details": 8,
+        "material_category": "memory and storage",
+        "quarter": "Q2",
+        "received_quantity": 683374,
+        "rejected_quantity": 923,
+        "rejection_rate": 0.001351,
+        "supplier_id": 21
+      },
+      {
+        "details": 4,
+        "material_category": "packaging and accessories",
+        "quarter": "Q2",
+        "received_quantity": 827154,
+        "rejected_quantity": 6019,
+        "rejection_rate": 0.007277,
+        "supplier_id": 21
+      },
+      {
+        "details": 6,
+        "material_category": "pcb and connectivity",
+        "quarter": "Q2",
+        "received_quantity": 111292,
+        "rejected_quantity": 107,
+        "rejection_rate": 0.000961,
+        "supplier_id": 21
+      },
+      {
+        "details": 6,
+        "material_category": "processing",
+        "quarter": "Q2",
+        "received_quantity": 110437,
+        "rejected_quantity": 464,
+        "rejection_rate": 0.004201,
+        "supplier_id": 21
+      }
+    ]
+  },
+  "delivery_stage": {
+    "rows": [
+      {
+        "actual_ship_to_arrival_days": 26.9,
+        "planned_ship_to_arrival_days": 26.6,
+        "quarter": "Q1",
+        "shipments": 10,
+        "supplier_id": 11
+      },
+      {
+        "actual_ship_to_arrival_days": 30.7,
+        "planned_ship_to_arrival_days": 27.8,
+        "quarter": "Q2",
+        "shipments": 10,
+        "supplier_id": 11
+      }
+    ]
+  },
+  "defects": null,
+  "evidence": [
+    "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+    "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+    "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+    "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+    "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+    "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+    "b70684f4aa6161cf8c63c8983bff9d74e6a9cda1b4346fce113bc0aa0436d7da",
+    "aa02bdb25716df4da058fa8da3944b8e40cfa493422bb531e564a050ea01405b",
+    "83b771a8a4a32a3aecb7320cd0c1dc381cfc4c93379c174065d3a1b9b8f74cd4",
+    "529d1f5bdd3e6c5d90ca69f0bf8db488900e4fa996c68a74d972a54442abe67b",
+    "b5eed9bcaf4b5ac0aabe2262b3a93e3c3eed0cbf6d70b4c1bbde704af5d63724",
+    "c51930dcf1a8f620a267abdbf127e71085b2be245108c78551fe8c89426cbd4a"
+  ],
+  "task_dag": {
+    "screen": {
+      "task_id": "screen",
+      "branch_id": "screen",
+      "agent": "query_agent",
+      "kind": "delivery_screen",
+      "supplier_id": null,
+      "depends_on": [],
+      "trigger_result_ref": null,
+      "plan_version": 1,
+      "reason": "先筛查交付趋势及样本量",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "用户要求比较交付与质量",
+      "hypotheses": [
+        "哪些供应商交付准时率下降"
+      ],
+      "expected_evidence": "两季度准时数、有效发货数与降幅",
+      "stop_condition": "没有达阈值候选时停止质量分支",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "8c990c3814896f7c612def384c8624fe5d595d113719325a22adcad406e54833",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "quality_probe:11": {
+      "task_id": "quality_probe:11",
+      "branch_id": "quality_probe:11",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 11,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+      "plan_version": 2,
+      "reason": "交付降幅最大，核查质量是否同步下降",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 11 准时数 8/10 → 4/10；下降 40.0 个百分点；平均延期 1.4 → 3.6 天",
+      "hypotheses": [
+        "该供应商质量可能同步下降"
+      ],
+      "expected_evidence": "同一发货队列的收货覆盖、拒收量与收货量",
+      "stop_condition": "两期不可比时标记证据不足",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "73e125136148daba5a810772c7cf2572067168993e57ed3f71f9bd536d573315",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "quality_probe:14": {
+      "task_id": "quality_probe:14",
+      "branch_id": "quality_probe:14",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 14,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+      "plan_version": 2,
+      "reason": "交付转差且Q2样本可比，核查质量风险",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 14 准时数 15/15 → 9/11；下降 18.18 个百分点；平均延期 0.0 → 0.45 天",
+      "hypotheses": [
+        "该供应商质量可能同步下降"
+      ],
+      "expected_evidence": "同一发货队列的收货覆盖、拒收量与收货量",
+      "stop_condition": "两期不可比时标记证据不足",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "ab3bfd78804e61b1589c170a3ed555dcd566322ad41cb4367bbe2e60d90017ad",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "quality_probe:13": {
+      "task_id": "quality_probe:13",
+      "branch_id": "quality_probe:13",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 13,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+      "plan_version": 2,
+      "reason": "交付降幅较大，核查质量是否恶化",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 13 准时数 12/14 → 7/10；下降 15.71 个百分点；平均延期 0.79 → 1.6 天",
+      "hypotheses": [
+        "该供应商质量可能同步下降"
+      ],
+      "expected_evidence": "同一发货队列的收货覆盖、拒收量与收货量",
+      "stop_condition": "两期不可比时标记证据不足",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "620f2c32b324e8556f9e0b5e0c279bc4d793d6c630192e21051ec6934b96ef97",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "quality_probe:3": {
+      "task_id": "quality_probe:3",
+      "branch_id": "quality_probe:3",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 3,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+      "plan_version": 2,
+      "reason": "交付下降，核查质量是否同步下降",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 3 准时数 10/11 → 11/14；下降 12.34 个百分点；平均延期 0.64 → 1.0 天",
+      "hypotheses": [
+        "该供应商质量可能同步下降"
+      ],
+      "expected_evidence": "同一发货队列的收货覆盖、拒收量与收货量",
+      "stop_condition": "两期不可比时标记证据不足",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "3f951c27d6f100de8098321d041badf200613a02acd03611872fc7efa09c493c",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "quality_probe:21": {
+      "task_id": "quality_probe:21",
+      "branch_id": "quality_probe:21",
+      "agent": "query_agent",
+      "kind": "quality_probe",
+      "supplier_id": 21,
+      "depends_on": [
+        "screen"
+      ],
+      "trigger_result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+      "plan_version": 2,
+      "reason": "交付下降，核查质量是否同步下降",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 21 准时数 12/13 → 12/15；下降 12.31 个百分点；平均延期 0.46 → 1.0 天",
+      "hypotheses": [
+        "该供应商质量可能同步下降"
+      ],
+      "expected_evidence": "同一发货队列的收货覆盖、拒收量与收货量",
+      "stop_condition": "两期不可比时标记证据不足",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "19d177254fdd0cb40d4c8f181f51491a01335b470a6821a2459320cce6317afa",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "material_probe:11": {
+      "task_id": "material_probe:11",
+      "branch_id": "material_probe:11",
+      "agent": "query_agent",
+      "kind": "material_probe",
+      "supplier_id": 11,
+      "depends_on": [
+        "quality_probe:11"
+      ],
+      "trigger_result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+      "plan_version": 3,
+      "reason": "交付降幅最大，优先核查材料构成",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 11 同队列拒收率 2.93% → 1.99%",
+      "hypotheses": [
+        "材料构成可能影响总体拒收率趋势"
+      ],
+      "expected_evidence": "各材料类别两期分子、分母与重加权率",
+      "stop_condition": "无可比类别时降低结论强度",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "f81106d6f56c9b233ca6a67dd851e4b6107a09fccf5227935199c5b3fc110726",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "material_probe:14": {
+      "task_id": "material_probe:14",
+      "branch_id": "material_probe:14",
+      "agent": "query_agent",
+      "kind": "material_probe",
+      "supplier_id": 14,
+      "depends_on": [
+        "quality_probe:14"
+      ],
+      "trigger_result_ref": "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+      "plan_version": 3,
+      "reason": "交付降幅次大，核查材料构成",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 14 同队列拒收率 0.14% → 0.04%",
+      "hypotheses": [
+        "材料构成可能影响总体拒收率趋势"
+      ],
+      "expected_evidence": "各材料类别两期分子、分母与重加权率",
+      "stop_condition": "无可比类别时降低结论强度",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "cd3780fd335afd247d345a8818c430a9db04526ffed6bc98ab7deab0cabeb338",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "material_probe:13": {
+      "task_id": "material_probe:13",
+      "branch_id": "material_probe:13",
+      "agent": "query_agent",
+      "kind": "material_probe",
+      "supplier_id": 13,
+      "depends_on": [
+        "quality_probe:13"
+      ],
+      "trigger_result_ref": "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+      "plan_version": 3,
+      "reason": "交付降幅较大，核查材料构成",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 13 同队列拒收率 0.39% → 0.22%",
+      "hypotheses": [
+        "材料构成可能影响总体拒收率趋势"
+      ],
+      "expected_evidence": "各材料类别两期分子、分母与重加权率",
+      "stop_condition": "无可比类别时降低结论强度",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "cb8b0a0c688c766bd320a69a393221e4c46f96603a14cf55eee7272bfaee6c3a",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "material_probe:3": {
+      "task_id": "material_probe:3",
+      "branch_id": "material_probe:3",
+      "agent": "query_agent",
+      "kind": "material_probe",
+      "supplier_id": 3,
+      "depends_on": [
+        "quality_probe:3"
+      ],
+      "trigger_result_ref": "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+      "plan_version": 3,
+      "reason": "质量已恶化，核查材料构成",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 3 同队列拒收率 0.17% → 0.27%",
+      "hypotheses": [
+        "材料构成可能影响总体拒收率趋势"
+      ],
+      "expected_evidence": "各材料类别两期分子、分母与重加权率",
+      "stop_condition": "无可比类别时降低结论强度",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "96d895d305b7b9db2a5225dc2586a7cfeeedb5b9910f6a198e969f50c3210be8",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "material_probe:21": {
+      "task_id": "material_probe:21",
+      "branch_id": "material_probe:21",
+      "agent": "query_agent",
+      "kind": "material_probe",
+      "supplier_id": 21,
+      "depends_on": [
+        "quality_probe:21"
+      ],
+      "trigger_result_ref": "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+      "plan_version": 3,
+      "reason": "质量已恶化，核查材料构成",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 21 同队列拒收率 0.22% → 0.43%",
+      "hypotheses": [
+        "材料构成可能影响总体拒收率趋势"
+      ],
+      "expected_evidence": "各材料类别两期分子、分母与重加权率",
+      "stop_condition": "无可比类别时降低结论强度",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "1a46d9d680e9222a04013eee2bc196290c3dd2df1e426eb170a6c1a401008336",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    },
+    "delivery_stage_probe:11": {
+      "task_id": "delivery_stage_probe:11",
+      "branch_id": "delivery_stage_probe:11",
+      "agent": "query_agent",
+      "kind": "delivery_stage_probe",
+      "supplier_id": 11,
+      "depends_on": [
+        "quality_probe:11"
+      ],
+      "trigger_result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+      "plan_version": 3,
+      "reason": "拆解最大降幅的发运与到货时点",
+      "acceptance": "只读查询完成且证据引用可回读",
+      "trigger_fact": "供应商 11 同队列拒收率 2.93% → 1.99%",
+      "hypotheses": [
+        "发运至到货的时间差可能解释交付变化"
+      ],
+      "expected_evidence": "两期发运至预计及实际到货平均天数",
+      "stop_condition": "只有日期差时不得推断运输根因",
+      "estimated_tool_calls": 1,
+      "status": "completed",
+      "idempotency_key": "ad37dbe740c437a6e89e842abff1c1eb25d57ad71e23e1c3aae606fa5602a6b7",
+      "metric_ids": [
+        "on_time_rate",
+        "average_delay_days",
+        "shipment_cohort_rejection_rate"
+      ]
+    }
+  },
+  "branch_results": {
+    "screen": {
+      "task_id": "screen",
+      "branch_id": "screen",
+      "status": "completed",
+      "summary": "delivery_screen: 25 rows",
+      "artifacts": [
+        "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75"
+      ],
+      "result_view": {
+        "result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+        "columns": [
+          "drop_pp",
+          "q1_avg_delay_days",
+          "q1_n",
+          "q1_on",
+          "q1_rate",
+          "q2_avg_delay_days",
+          "q2_n",
+          "q2_on",
+          "q2_rate",
+          "supplier_id",
+          "supplier_name"
+        ],
+        "types": {
+          "drop_pp": "float",
+          "q1_avg_delay_days": "float",
+          "q1_n": "int",
+          "q1_on": "int",
+          "q1_rate": "float",
+          "q2_avg_delay_days": "float",
+          "q2_n": "int",
+          "q2_on": "int",
+          "q2_rate": "float",
+          "supplier_id": "int",
+          "supplier_name": "str"
+        },
+        "total_rows": 25,
+        "preview": [
+          {
+            "supplier_id": 1,
+            "supplier_name": "Al Nile Electronic Components",
+            "q1_n": 14,
+            "q1_on": 14,
+            "q2_n": 17,
+            "q2_on": 16,
+            "q1_avg_delay_days": 0.0,
+            "q2_avg_delay_days": 0.24,
+            "q1_rate": 1.0,
+            "q2_rate": 0.9412,
+            "drop_pp": 5.88
+          },
+          {
+            "supplier_id": 2,
+            "supplier_name": "Misr Advanced Circuits",
+            "q1_n": 16,
+            "q1_on": 16,
+            "q2_n": 18,
+            "q2_on": 17,
+            "q1_avg_delay_days": 0.0,
+            "q2_avg_delay_days": 0.06,
+            "q1_rate": 1.0,
+            "q2_rate": 0.9444,
+            "drop_pp": 5.56
+          },
+          {
+            "supplier_id": 3,
+            "supplier_name": "Suez Tech Supplies",
+            "q1_n": 11,
+            "q1_on": 10,
+            "q2_n": 14,
+            "q2_on": 11,
+            "q1_avg_delay_days": 0.64,
+            "q2_avg_delay_days": 1.0,
+            "q1_rate": 0.9091,
+            "q2_rate": 0.7857,
+            "drop_pp": 12.34
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "drop_pp": 8,
+            "q1_avg_delay_days": 0,
+            "q1_n": 0,
+            "q1_on": 0,
+            "q1_rate": 8,
+            "q2_avg_delay_days": 0,
+            "q2_n": 0,
+            "q2_on": 0,
+            "q2_rate": 8,
+            "supplier_id": 0,
+            "supplier_name": 0
+          },
+          "numeric_ranges": {
+            "drop_pp": {
+              "min": -18.18,
+              "max": 40.0
+            },
+            "q1_avg_delay_days": {
+              "min": 0.0,
+              "max": 2.48
+            },
+            "q1_n": {
+              "min": 8,
+              "max": 23
+            },
+            "q1_on": {
+              "min": 8,
+              "max": 19
+            },
+            "q1_rate": {
+              "min": 0.6957,
+              "max": 1.0
+            },
+            "q2_avg_delay_days": {
+              "min": 0.0,
+              "max": 3.6
+            },
+            "q2_n": {
+              "min": 5,
+              "max": 26
+            },
+            "q2_on": {
+              "min": 4,
+              "max": 21
+            },
+            "q2_rate": {
+              "min": 0.4,
+              "max": 1.0
+            },
+            "supplier_id": {
+              "min": 1,
+              "max": 25
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+        "sql_sha256": "911212f70c8a7545dea5926169ab377f528328e29cfa6763f1973a53a7728d39",
+        "metric_version": "demo-1",
+        "idempotency_key": "8c990c3814896f7c612def384c8624fe5d595d113719325a22adcad406e54833"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:11": {
+      "task_id": "quality_probe:11",
+      "branch_id": "quality_probe:11",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56"
+      ],
+      "result_view": {
+        "result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+        "columns": [
+          "details",
+          "quarter",
+          "received_quantity",
+          "received_shipments",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "quarter": "str",
+          "received_quantity": "int",
+          "received_shipments": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 2,
+        "preview": [
+          {
+            "supplier_id": 11,
+            "quarter": "Q1",
+            "received_shipments": 10,
+            "details": 30,
+            "rejected_quantity": 118626,
+            "received_quantity": 4052552,
+            "rejection_rate": 0.029272
+          },
+          {
+            "supplier_id": 11,
+            "quarter": "Q2",
+            "received_shipments": 10,
+            "details": 30,
+            "rejected_quantity": 90102,
+            "received_quantity": 4524521,
+            "rejection_rate": 0.019914
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "received_shipments": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 30,
+              "max": 30
+            },
+            "received_quantity": {
+              "min": 4052552,
+              "max": 4524521
+            },
+            "received_shipments": {
+              "min": 10,
+              "max": 10
+            },
+            "rejected_quantity": {
+              "min": 90102,
+              "max": 118626
+            },
+            "rejection_rate": {
+              "min": 0.019914,
+              "max": 0.029272
+            },
+            "supplier_id": {
+              "min": 11,
+              "max": 11
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1",
+        "idempotency_key": "73e125136148daba5a810772c7cf2572067168993e57ed3f71f9bd536d573315"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:14": {
+      "task_id": "quality_probe:14",
+      "branch_id": "quality_probe:14",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864"
+      ],
+      "result_view": {
+        "result_ref": "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+        "columns": [
+          "details",
+          "quarter",
+          "received_quantity",
+          "received_shipments",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "quarter": "str",
+          "received_quantity": "int",
+          "received_shipments": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 2,
+        "preview": [
+          {
+            "supplier_id": 14,
+            "quarter": "Q1",
+            "received_shipments": 15,
+            "details": 45,
+            "rejected_quantity": 1278,
+            "received_quantity": 905612,
+            "rejection_rate": 0.001411
+          },
+          {
+            "supplier_id": 14,
+            "quarter": "Q2",
+            "received_shipments": 11,
+            "details": 33,
+            "rejected_quantity": 260,
+            "received_quantity": 675648,
+            "rejection_rate": 0.000385
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "received_shipments": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 33,
+              "max": 45
+            },
+            "received_quantity": {
+              "min": 675648,
+              "max": 905612
+            },
+            "received_shipments": {
+              "min": 11,
+              "max": 15
+            },
+            "rejected_quantity": {
+              "min": 260,
+              "max": 1278
+            },
+            "rejection_rate": {
+              "min": 0.000385,
+              "max": 0.001411
+            },
+            "supplier_id": {
+              "min": 14,
+              "max": 14
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1",
+        "idempotency_key": "ab3bfd78804e61b1589c170a3ed555dcd566322ad41cb4367bbe2e60d90017ad"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:13": {
+      "task_id": "quality_probe:13",
+      "branch_id": "quality_probe:13",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f"
+      ],
+      "result_view": {
+        "result_ref": "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+        "columns": [
+          "details",
+          "quarter",
+          "received_quantity",
+          "received_shipments",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "quarter": "str",
+          "received_quantity": "int",
+          "received_shipments": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 2,
+        "preview": [
+          {
+            "supplier_id": 13,
+            "quarter": "Q1",
+            "received_shipments": 14,
+            "details": 42,
+            "rejected_quantity": 2101,
+            "received_quantity": 532003,
+            "rejection_rate": 0.003949
+          },
+          {
+            "supplier_id": 13,
+            "quarter": "Q2",
+            "received_shipments": 10,
+            "details": 30,
+            "rejected_quantity": 812,
+            "received_quantity": 374314,
+            "rejection_rate": 0.002169
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "received_shipments": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 30,
+              "max": 42
+            },
+            "received_quantity": {
+              "min": 374314,
+              "max": 532003
+            },
+            "received_shipments": {
+              "min": 10,
+              "max": 14
+            },
+            "rejected_quantity": {
+              "min": 812,
+              "max": 2101
+            },
+            "rejection_rate": {
+              "min": 0.002169,
+              "max": 0.003949
+            },
+            "supplier_id": {
+              "min": 13,
+              "max": 13
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1",
+        "idempotency_key": "620f2c32b324e8556f9e0b5e0c279bc4d793d6c630192e21051ec6934b96ef97"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:3": {
+      "task_id": "quality_probe:3",
+      "branch_id": "quality_probe:3",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903"
+      ],
+      "result_view": {
+        "result_ref": "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+        "columns": [
+          "details",
+          "quarter",
+          "received_quantity",
+          "received_shipments",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "quarter": "str",
+          "received_quantity": "int",
+          "received_shipments": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 2,
+        "preview": [
+          {
+            "supplier_id": 3,
+            "quarter": "Q1",
+            "received_shipments": 11,
+            "details": 33,
+            "rejected_quantity": 2037,
+            "received_quantity": 1171654,
+            "rejection_rate": 0.001739
+          },
+          {
+            "supplier_id": 3,
+            "quarter": "Q2",
+            "received_shipments": 14,
+            "details": 42,
+            "rejected_quantity": 3947,
+            "received_quantity": 1458689,
+            "rejection_rate": 0.002706
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "received_shipments": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 33,
+              "max": 42
+            },
+            "received_quantity": {
+              "min": 1171654,
+              "max": 1458689
+            },
+            "received_shipments": {
+              "min": 11,
+              "max": 14
+            },
+            "rejected_quantity": {
+              "min": 2037,
+              "max": 3947
+            },
+            "rejection_rate": {
+              "min": 0.001739,
+              "max": 0.002706
+            },
+            "supplier_id": {
+              "min": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1",
+        "idempotency_key": "3f951c27d6f100de8098321d041badf200613a02acd03611872fc7efa09c493c"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "quality_probe:21": {
+      "task_id": "quality_probe:21",
+      "branch_id": "quality_probe:21",
+      "status": "completed",
+      "summary": "quality_probe: 2 rows",
+      "artifacts": [
+        "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7"
+      ],
+      "result_view": {
+        "result_ref": "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+        "columns": [
+          "details",
+          "quarter",
+          "received_quantity",
+          "received_shipments",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "quarter": "str",
+          "received_quantity": "int",
+          "received_shipments": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 2,
+        "preview": [
+          {
+            "supplier_id": 21,
+            "quarter": "Q1",
+            "received_shipments": 13,
+            "details": 39,
+            "rejected_quantity": 2156,
+            "received_quantity": 970418,
+            "rejection_rate": 0.002222
+          },
+          {
+            "supplier_id": 21,
+            "quarter": "Q2",
+            "received_shipments": 15,
+            "details": 45,
+            "rejected_quantity": 9943,
+            "received_quantity": 2325139,
+            "rejection_rate": 0.004276
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "received_shipments": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 39,
+              "max": 45
+            },
+            "received_quantity": {
+              "min": 970418,
+              "max": 2325139
+            },
+            "received_shipments": {
+              "min": 13,
+              "max": 15
+            },
+            "rejected_quantity": {
+              "min": 2156,
+              "max": 9943
+            },
+            "rejection_rate": {
+              "min": 0.002222,
+              "max": 0.004276
+            },
+            "supplier_id": {
+              "min": 21,
+              "max": 21
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+        "sql_sha256": "cdcaa95c0c56ef00a23bf225343027d6d26a7374c23740c6d04958c64c8ec50e",
+        "metric_version": "demo-1",
+        "idempotency_key": "19d177254fdd0cb40d4c8f181f51491a01335b470a6821a2459320cce6317afa"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "material_probe:11": {
+      "task_id": "material_probe:11",
+      "branch_id": "material_probe:11",
+      "status": "completed",
+      "summary": "material_probe: 16 rows",
+      "artifacts": [
+        "b70684f4aa6161cf8c63c8983bff9d74e6a9cda1b4346fce113bc0aa0436d7da"
+      ],
+      "result_view": {
+        "result_ref": "b70684f4aa6161cf8c63c8983bff9d74e6a9cda1b4346fce113bc0aa0436d7da",
+        "columns": [
+          "details",
+          "material_category",
+          "quarter",
+          "received_quantity",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "material_category": "str",
+          "quarter": "str",
+          "received_quantity": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 16,
+        "preview": [
+          {
+            "supplier_id": 11,
+            "quarter": "Q1",
+            "material_category": "battery and power",
+            "details": 3,
+            "rejected_quantity": 848,
+            "received_quantity": 128000,
+            "rejection_rate": 0.006625
+          },
+          {
+            "supplier_id": 11,
+            "quarter": "Q1",
+            "material_category": "camera audio and sensors",
+            "details": 2,
+            "rejected_quantity": 60611,
+            "received_quantity": 1497350,
+            "rejection_rate": 0.040479
+          },
+          {
+            "supplier_id": 11,
+            "quarter": "Q1",
+            "material_category": "display",
+            "details": 5,
+            "rejected_quantity": 3281,
+            "received_quantity": 195867,
+            "rejection_rate": 0.016751
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "material_category": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 1,
+              "max": 7
+            },
+            "received_quantity": {
+              "min": 40800,
+              "max": 1497350
+            },
+            "rejected_quantity": {
+              "min": 0,
+              "max": 60611
+            },
+            "rejection_rate": {
+              "min": 0.0,
+              "max": 0.053663
+            },
+            "supplier_id": {
+              "min": 11,
+              "max": 11
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "b70684f4aa6161cf8c63c8983bff9d74e6a9cda1b4346fce113bc0aa0436d7da",
+        "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+        "metric_version": "demo-1",
+        "idempotency_key": "f81106d6f56c9b233ca6a67dd851e4b6107a09fccf5227935199c5b3fc110726"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "material_probe:14": {
+      "task_id": "material_probe:14",
+      "branch_id": "material_probe:14",
+      "status": "completed",
+      "summary": "material_probe: 6 rows",
+      "artifacts": [
+        "aa02bdb25716df4da058fa8da3944b8e40cfa493422bb531e564a050ea01405b"
+      ],
+      "result_view": {
+        "result_ref": "aa02bdb25716df4da058fa8da3944b8e40cfa493422bb531e564a050ea01405b",
+        "columns": [
+          "details",
+          "material_category",
+          "quarter",
+          "received_quantity",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "material_category": "str",
+          "quarter": "str",
+          "received_quantity": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 6,
+        "preview": [
+          {
+            "supplier_id": 14,
+            "quarter": "Q1",
+            "material_category": "display",
+            "details": 15,
+            "rejected_quantity": 347,
+            "received_quantity": 151666,
+            "rejection_rate": 0.002288
+          },
+          {
+            "supplier_id": 14,
+            "quarter": "Q1",
+            "material_category": "enclosure and mechanical",
+            "details": 15,
+            "rejected_quantity": 0,
+            "received_quantity": 165929,
+            "rejection_rate": 0.0
+          },
+          {
+            "supplier_id": 14,
+            "quarter": "Q1",
+            "material_category": "pcb and connectivity",
+            "details": 15,
+            "rejected_quantity": 931,
+            "received_quantity": 588017,
+            "rejection_rate": 0.001583
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "material_category": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 11,
+              "max": 15
+            },
+            "received_quantity": {
+              "min": 116002,
+              "max": 588017
+            },
+            "rejected_quantity": {
+              "min": 0,
+              "max": 931
+            },
+            "rejection_rate": {
+              "min": 0.0,
+              "max": 0.002288
+            },
+            "supplier_id": {
+              "min": 14,
+              "max": 14
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "aa02bdb25716df4da058fa8da3944b8e40cfa493422bb531e564a050ea01405b",
+        "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+        "metric_version": "demo-1",
+        "idempotency_key": "cd3780fd335afd247d345a8818c430a9db04526ffed6bc98ab7deab0cabeb338"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "material_probe:13": {
+      "task_id": "material_probe:13",
+      "branch_id": "material_probe:13",
+      "status": "completed",
+      "summary": "material_probe: 6 rows",
+      "artifacts": [
+        "83b771a8a4a32a3aecb7320cd0c1dc381cfc4c93379c174065d3a1b9b8f74cd4"
+      ],
+      "result_view": {
+        "result_ref": "83b771a8a4a32a3aecb7320cd0c1dc381cfc4c93379c174065d3a1b9b8f74cd4",
+        "columns": [
+          "details",
+          "material_category",
+          "quarter",
+          "received_quantity",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "material_category": "str",
+          "quarter": "str",
+          "received_quantity": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 6,
+        "preview": [
+          {
+            "supplier_id": 13,
+            "quarter": "Q1",
+            "material_category": "display",
+            "details": 14,
+            "rejected_quantity": 368,
+            "received_quantity": 180365,
+            "rejection_rate": 0.00204
+          },
+          {
+            "supplier_id": 13,
+            "quarter": "Q1",
+            "material_category": "enclosure and mechanical",
+            "details": 14,
+            "rejected_quantity": 1213,
+            "received_quantity": 222247,
+            "rejection_rate": 0.005458
+          },
+          {
+            "supplier_id": 13,
+            "quarter": "Q1",
+            "material_category": "pcb and connectivity",
+            "details": 14,
+            "rejected_quantity": 520,
+            "received_quantity": 129391,
+            "rejection_rate": 0.004019
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "material_category": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 10,
+              "max": 14
+            },
+            "received_quantity": {
+              "min": 84684,
+              "max": 222247
+            },
+            "rejected_quantity": {
+              "min": 0,
+              "max": 1213
+            },
+            "rejection_rate": {
+              "min": 0.0,
+              "max": 0.008266
+            },
+            "supplier_id": {
+              "min": 13,
+              "max": 13
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "83b771a8a4a32a3aecb7320cd0c1dc381cfc4c93379c174065d3a1b9b8f74cd4",
+        "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+        "metric_version": "demo-1",
+        "idempotency_key": "cb8b0a0c688c766bd320a69a393221e4c46f96603a14cf55eee7272bfaee6c3a"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "material_probe:3": {
+      "task_id": "material_probe:3",
+      "branch_id": "material_probe:3",
+      "status": "completed",
+      "summary": "material_probe: 6 rows",
+      "artifacts": [
+        "529d1f5bdd3e6c5d90ca69f0bf8db488900e4fa996c68a74d972a54442abe67b"
+      ],
+      "result_view": {
+        "result_ref": "529d1f5bdd3e6c5d90ca69f0bf8db488900e4fa996c68a74d972a54442abe67b",
+        "columns": [
+          "details",
+          "material_category",
+          "quarter",
+          "received_quantity",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "material_category": "str",
+          "quarter": "str",
+          "received_quantity": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 6,
+        "preview": [
+          {
+            "supplier_id": 3,
+            "quarter": "Q1",
+            "material_category": "camera audio and sensors",
+            "details": 11,
+            "rejected_quantity": 0,
+            "received_quantity": 687885,
+            "rejection_rate": 0.0
+          },
+          {
+            "supplier_id": 3,
+            "quarter": "Q1",
+            "material_category": "memory and storage",
+            "details": 11,
+            "rejected_quantity": 999,
+            "received_quantity": 247002,
+            "rejection_rate": 0.004045
+          },
+          {
+            "supplier_id": 3,
+            "quarter": "Q1",
+            "material_category": "packaging and accessories",
+            "details": 11,
+            "rejected_quantity": 1038,
+            "received_quantity": 236767,
+            "rejection_rate": 0.004384
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "material_category": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 11,
+              "max": 14
+            },
+            "received_quantity": {
+              "min": 236767,
+              "max": 826861
+            },
+            "rejected_quantity": {
+              "min": 0,
+              "max": 2654
+            },
+            "rejection_rate": {
+              "min": 0.0,
+              "max": 0.008342
+            },
+            "supplier_id": {
+              "min": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "529d1f5bdd3e6c5d90ca69f0bf8db488900e4fa996c68a74d972a54442abe67b",
+        "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+        "metric_version": "demo-1",
+        "idempotency_key": "96d895d305b7b9db2a5225dc2586a7cfeeedb5b9910f6a198e969f50c3210be8"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "material_probe:21": {
+      "task_id": "material_probe:21",
+      "branch_id": "material_probe:21",
+      "status": "completed",
+      "summary": "material_probe: 16 rows",
+      "artifacts": [
+        "b5eed9bcaf4b5ac0aabe2262b3a93e3c3eed0cbf6d70b4c1bbde704af5d63724"
+      ],
+      "result_view": {
+        "result_ref": "b5eed9bcaf4b5ac0aabe2262b3a93e3c3eed0cbf6d70b4c1bbde704af5d63724",
+        "columns": [
+          "details",
+          "material_category",
+          "quarter",
+          "received_quantity",
+          "rejected_quantity",
+          "rejection_rate",
+          "supplier_id"
+        ],
+        "types": {
+          "details": "int",
+          "material_category": "str",
+          "quarter": "str",
+          "received_quantity": "int",
+          "rejected_quantity": "int",
+          "rejection_rate": "float",
+          "supplier_id": "int"
+        },
+        "total_rows": 16,
+        "preview": [
+          {
+            "supplier_id": 21,
+            "quarter": "Q1",
+            "material_category": "battery and power",
+            "details": 4,
+            "rejected_quantity": 0,
+            "received_quantity": 87300,
+            "rejection_rate": 0.0
+          },
+          {
+            "supplier_id": 21,
+            "quarter": "Q1",
+            "material_category": "camera audio and sensors",
+            "details": 4,
+            "rejected_quantity": 0,
+            "received_quantity": 223386,
+            "rejection_rate": 0.0
+          },
+          {
+            "supplier_id": 21,
+            "quarter": "Q1",
+            "material_category": "display",
+            "details": 4,
+            "rejected_quantity": 177,
+            "received_quantity": 63000,
+            "rejection_rate": 0.00281
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "details": 0,
+            "material_category": 0,
+            "quarter": 0,
+            "received_quantity": 0,
+            "rejected_quantity": 0,
+            "rejection_rate": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "details": {
+              "min": 3,
+              "max": 8
+            },
+            "received_quantity": {
+              "min": 63000,
+              "max": 827154
+            },
+            "rejected_quantity": {
+              "min": 0,
+              "max": 6019
+            },
+            "rejection_rate": {
+              "min": 0.0,
+              "max": 0.013851
+            },
+            "supplier_id": {
+              "min": 21,
+              "max": 21
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "b5eed9bcaf4b5ac0aabe2262b3a93e3c3eed0cbf6d70b4c1bbde704af5d63724",
+        "sql_sha256": "fe0d2d759a92ee17b6ed8f51576faef830ed737062723434b4e58ae8d4695feb",
+        "metric_version": "demo-1",
+        "idempotency_key": "1a46d9d680e9222a04013eee2bc196290c3dd2df1e426eb170a6c1a401008336"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    },
+    "delivery_stage_probe:11": {
+      "task_id": "delivery_stage_probe:11",
+      "branch_id": "delivery_stage_probe:11",
+      "status": "completed",
+      "summary": "delivery_stage_probe: 2 rows",
+      "artifacts": [
+        "c51930dcf1a8f620a267abdbf127e71085b2be245108c78551fe8c89426cbd4a"
+      ],
+      "result_view": {
+        "result_ref": "c51930dcf1a8f620a267abdbf127e71085b2be245108c78551fe8c89426cbd4a",
+        "columns": [
+          "actual_ship_to_arrival_days",
+          "planned_ship_to_arrival_days",
+          "quarter",
+          "shipments",
+          "supplier_id"
+        ],
+        "types": {
+          "actual_ship_to_arrival_days": "float",
+          "planned_ship_to_arrival_days": "float",
+          "quarter": "str",
+          "shipments": "int",
+          "supplier_id": "int"
+        },
+        "total_rows": 2,
+        "preview": [
+          {
+            "supplier_id": 11,
+            "quarter": "Q1",
+            "shipments": 10,
+            "planned_ship_to_arrival_days": 26.6,
+            "actual_ship_to_arrival_days": 26.9
+          },
+          {
+            "supplier_id": 11,
+            "quarter": "Q2",
+            "shipments": 10,
+            "planned_ship_to_arrival_days": 27.8,
+            "actual_ship_to_arrival_days": 30.7
+          }
+        ],
+        "summary": {
+          "null_counts": {
+            "actual_ship_to_arrival_days": 0,
+            "planned_ship_to_arrival_days": 0,
+            "quarter": 0,
+            "shipments": 0,
+            "supplier_id": 0
+          },
+          "numeric_ranges": {
+            "actual_ship_to_arrival_days": {
+              "min": 26.9,
+              "max": 30.7
+            },
+            "planned_ship_to_arrival_days": {
+              "min": 26.6,
+              "max": 27.8
+            },
+            "shipments": {
+              "min": 10,
+              "max": 10
+            },
+            "supplier_id": {
+              "min": 11,
+              "max": 11
+            }
+          }
+        }
+      },
+      "evidence": {
+        "result_ref": "c51930dcf1a8f620a267abdbf127e71085b2be245108c78551fe8c89426cbd4a",
+        "sql_sha256": "7593e7d5dca40d6037161401c41f780e61980fe97f857c9786ddd005a2a37a46",
+        "metric_version": "demo-1",
+        "idempotency_key": "ad37dbe740c437a6e89e842abff1c1eb25d57ad71e23e1c3aae606fa5602a6b7"
+      },
+      "warnings": [],
+      "next_action": "supervisor_review"
+    }
+  },
+  "plan_version": 3,
+  "decisions": [
+    {
+      "plan_version": 1,
+      "added": [
+        "screen"
+      ],
+      "reason": "initial_screen",
+      "trigger_result_ref": null
+    },
+    {
+      "plan_version": 2,
+      "added": [
+        "quality_probe:11",
+        "quality_probe:14",
+        "quality_probe:13",
+        "quality_probe:3",
+        "quality_probe:21"
+      ],
+      "reason": "交付筛查显示5家候选交付恶化，需拉取质量检验数据评估双重风险。",
+      "stage": "quality",
+      "planner": "llm",
+      "model": "deepseek-flash",
+      "config_version": "55882ae0c6d7",
+      "latency_ms": 13515,
+      "structured_output_valid": true,
+      "usage": {
+        "prompt_tokens": 806,
+        "completion_tokens": 798,
+        "total_tokens": 1604,
+        "prompt_tokens_details": {
+          "cached_tokens": 640
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 612
+        },
+        "prompt_cache_hit_tokens": 640,
+        "prompt_cache_miss_tokens": 166
+      },
+      "attempts": 1,
+      "trigger_result_refs": [
+        "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+        "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+        "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+        "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75",
+        "0e32588e8cd62ef5ca30ceda4701e5f4639b6edc4e907e76ff4a7aa3b5ecbc75"
+      ]
+    },
+    {
+      "plan_version": 3,
+      "added": [
+        "material_probe:11",
+        "material_probe:14",
+        "material_probe:13",
+        "material_probe:3",
+        "material_probe:21",
+        "delivery_stage_probe:11"
+      ],
+      "reason": "交付恶化候选明确，需核查材料构成以评价双重风险；优先降幅大者。",
+      "stage": "material",
+      "planner": "llm",
+      "model": "deepseek-flash",
+      "config_version": "55882ae0c6d7",
+      "latency_ms": 19546,
+      "structured_output_valid": true,
+      "usage": {
+        "prompt_tokens": 1166,
+        "completion_tokens": 2314,
+        "total_tokens": 3480,
+        "prompt_tokens_details": {
+          "cached_tokens": 1024
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2073
+        },
+        "prompt_cache_hit_tokens": 1024,
+        "prompt_cache_miss_tokens": 142
+      },
+      "attempts": 1,
+      "trigger_result_refs": [
+        "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56",
+        "ca2da98895808c0026e7fd70f557b53fe2a478a3e9c2474b70931a823792e864",
+        "294598d0e6ec18b2d638a23fb2a9a265244d376379ca612b6ca176e06a50456f",
+        "5dc87afd8b82483c335c95684b0a72b8d1f493d3144fafcee2795341c7866903",
+        "282d1e8a4219e7c4a854d0729f1491ca357d9e64781099470dafa4b08456fcf7",
+        "e92354095d91513533911106941fc5bbace8cbef216fc8c318de6810850c7e56"
+      ]
+    }
+  ],
+  "budget": {
+    "max_tool_calls": 12,
+    "used_tool_calls": 12,
+    "remaining_tool_calls": 0,
+    "max_parallel": 3,
+    "max_candidates": 5,
+    "max_additional_rounds": 2,
+    "max_model_attempts": 4,
+    "used_model_attempts": 2,
+    "remaining_model_attempts": 2
+  },
+  "stop_reason": "evidence_complete",
+  "snapshot_id": "bc507973f100da89",
+  "run_id": "real-model-current:run:810b5b41f34d4466ac5bcbf6bea66695"
+}

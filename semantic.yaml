@@ -1,0 +1,117 @@
+version: demo-1
+status: provisional
+source: docs/电子供应链数据表说明.md
+metrics:
+  on_time_rate:
+    status: candidate
+    version: demo-1
+    owner_domains: [procurement, data]
+    fields: [SupplierShipments.shipment_id, SupplierShipments.expected_arrival_date, SupplierShipments.actual_arrival_date]
+    denominator: 有效发货单数
+    zero_denominator: null
+    name: 到货准时率
+    aliases: [准时率, 交付准时, 按时到货]
+    grain: SupplierShipments.shipment_id
+    date: SupplierShipments.expected_arrival_date
+    formula: actual_arrival_date <= expected_arrival_date / 有效发货单数
+    dimensions: [supplier, quarter]
+    note: 按预计到货日入期；发货单为分母；演示口径待业务确认
+  average_delay_days:
+    status: candidate
+    version: demo-1
+    owner_domains: [procurement, data]
+    fields: [SupplierShipments.shipment_id, SupplierShipments.expected_arrival_date, SupplierShipments.actual_arrival_date]
+    denominator: 有效到货发货单数
+    zero_denominator: null
+    name: 平均延期天数
+    aliases: [平均延期天数, 平均延迟天数]
+    grain: SupplierShipments.shipment_id
+    date: SupplierShipments.expected_arrival_date
+    formula: AVG(MAX(actual_arrival_date - expected_arrival_date, 0) 的日数)
+    dimensions: [supplier, quarter]
+    note: 按预计到货日入期；提前到货按0天延期；未到货不计入分母；演示口径待业务确认
+  rejection_rate:
+    status: candidate
+    version: demo-1
+    owner_domains: [quality, data]
+    fields: [GoodsReceiptDetails.gr_detail_id, GoodsReceiptDetails.rejected_quantity, GoodsReceiptDetails.received_quantity, GoodsReceipts.receipt_date]
+    denominator: 收货数量总和
+    zero_denominator: null
+    name: 来料拒收率
+    aliases: [拒收率, 来料质量]
+    grain: GoodsReceiptDetails.gr_detail_id
+    date: GoodsReceipts.receipt_date
+    formula: SUM(rejected_quantity) / SUM(received_quantity)
+    dimensions: [month]
+    note: 按收货日入期；全部有效收货量为分母；演示口径待业务确认
+  shipment_cohort_rejection_rate:
+    status: candidate
+    version: demo-1
+    owner_domains: [procurement, quality, data]
+    fields: [GoodsReceiptDetails.gr_detail_id, GoodsReceiptDetails.rejected_quantity, GoodsReceiptDetails.received_quantity, SupplierShipments.expected_arrival_date]
+    denominator: 同队列收货数量总和
+    zero_denominator: null
+    name: 发货队列来料拒收率
+    grain: GoodsReceiptDetails.gr_detail_id
+    date: SupplierShipments.expected_arrival_date
+    formula: SUM(rejected_quantity) / SUM(received_quantity)
+    dimensions: [supplier, quarter]
+    note: 仅用于交付探查；以预计到货日分队列，与按收货日统计的正式指标不可混用
+dimension_ids:
+  supplier:
+    status: candidate
+    version: demo-1
+    owner_domains: [procurement, data]
+    kind: entity
+    fields: [Suppliers.supplier_id, Suppliers.supplier_name]
+    grain: Suppliers.supplier_id
+  month:
+    status: candidate
+    version: demo-1
+    owner_domains: [procurement, quality, data]
+    kind: calendar_month
+    fields: [GoodsReceipts.receipt_date, SupplierShipments.expected_arrival_date]
+  quarter:
+    status: candidate
+    version: demo-1
+    owner_domains: [procurement, quality, data]
+    kind: calendar_quarter
+    fields: [SupplierShipments.expected_arrival_date, GoodsReceipts.receipt_date]
+relation_ids:
+  shipments_to_suppliers:
+    version: demo-1
+    owner_domains: [procurement, data]
+    endpoints: [SupplierShipments.supplier_id, Suppliers.supplier_id]
+    status: candidate
+  receipts_to_shipments:
+    version: demo-1
+    owner_domains: [procurement, quality, data]
+    endpoints: [GoodsReceipts.shipment_id, SupplierShipments.shipment_id]
+    status: candidate
+  details_to_receipts:
+    version: demo-1
+    owner_domains: [quality, data]
+    endpoints: [GoodsReceiptDetails.gr_id, GoodsReceipts.gr_id]
+    status: candidate
+  details_to_materials:
+    version: demo-1
+    owner_domains: [quality, data]
+    endpoints: [GoodsReceiptDetails.material_id, Materials.material_id]
+    status: candidate
+  inspections_to_details:
+    version: demo-1
+    owner_domains: [quality, data]
+    endpoints: [QualityInspections.gr_detail_id, GoodsReceiptDetails.gr_detail_id]
+    status: candidate
+relations:
+  - [SupplierShipments.supplier_id, Suppliers.supplier_id, many_to_one]
+  - [GoodsReceipts.shipment_id, SupplierShipments.shipment_id, many_to_one]
+  - [GoodsReceiptDetails.gr_id, GoodsReceipts.gr_id, many_to_one]
+  - [GoodsReceiptDetails.material_id, Materials.material_id, many_to_one]
+  - [QualityInspections.gr_detail_id, GoodsReceiptDetails.gr_detail_id, many_to_one]
+limitations:
+  - 缺少设备停机、产线、工序和销售订单数据
+  - 原料和成品库存只有 2025-12-31 快照
+  - 金额币种未知
+  - 生产良率口径未确认
+  - 无法从收货批次追溯至生产工单

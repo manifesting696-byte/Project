@@ -1,0 +1,6 @@
+fastapi==0.137.1
+uvicorn==0.47.0
+PyYAML==6.0.3
+sqlglot==30.29.0
+psycopg[binary]==3.3.7
+httpx==0.28.1

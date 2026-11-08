@@ -1,0 +1,31 @@
+{
+  "live_status": "completed",
+  "agents": [
+    "SemanticAgent",
+    "QueryAgent"
+  ],
+  "blocks": [
+    {
+      "block_id": "block_001",
+      "kind": "text",
+      "content": "Products 表实际行数为 16 行（SELECT COUNT(*) AS row_count FROM products，单行单列结果 row_count = 16）。本次统计只做物理行计数，未使用任何业务指标或派生口径。",
+      "refs": [
+        {
+          "kind": "artifact",
+          "id": "result_001"
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "artifact_id": "result_001",
+      "sql": "SELECT COUNT(*) AS row_count FROM products AS products",
+      "rows": [
+        {
+          "row_count": 16
+        }
+      ]
+    }
+  ]
+}

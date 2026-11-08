@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <title>问析工作台 · 企业数据底座</title>
+  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/chat.css">
+</head>
+<body>
+  <section id="login" class="login-shell">
+    <div class="login-brand"><span class="brand-mark">∴</span><span>DATA / INTELLIGENCE</span></div>
+    <div class="login-grid">
+      <div class="login-statement"><div class="eyebrow light">供应链数据工作台 / 01</div><h1>让每一个结论<br>都能回到数据。</h1><p>从业务提问出发，沿着口径、查询、证据与分析路径逐步验证。</p><div class="login-fine">业务知识 · 数据问析 · 结果追问 · 可追溯分析</div></div>
+      <form id="loginForm" class="login-card"><div class="eyebrow">安全访问</div><h2>登录工作台</h2><label>账号<input id="username" autocomplete="username" required></label><label>密码<input id="password" type="password" autocomplete="current-password" required></label><button class="primary full" type="submit">进入工作台 <span>↗</span></button><p id="loginError" class="form-error" role="alert"></p></form>
+    </div>
+    <div class="login-footer">企业数据底座智能问析 Agent 系统 <span>© 2026</span></div>
+  </section>
+  <div id="shell" class="shell hidden">
+    <aside class="sidebar">
+      <div class="side-brand"><div class="brand-mark">∴</div><div><strong>问析工作台</strong><small>DATA INTELLIGENCE</small></div></div>
+      <div class="side-caption">WORKSPACE / 工作空间</div>
+      <nav id="nav">
+        <button data-view="overview" class="active"><span class="nav-icon">◫</span> 总览</button>
+        <button data-view="ask" id="askNav"><span class="nav-icon">✳</span> 智能问析</button>
+        <button data-view="catalog"><span class="nav-icon">▤</span> 数据与指标</button>
+        <button data-view="history"><span class="nav-icon">◷</span> 执行记录</button>
+        <button data-view="admin" id="adminNav" class="hidden"><span class="nav-icon">⚙</span> 用户管理</button>
+      </nav>
+      <section class="sidebar-sessions" aria-label="最近会话"><div class="session-heading"><span>最近会话</span><button id="newConversation" type="button" aria-label="新建会话" title="新建会话">＋</button></div><div id="sessionList" class="session-list"></div></section>
+      <div class="side-bottom"><div class="snapshot-box"><span class="pulse"></span><div><strong>数据快照已就绪</strong><small id="sideSnapshot">读取中</small></div></div><button id="logout" class="logout">退出登录 <span>↗</span></button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><button id="menuToggle" class="menu-toggle" type="button" aria-label="打开导航">☰</button><div class="breadcrumbs"><span>企业数据底座</span><span>/</span><strong id="currentSection">总览</strong></div><div class="top-actions"><span class="top-pill">口径状态以语义目录为准</span><button id="openPassword" class="text-button">修改密码</button><span id="userBadge" class="user-badge"></span></div></header>
+      <div class="content">
+        <section id="overviewView" class="view">
+          <div class="hero"><div><div class="eyebrow light">OPERATIONS INTELLIGENCE / 数据洞察</div><h1>看清供应链，<br><em>从一个问题开始。</em></h1><p>在统一数据快照上查询交付、来料质量和业务记录。每项数字都附带口径、SQL 与证据。</p><button id="heroAsk" class="hero-button">开始问析 <span>↗</span></button></div><div class="hero-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="core-mark">DATA<br><b>∴</b><br>TRACE</div><div class="art-label">01 / VERIFIED PATH</div></div></div>
+          <div class="section-heading"><div><div class="eyebrow">DATA SNAPSHOT</div><h2>当前数据概况</h2></div><span id="snapshotLabel" class="muted"></span></div>
+          <div class="stat-grid"><div class="stat"><span>业务数据表</span><strong id="tableCount">—</strong><small>采购 · 发货 · 收货 · 质检</small></div><div class="stat"><span>记录总量</span><strong id="rowCount">—</strong><small>固定数据快照</small></div><div class="stat"><span>核心业务指标</span><strong id="metricCount">—</strong><small>已发布的业务指标</small></div><div class="stat accent"><span>查询依据</span><strong>ON</strong><small>SQL · 口径 · 快照版本</small></div></div>
+          <div class="section-heading"><div><div class="eyebrow">START HERE</div><h2>示例问题</h2></div></div>
+          <div id="quickCards" class="quick-grid"></div>
+        </section>
+        <section id="askView" class="view chat-view hidden">
+          <div class="chat-heading"><div><span class="eyebrow">智能问析 / CONVERSATION</span><h1 id="chatTitle">新会话</h1></div><span id="chatSnapshot" class="chat-snapshot"></span></div>
+          <div id="chatScroll" class="chat-scroll">
+            <div id="resultEmpty" class="chat-empty"><span class="chat-empty-mark">∴</span><h2>从一个业务问题开始</h2><p>查询数据、核对口径、生成图表，或接着上一次的结果继续分析。</p><div id="examples" class="chat-suggestions"></div></div>
+            <div id="conversationLog" class="conversation-log" aria-live="polite"></div>
+          </div>
+          <div class="composer-dock"><form id="askForm" class="chat-composer"><label class="sr-only" for="question">输入业务问题</label><textarea id="question" placeholder="询问业务数据，或继续追问刚才的结果…" rows="2" required></textarea><div class="composer-controls"><details class="date-options"><summary>日期条件</summary><div class="date-row"><label>起始日期 <input id="startDate" type="date"></label><label>结束日期（不含） <input id="endDate" type="date"></label></div></details><span class="composer-hint">Enter 发送 · Shift + Enter 换行</span><button id="askButton" class="send-button" type="submit" aria-label="发送问题"><span>发送</span><span aria-hidden="true">↗</span></button></div></form><p class="composer-note">结果以当前数据快照和已发布语义为准。点击数据卡片可查看明细和依据。</p></div>
+        </section>
+        <section id="catalogView" class="view hidden"><div class="page-head"><div class="eyebrow">SEMANTIC CATALOG / 业务语义</div><h1>数据和口径，一目了然。</h1><p>先确认指标含义和表字段，再开展分析。联系方式等敏感字段仅展示字段存在性。</p></div><div class="catalog-layout"><div class="panel"><div class="panel-title"><span class="number">01</span><h2>核心指标</h2></div><div id="metricCards"></div></div><div class="panel"><div class="panel-title"><span class="number">02</span><h2>数据资源</h2></div><div id="tableCards"></div></div></div></section>
+        <section id="historyView" class="view hidden"><div class="page-head"><div class="eyebrow">AUDIT TRAIL / 执行记录</div><h1>每次分析，都有记录。</h1><p>查看执行状态、耗时、SQL 指纹和数据版本。管理员可查看全员记录。</p></div><div class="panel"><div id="historyTable"></div></div></section>
+        <section id="adminView" class="view hidden"><div class="page-head"><div class="eyebrow">ACCESS CONTROL / 用户管理</div><h1>管理工作台访问。</h1><p>管理员可创建分析员和只读查看者。新账号密码至少 12 位。</p></div><div class="catalog-layout"><div class="panel"><div class="panel-title"><span class="number">01</span><h2>创建用户</h2></div><form id="userForm" class="stack-form"><label>账号<input id="newUsername" required></label><label>初始密码<input id="newPassword" type="password" minlength="12" required></label><label>角色<select id="newRole"><option value="analyst">分析员</option><option value="viewer">只读查看者</option><option value="admin">管理员</option></select></label><button class="primary" type="submit">创建账号 <span>↗</span></button><p id="userFormNote" role="status"></p></form></div><div class="panel"><div class="panel-title"><span class="number">02</span><h2>现有用户</h2></div><div id="userList"></div></div></div></section>
+      </div>
+    </main>
+  </div>
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="artifactDrawer" class="artifact-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="drawerTitle"><header class="drawer-header"><div><span id="drawerType" class="eyebrow">数据产物</span><h2 id="drawerTitle">查看结果</h2></div><button id="closeDrawer" type="button" aria-label="关闭详情">×</button></header><div id="drawerMeta" class="drawer-meta"></div><div id="drawerContent" class="drawer-content"></div></aside>
+  <dialog id="passwordDialog" class="password-dialog"><form id="passwordForm"><div class="eyebrow">ACCOUNT SECURITY</div><h2>修改登录密码</h2><label>当前密码<input id="oldPassword" type="password" required></label><label>新密码（至少 12 位）<input id="newPasswordSelf" type="password" minlength="12" required></label><p id="passwordNote" role="status"></p><div class="dialog-actions"><button type="button" id="cancelPassword" class="text-button">取消</button><button type="submit" class="primary">保存新密码</button></div></form></dialog>
+  <script src="/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+[
+  {
+    "from": "FinishedGoodsInventory.warehouse_id",
+    "to": "Warehouses.warehouse_id"
+  },
+  {
+    "from": "FinishedGoodsInventory.product_id",
+    "to": "Products.product_id"
+  },
+  {
+    "from": "ProductBOM.product_id",
+    "to": "Products.product_id"
+  },
+  {
+    "from": "ProductBOM.material_id",
+    "to": "Materials.material_id"
+  },
+  {
+    "from": "Production.product_id",
+    "to": "Products.product_id"
+  },
+  {
+    "from": "ProductionDetails.production_id",
+    "to": "Production.production_id"
+  },
+  {
+    "from": "ProductionDetails.bom_id",
+    "to": "ProductBOM.bom_id"
+  },
+  {
+    "from": "ProductionDetails.raw_inventory_id",
+    "to": "RawMaterialInventory.raw_inventory_id"
+  },
+  {
+    "from": "PurchaseOrders.supplier_id",
+    "to": "Suppliers.supplier_id"
+  },
+  {
+    "from": "PurchaseOrderDetails.po_id",
+    "to": "PurchaseOrders.po_id"
+  },
+  {
+    "from": "PurchaseOrderDetails.material_id",
+    "to": "Materials.material_id"
+  },
+  {
+    "from": "RawMaterialInventory.warehouse_id",
+    "to": "Warehouses.warehouse_id"
+  },
+  {
+    "from": "RawMaterialInventory.material_id",
+    "to": "Materials.material_id"
+  },
+  {
+    "from": "SupplierShipments.supplier_id",
+    "to": "Suppliers.supplier_id"
+  },
+  {
+    "from": "SupplierShipments.po_id",
+    "to": "PurchaseOrders.po_id"
+  },
+  {
+    "from": "GoodsReceipts.shipment_id",
+    "to": "SupplierShipments.shipment_id"
+  },
+  {
+    "from": "GoodsReceiptDetails.gr_id",
+    "to": "GoodsReceipts.gr_id"
+  },
+  {
+    "from": "GoodsReceiptDetails.material_id",
+    "to": "Materials.material_id"
+  },
+  {
+    "from": "QualityInspections.gr_detail_id",
+    "to": "GoodsReceiptDetails.gr_detail_id"
+  },
+  {
+    "from": "SupplierShipmentDetails.shipment_id",
+    "to": "SupplierShipments.shipment_id"
+  },
+  {
+    "from": "SupplierShipmentDetails.po_detail_id",
+    "to": "PurchaseOrderDetails.po_detail_id"
+  },
+  {
+    "from": "SupplierShipmentDetails.material_id",
+    "to": "Materials.material_id"
+  },
+  {
+    "from": "GoodsReceiptDetails.shipment_detail_id",
+    "to": "SupplierShipmentDetails.shipment_detail_id"
+  }
+]
