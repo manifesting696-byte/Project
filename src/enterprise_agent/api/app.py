@@ -1,14 +1,24 @@
 """HTTP/authentication adapter. Business execution lives in application.Application."""
+
 import sqlite3
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 from ..application.service import Application
-from ..core.config import ROOT
-from .identity import (setup, current_user, require, login, logout, change_password,
-                       create_user, app_db, audit, list_audit)
+from .identity import (
+    setup,
+    current_user,
+    require,
+    login,
+    logout,
+    change_password,
+    create_user,
+    app_db,
+    audit,
+    list_audit,
+)
 
 
 @lru_cache(maxsize=1)
@@ -22,7 +32,7 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="企业数据智能问析", version="2.0.0", lifespan=lifespan)
+app = FastAPI(title="企业数据智能问析", version="3.0.0", lifespan=lifespan)
 UI = __import__("pathlib").Path(__file__).resolve().parents[1] / "ui"
 
 
@@ -62,12 +72,14 @@ class Feedback(BaseModel):
 @app.exception_handler(PermissionError)
 async def forbidden(request, exc):
     from fastapi.responses import JSONResponse
+
     return JSONResponse(status_code=403, content={"detail": str(exc)})
 
 
 @app.exception_handler(ValueError)
 async def invalid(request, exc):
     from fastapi.responses import JSONResponse
+
     return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
@@ -76,7 +88,9 @@ async def headers(request, call_next):
     response = await call_next(request)
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
+    )
     return response
 
 
@@ -117,7 +131,9 @@ def me(user=Depends(current_user)):
 
 
 @app.post("/auth/logout")
-def sign_out(authorization: str | None = Header(default=None), user=Depends(current_user)):
+def sign_out(
+    authorization: str | None = Header(default=None), user=Depends(current_user)
+):
     logout(authorization)
     return {"ok": True}
 
@@ -137,10 +153,21 @@ def catalog(user=Depends(current_user)):
 @app.get("/tables")
 def tables(user=Depends(current_user)):
     registry = application().registry
-    return {"snapshot_id": registry.snapshot_id,
-            "total_rows": sum(entry["rows"] for entry in registry.tables.values()),
-            "tables": [{"name": name, "rows": entry["rows"], "columns": [{"name": col, **definition}
-                for col, definition in entry["columns"].items()]} for name, entry in registry.tables.items()]}
+    return {
+        "snapshot_id": registry.snapshot_id,
+        "total_rows": sum(entry["rows"] for entry in registry.tables.values()),
+        "tables": [
+            {
+                "name": name,
+                "rows": entry["rows"],
+                "columns": [
+                    {"name": col, **definition}
+                    for col, definition in entry["columns"].items()
+                ],
+            }
+            for name, entry in registry.tables.items()
+        ],
+    }
 
 
 def execute_question(body, user, preview=False):
@@ -148,10 +175,22 @@ def execute_question(body, user, preview=False):
     for key in ("start", "end"):
         if key in body.model_fields_set:
             constraints[key] = getattr(body, key)
-    result = application().ask(user["id"], body.question, body.session_id, constraints,
-                               body.pause_after_batch, preview)
-    audit_id = audit(user["id"], "ask", result["status"], question=body.question,
-                     snapshot_id=result["snapshot_id"], metric_version=result["semantic_version"])
+    result = application().ask(
+        user["id"],
+        body.question,
+        body.session_id,
+        constraints,
+        body.pause_after_batch,
+        preview,
+    )
+    audit_id = audit(
+        user["id"],
+        "ask",
+        result["status"],
+        question=body.question,
+        snapshot_id=result["snapshot_id"],
+        metric_version=result["semantic_version"],
+    )
     return {**result, "audit_id": audit_id}
 
 
@@ -180,19 +219,76 @@ def events(session_id: str, user=Depends(current_user)):
 @app.get("/tasks/{task_id}")
 def task(task_id: str, user=Depends(current_user)):
     engine = application()
-    record = engine.stores.owned_task(user["id"], task_id)
-    return engine.snapshot(record["origin_session_id"], record["current_turn_id"], record)
+    if engine.stores.exists("tasks", task_id):
+        record = engine.stores.get("tasks", task_id)
+        owner = engine.stores.owned_request(user["id"], record["request_id"])
+        return {
+            "task": record,
+            "request": owner,
+            "revision": engine.stores.get("request_revisions", record["revision_id"]),
+        }
+    legacy_ids = engine.stores.legacy_request_ids(task_id)
+    if not legacy_ids:
+        raise ValueError("执行 Task 不存在")
+    owners = [engine.stores.owned_request(user["id"], key) for key in legacy_ids]
+    return engine.snapshot(owners[0]["session_id"], request_ids=legacy_ids)
+
+
+@app.get("/requests")
+def requests(session_id: str, user=Depends(current_user)):
+    engine = application()
+    engine.stores.session(user["id"], session_id)
+    return engine.stores.list("requests", "session_id", session_id)
+
+
+@app.get("/requests/{request_id}")
+def request_state(request_id: str, user=Depends(current_user)):
+    engine = application()
+    record = engine.stores.owned_request(user["id"], request_id)
+    return engine.snapshot(record["session_id"], request_ids=[request_id])
+
+
+@app.get("/requests/{request_id}/revisions")
+def request_revisions(request_id: str, user=Depends(current_user)):
+    engine = application()
+    engine.stores.owned_request(user["id"], request_id)
+    return engine.stores.list("request_revisions", "request_id", request_id)
+
+
+@app.post("/requests/{request_id}/resume")
+def resume_request(
+    request_id: str, body: Resume, user=Depends(require("admin", "analyst"))
+):
+    return application().resume(user["id"], request_id, body.continue_analysis)
 
 
 @app.post("/tasks/{task_id}/resume")
 def resume(task_id: str, body: Resume, user=Depends(require("admin", "analyst"))):
-    return application().resume(user["id"], task_id, body.continue_analysis)
+    engine = application()
+    if engine.stores.exists("tasks", task_id):
+        request_ids = [engine.stores.get("tasks", task_id)["request_id"]]
+    else:
+        request_ids = engine.stores.legacy_request_ids(task_id)
+    if not request_ids:
+        raise ValueError("执行 Task 不存在")
+    for key in request_ids:
+        engine.stores.owned_request(user["id"], key)
+    results = [
+        engine.resume(user["id"], key, body.continue_analysis) for key in request_ids
+    ]
+    last = results[-1]
+    return {
+        **engine.snapshot(
+            last["session_id"], last["turn_id"], request_ids, last["status"]
+        ),
+        "blocks": [block for result in results for block in result["blocks"]],
+    }
 
 
 def authorize_artifact(artifact_id, user):
     engine = application()
     item = engine.artifacts.inspect(artifact_id)
-    engine.stores.owned_task(user["id"], item["task_id"])
+    engine.stores.owned_request(user["id"], item["request_id"])
     return engine, item
 
 
@@ -203,17 +299,28 @@ def artifact(artifact_id: str, user=Depends(current_user)):
 
 
 @app.get("/artifacts/{artifact_id}/content")
-def content(artifact_id: str, offset: int = 0, limit: int = 100, user=Depends(current_user)):
+def content(
+    artifact_id: str, offset: int = 0, limit: int = 100, user=Depends(current_user)
+):
     engine, item = authorize_artifact(artifact_id, user)
     if offset < 0 or not 1 <= limit <= 100:
         raise ValueError("无效分页范围")
-    return engine.artifacts.read(artifact_id, {"offset": offset, "limit": limit}) if item["type"] == "query_result" else {"content": engine.artifacts.content(artifact_id)}
+    return (
+        engine.artifacts.read(artifact_id, {"offset": offset, "limit": limit})
+        if item["type"] == "query_result"
+        else {"content": engine.artifacts.content(artifact_id)}
+    )
 
 
 @app.get("/artifacts/{artifact_id}/sql")
 def sql(artifact_id: str, user=Depends(current_user)):
     engine, item = authorize_artifact(artifact_id, user)
-    return {"sql": engine.artifacts.sql(artifact_id), "semantic_binding": item["payload"].get("semantic_binding")}
+    return {
+        "sql": engine.artifacts.sql(artifact_id),
+        "semantic_binding": item["payload"].get("semantic_binding"),
+        "provenance": item["payload"].get("provenance"),
+        "source_refs": item["source_refs"],
+    }
 
 
 @app.get("/artifacts/{artifact_id}/download")
@@ -221,8 +328,11 @@ def download(artifact_id: str, user=Depends(current_user)):
     engine, item = authorize_artifact(artifact_id, user)
     if item["type"] not in ("analysis_result", "report"):
         raise ValueError("该产物不是 Markdown 文档")
-    return Response(engine.artifacts.content(artifact_id), media_type="text/markdown; charset=utf-8",
-                    headers={"Content-Disposition": f'attachment; filename="{artifact_id}.md"'})
+    return Response(
+        engine.artifacts.content(artifact_id),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{artifact_id}.md"'},
+    )
 
 
 @app.get("/history")
@@ -234,24 +344,36 @@ def history(user=Depends(current_user)):
 def feedback(body: Feedback, user=Depends(current_user)):
     with app_db() as db:
         if body.audit_id:
-            row = db.execute("SELECT user_id FROM audit WHERE id=?", (body.audit_id,)).fetchone()
+            row = db.execute(
+                "SELECT user_id FROM audit WHERE id=?", (body.audit_id,)
+            ).fetchone()
             if not row or row[0] != user["id"]:
                 raise PermissionError("无权评价此记录")
-        cursor = db.execute("INSERT INTO feedback(at,user_id,audit_id,rating,comment) VALUES(datetime('now'),?,?,?,?)",
-                            (user["id"], body.audit_id, body.rating, body.comment))
+        cursor = db.execute(
+            "INSERT INTO feedback(at,user_id,audit_id,rating,comment) VALUES(datetime('now'),?,?,?,?)",
+            (user["id"], body.audit_id, body.rating, body.comment),
+        )
         return {"id": cursor.lastrowid, "ok": True}
 
 
 @app.get("/admin/users")
 def users(user=Depends(require("admin"))):
     with app_db() as db:
-        return [dict(row) for row in db.execute("SELECT id,username,role,active,created_at FROM users ORDER BY id")]
+        return [
+            dict(row)
+            for row in db.execute(
+                "SELECT id,username,role,active,created_at FROM users ORDER BY id"
+            )
+        ]
 
 
 @app.post("/admin/users")
 def add_user(body: NewUser, user=Depends(require("admin"))):
     try:
-        return {"id": create_user(body.username, body.password, body.role), "username": body.username}
+        return {
+            "id": create_user(body.username, body.password, body.role),
+            "username": body.username,
+        }
     except sqlite3.IntegrityError as exc:
         raise ValueError("账号已存在") from exc
 

@@ -1,30 +1,36 @@
-"""Intent IR belongs to Unified Supervisor; it describes this Turn only."""
-from typing import Any, Literal
+"""Turn intent selects request operations; code owns durable IDs and state."""
+
+from typing import Literal
+
 from pydantic import Field, model_validator
-from ..core.models import Model, ResourceRef, InputBinding
+
+from ..core.models import Category, Model, ResourceRef
 
 
-class RequestChange(Model):
-    action: Literal["add", "replace", "remove"]
+class RequestOperation(Model):
     request_id: str = Field(min_length=1)
-    type: Literal["data_analysis", "visualization", "report", "business_knowledge", "general_qa"] | None = None
-    description: str | None = None
-    params: dict[str, Any] = Field(default_factory=dict)
-    inputs: list[InputBinding] = Field(default_factory=list)
+    action: Literal["none", "create_task", "update_task"]
+    category: Category
+    instruction: str = Field(min_length=1)
+    refs: list[ResourceRef] = Field(default_factory=list)
 
-    @model_validator(mode="after")
-    def complete_change(self):
-        if self.action != "remove" and (not self.type or not self.description):
-            raise ValueError("添加或修改需求必须提供 type 和 description")
-        return self
+
+class Clarification(Model):
+    request_id: str | None = None
+    subject: str = Field(min_length=1)
+    question: str = Field(min_length=1)
+    refs: list[ResourceRef] = Field(default_factory=list)
 
 
 class Intent(Model):
-    dialogue_action: Literal["new_task", "continue", "modify", "independent", "clarify"]
-    target_task_id: str | None = None
-    goal: str = ""
-    constraints_patch: dict[str, Any] = Field(default_factory=dict)
-    request_changes: list[RequestChange] = Field(default_factory=list)
-    refs: list[ResourceRef] = Field(default_factory=list)
-    clarification: str | None = None
+    operations: list[RequestOperation] = Field(default_factory=list)
+    clarifications: list[Clarification] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def complete_turn(self):
+        ids = [item.request_id for item in self.operations]
+        if len(ids) != len(set(ids)):
+            raise ValueError("本轮同一 Request 的修改必须合并为一项操作")
+        if not self.operations and not self.clarifications:
+            raise ValueError("必须给出请求操作或具体澄清问题")
+        return self

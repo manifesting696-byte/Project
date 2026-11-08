@@ -1,4 +1,5 @@
 """The four specialist roles and their dispatch table."""
+
 from ..core.models import SemanticBinding
 from .base import ArtifactAgent, SpecialistAgent
 from .prompt import ANALYSIS, PRESENTATION, QUERY, SEMANTIC
@@ -11,12 +12,24 @@ class SemanticAgent(SpecialistAgent):
         self.registry = registry
 
     def execute(self, context, allowed, emit):
-        binding = self.invoke("SemanticAgent", SEMANTIC, context, SemanticBinding,
-                              semantic_tools(self.registry), emit)
+        binding = self.invoke(
+            "SemanticAgent",
+            SEMANTIC,
+            context,
+            SemanticBinding,
+            semantic_tools(self.registry),
+            emit,
+        )
         self.registry.validate_binding(binding)
-        return {"status": "completed" if binding.status == "bound" else "needs_clarification",
-                "summary": binding.explanation, "semantic_binding": binding.model_dump(exclude_none=True),
-                "produced_outputs": {}, "suggestions": binding.ambiguities}
+        return {
+            "status": "completed"
+            if binding.status == "bound"
+            else "needs_clarification",
+            "summary": binding.explanation,
+            "semantic_binding": binding.model_dump(exclude_none=True),
+            "produced_outputs": {},
+            "suggestions": binding.ambiguities,
+        }
 
 
 class QueryAgent(ArtifactAgent):
@@ -31,7 +44,7 @@ class QueryAgent(ArtifactAgent):
 class AnalysisAgent(ArtifactAgent):
     role = "AnalysisAgent"
     instruction = ANALYSIS
-    output_types = frozenset({"analysis_result"})
+    output_types = frozenset({"analysis_result", "query_result"})
 
     def role_tools(self, toolbox, context):
         return toolbox.analysis_tools()
@@ -63,5 +76,5 @@ class Specialists:
             self.agents.update(overrides)
 
     def execute(self, context, allowed, emit):
-        role = context["subtask"]["assigned_agent"]
+        role = context["task"]["assigned_agent"]
         return self.agents[role].execute(context, allowed, emit)

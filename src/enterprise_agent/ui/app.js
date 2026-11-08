@@ -132,8 +132,13 @@ function renderTurnStatus(result){
   if(result.status==='completed'||result.status==='needs_clarification')return;
   const view=messageShell('assistant'),status=node('div','turn-status');
   status.append(node('strong','',result.status==='waiting_input'?'分析已暂停':'本轮部分完成'));
-  if(result.subtasks?.length){const details=node('details','run-details'),summary=node('summary','','查看执行步骤');details.append(summary);for(const step of result.subtasks)details.append(node('p','',`${step.assigned_agent.replace('Agent','')} · ${step.status}${step.summary?' · '+step.summary.slice(0,90):''}`));status.append(details)}
-  if(result.status==='waiting_input'&&result.task){const button=node('button','artifact-open','继续执行');button.onclick=async()=>{button.disabled=true;try{state.result=await api(`/tasks/${result.task.task_id}/resume`,{method:'POST',body:JSON.stringify({continue_analysis:true})});await loadConversation()}catch(error){status.append(node('p','form-error',error.message));button.disabled=false}};status.append(button)}
+  if(result.tasks?.length){const details=node('details','run-details'),summary=node('summary','','查看执行步骤');details.append(summary);for(const step of result.tasks)details.append(node('p','',`${step.assigned_agent.replace('Agent','')} · ${step.status}${step.summary?' · '+step.summary.slice(0,90):''}`));status.append(details)}
+  for(const request of result.requests||[]){
+    if(!['pending','failed'].includes(request.status))continue;
+    const button=node('button','artifact-open',`继续执行 · ${request.title}`);button.type='button';
+    button.onclick=async()=>{button.disabled=true;try{state.result=await api(`/requests/${request.request_id}/resume`,{method:'POST',body:JSON.stringify({continue_analysis:true})});await loadConversation()}catch(error){status.append(node('p','form-error',error.message));button.disabled=false}};
+    status.append(button);
+  }
   view.body.append(status);$('conversationLog').append(view.article);
 }
 async function askQuestion(event){
@@ -158,6 +163,8 @@ async function showArtifact(id){
 async function renderArtifactDetail(item,box){
   const id=item.artifact_id;
   if(item.type==='query_result'){
+    const origin=item.payload?.provenance?.method;
+    if(origin)box.append(node('p','artifact-summary',origin==='business_sql'?'来源：业务数据库只读查询':'来源：已有数据结果的精确计算'));
     let offset=0;const dataBox=node('div'),controls=node('div','artifact-controls');box.append(dataBox,controls);
     async function page(){const data=await api(`/artifacts/${id}/content?offset=${offset}&limit=20`);clear(dataBox);clear(controls);dataBox.append(data.rows.length?makeTable(data.rows):node('p','muted','没有匹配记录'));controls.append(node('span','muted',`${fmt(data.total_rows)} 行 · 当前 ${data.rows.length?offset+1:0}–${offset+data.rows.length}`));
       if(offset>0){const previous=node('button','text-button','上一页');previous.onclick=()=>{offset=Math.max(0,offset-20);page()};controls.append(previous)}
