@@ -1,25 +1,151 @@
-"""Deterministic scheduling of execution Tasks within the current request scope."""
+"""LangGraph fan-out scheduling over the persisted execution Task DAG."""
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import operator
+from typing import Annotated, TypedDict
 
-from ..core.config import MAX_PARALLEL
+from langgraph.graph import END, START, StateGraph
+from langgraph.types import Send
+
+from ..core.config import MAX_PARALLEL, MAX_TASKS
 from ..persistence.stores import now
+
+
+class ScheduleState(TypedDict, total=False):
+    request_id: str
+    session_id: str
+    revision_id: str
+    turn_id: str
+    execution_key: str | None
+    pause: bool
+    ready: list[str]
+    results: Annotated[dict[str, dict], operator.or_]
+    decision_required: bool
+    paused: bool
+    waiting_for_requests: bool
+    blocked: str | None
+    route: str
+    retry_dispatch: bool
 
 
 class Scheduler:
     def __init__(self, stores, context, specialists):
         self.stores, self.context, self.specialists = stores, context, specialists
+        builder = StateGraph(ScheduleState)
+        builder.add_node("dispatch", self.dispatch)
+        builder.add_node("execute_task", self.execute)
+        builder.add_node("collect", self.collect)
+        builder.add_edge(START, "dispatch")
+        builder.add_conditional_edges("dispatch", self.send_ready)
+        builder.add_edge("execute_task", "collect")
+        builder.add_conditional_edges("collect", lambda state: state["route"])
+        self.graph = builder.compile(checkpointer=False, name="task_scheduler")
 
-    def run(self, request, turn_id, pause=False):
-        new_results = []
-        session_id = request["session_id"]
-        expected = {request["request_id"]: request["current_revision_id"]}
+    def run(self, request, turn_id, pause=False, execution_key=None):
+        completed = {}
+        if execution_key:
+            for event in self.stores.list(
+                "session_events", "session_id", request["session_id"]
+            ):
+                if event["payload"].get("execution_key") == execution_key:
+                    node = self.stores.get("tasks", event["task_id"])
+                    completed[node["task_id"]] = self.task_result(node)
+        result = self.graph.invoke(
+            {
+                "request_id": request["request_id"],
+                "session_id": request["session_id"],
+                "revision_id": request["current_revision_id"],
+                "turn_id": turn_id,
+                "execution_key": execution_key,
+                "pause": pause,
+                "results": completed,
+                "decision_required": any(
+                    node.get("replan_after") or node.get("suggestions")
+                    for node in completed.values()
+                ),
+                "paused": bool(pause and completed),
+                "waiting_for_requests": False,
+            },
+            {"max_concurrency": MAX_PARALLEL, "recursion_limit": MAX_TASKS * 3 + 16},
+        )
+        return {
+            "new_results": list(result["results"].values()),
+            "decision_required": result["decision_required"],
+            "paused": result["paused"],
+            "waiting_for_requests": result["waiting_for_requests"],
+            "blocked": result.get("blocked"),
+        }
 
-        def execute(node):
+    def dispatch(self, state):
+        if state["decision_required"] or state["paused"]:
+            return {"ready": [], "retry_dispatch": False}
+        nodes = self.stores.list("tasks", "request_id", state["request_id"])
+        by_id = {
+            node["task_id"]: node
+            for node in self.stores.session_tasks(state["session_id"])
+        }
+        ready, waiting, changed = [], False, False
+        for node in nodes:
+            if node["status"] not in ("pending", "running"):
+                continue
+            dependencies = [by_id.get(key) for key in node["depends_on"]]
+            if any(
+                dep is None
+                or dep["status"]
+                in (
+                    "failed",
+                    "skipped",
+                    "needs_clarification",
+                    "cancelled",
+                    "superseded",
+                )
+                for dep in dependencies
+            ):
+                node.update(
+                    status="skipped", summary="依赖没有可用输出", completed_at=now()
+                )
+                self.stores.save_many(
+                    [("tasks", node)],
+                    expected_revisions={state["request_id"]: state["revision_id"]},
+                )
+                changed = True
+                continue
+            try:
+                for binding in node["input_bindings"]:
+                    if binding["source"]["kind"] == "request":
+                        self.context.requests.resolve(
+                            state["session_id"], binding["source"]
+                        )
+            except ValueError:
+                waiting = True
+                continue
+            if all(dep["status"] == "completed" for dep in dependencies):
+                ready.append(node["task_id"])
+        return {
+            "ready": ready[:MAX_PARALLEL],
+            "waiting_for_requests": waiting,
+            "blocked": "上游执行尚未完成" if waiting else None,
+            "retry_dispatch": changed and not ready,
+        }
+
+    @staticmethod
+    def send_ready(state):
+        if not state["ready"]:
+            return "dispatch" if state["retry_dispatch"] else END
+        return [
+            Send("execute_task", {**state, "task_id": key}) for key in state["ready"]
+        ]
+
+    def execute(self, state):
+        node = self.stores.get("tasks", state["task_id"])
+        expected = {state["request_id"]: state["revision_id"]}
+        if node["status"] != "completed":
+            node.update(status="running", started_at=node.get("started_at") or now())
+            self.stores.save_many([("tasks", node)], expected_revisions=expected)
+
             def emit(kind, payload):
                 return self.stores.event(
-                    session_id,
-                    turn_id,
+                    state["session_id"],
+                    state["turn_id"],
                     kind,
                     node["assigned_agent"],
                     payload,
@@ -27,11 +153,11 @@ class Scheduler:
                     task_id=node["task_id"],
                 )
 
-            node.update(status="running", started_at=now())
-            self.stores.save_many([("tasks", node)], expected_revisions=expected)
             try:
                 for binding in node["input_bindings"]:
-                    value = self.context.requests.resolve(session_id, binding["source"])
+                    value = self.context.requests.resolve(
+                        state["session_id"], binding["source"]
+                    )
                     if value.get("artifact_id"):
                         binding["source"] = {
                             "kind": "artifact",
@@ -47,93 +173,49 @@ class Scheduler:
                     "produced_outputs": {},
                 }
             node.update(**result, completed_at=now())
-            try:
-                self.stores.save_many([("tasks", node)], expected_revisions=expected)
-            except ValueError:
-                return self.stores.get("tasks", node["task_id"])
-            emit(
-                "agent_output",
-                {
-                    "summary": result["summary"],
-                    "status": result["status"],
-                    "refs": list(result["produced_outputs"].values()),
+            self.stores.save_many(
+                [("tasks", node)],
+                expected_revisions=expected,
+                event={
+                    "session_id": state["session_id"],
+                    "turn_id": state["turn_id"],
+                    "event_type": "agent_output",
+                    "actor": node["assigned_agent"],
+                    "request_id": node["request_id"],
+                    "task_id": node["task_id"],
+                    "payload": {
+                        "summary": result["summary"],
+                        "status": result["status"],
+                        "refs": list(result["produced_outputs"].values()),
+                        "execution_key": state["execution_key"],
+                    },
                 },
             )
-            return node
+        return {"results": {node["task_id"]: self.task_result(node)}}
 
-        while True:
-            nodes = self.stores.list("tasks", "request_id", request["request_id"])
-            by_id = {
-                node["task_id"]: node for node in self.stores.session_tasks(session_id)
-            }
-            pending = [node for node in nodes if node["status"] == "pending"]
-            if not pending:
-                return {"new_results": new_results, "decision_required": False}
-            blocked = [
-                node
-                for node in pending
-                if any(
-                    dep not in by_id
-                    or by_id[dep]["status"]
-                    in (
-                        "failed",
-                        "skipped",
-                        "needs_clarification",
-                        "cancelled",
-                        "superseded",
-                    )
-                    for dep in node["depends_on"]
-                )
-            ]
-            for node in blocked:
-                node.update(
-                    status="skipped", summary="依赖没有可用输出", completed_at=now()
-                )
-                self.stores.save_many([("tasks", node)], expected_revisions=expected)
-            waiting = set()
-            for node in pending:
-                for binding in node["input_bindings"]:
-                    if binding["source"]["kind"] != "request":
-                        continue
-                    try:
-                        self.context.requests.resolve(session_id, binding["source"])
-                    except ValueError:
-                        waiting.add(node["task_id"])
-                        break
-            ready = [
-                node
-                for node in pending
-                if node not in blocked
-                and node["task_id"] not in waiting
-                and all(
-                    by_id[dep]["status"] == "completed" for dep in node["depends_on"]
-                )
-            ]
-            if not ready:
-                if blocked:
-                    continue
-                return {
-                    "new_results": new_results,
-                    "decision_required": False,
-                    "blocked": "上游执行尚未完成",
-                    "waiting_for_requests": bool(waiting),
-                }
-            with ThreadPoolExecutor(max_workers=MAX_PARALLEL) as pool:
-                futures = [pool.submit(execute, node) for node in ready[:MAX_PARALLEL]]
-                wave = [future.result() for future in as_completed(futures)]
-            new_results.extend(
-                {
-                    "task_id": node["task_id"],
-                    "status": node["status"],
-                    "summary": node.get("summary", ""),
-                    "produced_outputs": node["produced_outputs"],
-                    "suggestions": node.get("suggestions", []),
-                }
-                for node in wave
+    @staticmethod
+    def task_result(node):
+        return {
+            key: node.get(key)
+            for key in (
+                "task_id",
+                "status",
+                "summary",
+                "produced_outputs",
+                "suggestions",
+                "replan_after",
             )
-            if pause:
-                return {"new_results": new_results, "paused": True}
-            if any(
-                node.get("replan_after") or node.get("suggestions") for node in wave
-            ):
-                return {"new_results": new_results, "decision_required": True}
+        }
+
+    @staticmethod
+    def collect(state):
+        wave = [state["results"][key] for key in state["ready"]]
+        decision = any(
+            node.get("replan_after") or node.get("suggestions") for node in wave
+        )
+        stop = state["pause"] or decision
+        return {
+            "paused": state["pause"],
+            "decision_required": decision,
+            "route": END if stop else "dispatch",
+        }

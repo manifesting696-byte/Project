@@ -315,6 +315,21 @@ class Stores:
         self._put(db, "sessions", session)
         return record
 
+    def workflow_event(self, session_id, workflow_key):
+        with self.db() as db:
+            return self._workflow_event(db, session_id, workflow_key)
+
+    @staticmethod
+    def _workflow_event(db, session_id, workflow_key):
+        for row in db.execute(
+            "SELECT body FROM session_events WHERE session_id=? ORDER BY seq DESC",
+            (session_id,),
+        ):
+            item = json.loads(row[0])
+            if item["payload"].get("workflow_key") == workflow_key:
+                return item
+        return None
+
     def event(
         self,
         session_id,
@@ -324,9 +339,15 @@ class Stores:
         payload,
         request_id=None,
         task_id=None,
+        workflow_key=None,
     ):
         with self.db() as db:
             db.execute("BEGIN IMMEDIATE")
+            if workflow_key:
+                cached = self._workflow_event(db, session_id, workflow_key)
+                if cached:
+                    return cached
+                payload = {**payload, "workflow_key": workflow_key}
             return self._append_event(
                 db, session_id, turn_id, event_type, actor, payload, request_id, task_id
             )
@@ -343,14 +364,17 @@ class Stores:
             for task in self.list("tasks", "request_id", request["request_id"])
         ]
 
-    def recover_interrupted(self):
-        """Called once by the single-worker application at startup."""
+    def recover_interrupted(self, resumable_request_ids=()):
+        """Preserve checkpoint-backed work and recover legacy interrupted execution."""
         with self.db() as db:
             db.execute("BEGIN IMMEDIATE")
             affected = set()
             for row in db.execute("SELECT body FROM tasks").fetchall():
                 task = json.loads(row[0])
-                if task["status"] == "running":
+                if (
+                    task["status"] == "running"
+                    and task["request_id"] not in resumable_request_ids
+                ):
                     task.update(
                         status="failed",
                         summary="上次服务退出时执行中断，可以重新规划",

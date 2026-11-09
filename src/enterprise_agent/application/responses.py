@@ -36,7 +36,14 @@ class Responses:
         )
 
     def materialize(
-        self, request, turn_id, draft, extra_refs=(), output_names=None, bind=False
+        self,
+        request,
+        turn_id,
+        draft,
+        extra_refs=(),
+        output_names=None,
+        bind=False,
+        workflow_key=None,
     ):
         if isinstance(draft, Response):
             return draft
@@ -95,6 +102,7 @@ class Responses:
                     "request_id": request["request_id"],
                     "revision_id": request["current_revision_id"],
                     "producer": "Supervisor",
+                    "workflow_key": workflow_key,
                 }
                 sources = list(dict.fromkeys(sources + input_ids))
                 provenance = {"method": "answer", "input_artifact_ids": input_ids}
@@ -159,7 +167,9 @@ class Responses:
                     },
                 )["artifact_id"]
             bindings[name] = {"kind": "artifact", "id": key}
-        if bindings:
+        if bindings and any(
+            deliveries.get(name) != ref for name, ref in bindings.items()
+        ):
             self.tasks.apply_plan(
                 request,
                 turn_id,

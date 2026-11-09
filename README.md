@@ -21,7 +21,11 @@
 - application/requests.py 管理请求身份、版本、输入依赖、交付解析和失效传播。
 - application/preparation.py 合并要求整理与首次规划，校验候选结果并原子保存 Revision 和初始计划。
 - application/tasks.py 校验执行 DAG，绑定真实输入及交付。
-- application/service.py 组织同轮多个请求，按本轮范围回答。
+- application/service.py 提供会话锁、业务校验和图执行入口。
+- pipeline/turns.py 用 LangGraph 串联意图、准备、提交、逐项处理和发布回复。
+- pipeline/execution.py 用 LangGraph 管理执行、验收、重规划和 interrupt/resume。
+- pipeline/scheduler.py 用 Send 并行分发就绪 Task，并按 task_id 汇总结果。
+- pipeline/checkpoints.py 将运行现场保存到 runtime/langgraph.sqlite。
 - application/responses.py 将文字草稿保存为 Artifact，组装只含产物引用的 Response 块。前端据此展示正文和结果卡片。
 - persistence/migration.py 自动备份并事务迁移旧账本。
 - persistence/unified_migration.py 统一历史 Artifact 类型和回答结构，保留原数据与 SQL。
@@ -34,7 +38,7 @@
 .\.venv\Scripts\python.exe evaluate.py --live-only
 ```
 
-第二条命令通过真实模型查询 Products 产品数，并与业务快照核对。
+第二条命令通过真实模型查询 Products 产品数，并与业务快照核对。测试覆盖并行调度、重启恢复、产物写入后中断、计划与回复保存后的重放。
 
 ## 原项目记录
 

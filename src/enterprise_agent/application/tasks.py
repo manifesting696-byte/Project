@@ -278,8 +278,10 @@ class Tasks:
             },
         }
 
-    def apply_plan(self, request, turn_id, plan: Plan):
+    def apply_plan(self, request, turn_id, plan: Plan, workflow_key=None):
         prepared = self.prepare_plan(request, turn_id, plan)
+        if workflow_key:
+            prepared["event"]["payload"]["workflow_key"] = workflow_key
         self.stores.save_many(
             prepared["records"],
             expected_revisions={request["request_id"]: request["current_revision_id"]},

@@ -330,10 +330,14 @@ class Preparation:
         )
 
     def commit(self, bundle):
+        events = deepcopy(bundle["events"])
+        if bundle.get("workflow_key"):
+            for event in events:
+                event["payload"]["workflow_key"] = bundle["workflow_key"]
         self.stores.save_many(
             bundle["records"],
             expected_revisions=bundle["expected_revisions"],
             expected_plan_versions=bundle["expected_plan_versions"],
-            events=bundle["events"],
+            events=events,
         )
         return bundle["request"]

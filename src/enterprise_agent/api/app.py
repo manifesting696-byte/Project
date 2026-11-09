@@ -61,6 +61,7 @@ class PasswordChange(BaseModel):
 
 class Resume(BaseModel):
     continue_analysis: bool = True
+    answer: str | None = Field(default=None, min_length=1, max_length=4000)
 
 
 class Feedback(BaseModel):
@@ -216,6 +217,13 @@ def events(session_id: str, user=Depends(current_user)):
     return engine.stores.list("session_events", "session_id", session_id)
 
 
+@app.post("/sessions/{session_id}/turns/{turn_id}/resume")
+def resume_turn(
+    session_id: str, turn_id: str, user=Depends(require("admin", "analyst"))
+):
+    return application().resume_turn(user["id"], session_id, turn_id)
+
+
 @app.get("/tasks/{task_id}")
 def task(task_id: str, user=Depends(current_user)):
     engine = application()
@@ -259,7 +267,9 @@ def request_revisions(request_id: str, user=Depends(current_user)):
 def resume_request(
     request_id: str, body: Resume, user=Depends(require("admin", "analyst"))
 ):
-    return application().resume(user["id"], request_id, body.continue_analysis)
+    return application().resume(
+        user["id"], request_id, body.continue_analysis, body.answer
+    )
 
 
 @app.post("/tasks/{task_id}/resume")
@@ -274,7 +284,8 @@ def resume(task_id: str, body: Resume, user=Depends(require("admin", "analyst"))
     for key in request_ids:
         engine.stores.owned_request(user["id"], key)
     results = [
-        engine.resume(user["id"], key, body.continue_analysis) for key in request_ids
+        engine.resume(user["id"], key, body.continue_analysis, body.answer)
+        for key in request_ids
     ]
     last = results[-1]
     return {

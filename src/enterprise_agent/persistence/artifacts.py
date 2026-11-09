@@ -1,5 +1,6 @@
 """Managed content, exact selective reads, and isolated computation over existing results."""
 
+import hashlib
 import json
 import re
 import sqlite3
@@ -60,6 +61,46 @@ class Artifacts:
         for key in sources:
             if self.inspect(key)["session_id"] != session_id:
                 raise PermissionError("来源产物不属于当前会话")
+        payload = deepcopy(payload or {})
+        if task.get("workflow_key"):
+            payload.setdefault("provenance", {})["workflow_key"] = task["workflow_key"]
+        fingerprint = None
+        if task.get("task_id") or task.get("workflow_key"):
+            encoded = json.dumps(
+                {
+                    "content_type": content_type,
+                    "content": content,
+                    "column_order": list(content[0])
+                    if content_type == "table" and content
+                    else payload.get("columns"),
+                    "sources": sources,
+                    "payload": payload,
+                    "sql": sql,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                default=str,
+            )
+            fingerprint = hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+            for item in self.stores.list("artifacts", "session_id", session_id):
+                same_origin = (
+                    item.get("task_id") == task["task_id"]
+                    if task.get("task_id")
+                    else item["payload"].get("provenance", {}).get("workflow_key")
+                    == task["workflow_key"]
+                )
+                if (
+                    same_origin
+                    and item["payload"].get("write_fingerprint") == fingerprint
+                ):
+                    if self.content(item["artifact_id"]) == json.loads(
+                        json.dumps(content, ensure_ascii=False, default=str)
+                    ):
+                        return {
+                            "artifact_id": item["artifact_id"],
+                            "summary": item["summary"],
+                            "refs": [{"kind": "artifact", "id": item["artifact_id"]}],
+                        }
         artifact_id = self.stores.new_id("result")
         while (self.root / artifact_id).exists() or self.stores.exists(
             "artifacts", artifact_id
@@ -77,7 +118,8 @@ class Artifacts:
             if isinstance(content, str)
             else json.dumps(content, ensure_ascii=False, default=str)
         )
-        payload = deepcopy(payload or {})
+        if fingerprint:
+            payload["write_fingerprint"] = fingerprint
         payload.setdefault(
             "provenance",
             {"method": "analysis" if content_type == "text" else "presentation"},
