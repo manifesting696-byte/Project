@@ -4,6 +4,27 @@ import json
 import sqlite3
 from pathlib import Path
 
+from ..core.models import Request
+
+
+def migrate_request_results(db):
+    """Rename persisted Request outputs in the same startup transaction."""
+    if not db.in_transaction:
+        db.execute("BEGIN IMMEDIATE")
+    for row in db.execute("SELECT id, body FROM requests").fetchall():
+        request = json.loads(row[1])
+        if "output_refs" not in request:
+            continue
+        previous = request.pop("output_refs")
+        if "results" in request and request["results"] != previous:
+            raise ValueError("Request results conflicts with legacy output_refs")
+        request["results"] = previous
+        validated = Request.model_validate(request).model_dump(exclude_none=True)
+        db.execute(
+            "UPDATE requests SET body=? WHERE id=?",
+            (json.dumps(validated, ensure_ascii=False), row[0]),
+        )
+
 
 def migrate_legacy(db, path: Path):
     columns = {row[1] for row in db.execute("PRAGMA table_info(tasks)")}
@@ -210,7 +231,7 @@ def migrate_legacy(db, path: Path):
             )
             if active
             else "archived",
-            "output_refs": {
+            "results": {
                 name: ref for name, (_, ref) in outputs.items() if ref is not None
             },
             "created_at": task["created_at"],

@@ -415,7 +415,7 @@ class Application:
                 )
             if check.status != "completed":
                 continue
-            actual = request["output_refs"].get(check.name)
+            actual = request["results"].get(check.name)
             if not actual or not check.refs:
                 raise ValueError("完成的交付必须绑定真实输出并提供证据")
             resolved = self.tasks.resolve(request["session_id"], actual)
@@ -439,7 +439,7 @@ class Application:
         allowed = self.requests.artifact_scope(
             [
                 ref
-                for name, ref in request["output_refs"].items()
+                for name, ref in request["results"].items()
                 if output_names is None or name in output_names
             ]
             + [binding["source"] for binding in revision["spec"]["inputs"]]
@@ -491,7 +491,7 @@ class Application:
             revision = self.stores.get(
                 "request_revisions", request["current_revision_id"]
             )
-            request["output_refs"] = {
+            request["results"] = {
                 item["name"]: {
                     "kind": "event",
                     "id": event["event_id"],

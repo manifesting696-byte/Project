@@ -142,7 +142,7 @@ class FixtureModel:
             state = tools["get_request_state"].call(request_id=candidate["request_id"])
             refs = []
             if "横向" in query:
-                refs = [state["request"]["output_refs"]["chart"]]
+                refs = [state["request"]["results"]["chart"]]
             operations = [
                 self.operation(
                     candidate["request_id"],
@@ -381,7 +381,7 @@ class FixtureModel:
                     )
                 )
                 bindings["chart"] = {"kind": "task", "id": "chart", "output": "chart"}
-        elif "report" in outputs and "report" not in context["request"]["output_refs"]:
+        elif "report" in outputs and "report" not in context["request"]["results"]:
             analysis = next(
                 node
                 for node in nodes
@@ -422,7 +422,7 @@ class FixtureModel:
 
     @staticmethod
     def completion(context):
-        refs = context["request"]["output_refs"]
+        refs = context["request"]["results"]
         checks = []
         for item in context["revision"]["spec"]["outputs"]:
             completed = item["name"] in refs
@@ -463,7 +463,7 @@ class FixtureModel:
             name = item["name"]
             if visible is not None and name not in visible:
                 continue
-            ref = context["request"]["output_refs"].get(name)
+            ref = context["request"]["results"].get(name)
             if ref and item["kind"] != "text":
                 blocks.append(
                     {"request_id": request_id, "kind": item["kind"], "refs": [ref]}

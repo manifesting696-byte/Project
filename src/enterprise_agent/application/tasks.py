@@ -27,7 +27,7 @@ class Tasks:
             return {"event": event}
         if kind == "request":
             request = self.stores.get("requests", key)
-            outputs = request["output_refs"]
+            outputs = request["results"]
             name = ref.get("output")
             if name is None:
                 if len(outputs) != 1:
@@ -119,11 +119,11 @@ class Tasks:
                     source = self.stores.get("requests", ref["id"])
                     self.requests.validate_ref(request["session_id"], ref)
                     name = ref.get("output")
-                    if name is None and len(source["output_refs"]) == 1:
-                        name = next(iter(source["output_refs"]))
-                    if name not in source["output_refs"]:
+                    if name is None and len(source["results"]) == 1:
+                        name = next(iter(source["results"]))
+                    if name not in source["results"]:
                         raise ValueError("上游 Request 的交付尚未完成")
-                    binding["source"] = deepcopy(source["output_refs"][name])
+                    binding["source"] = deepcopy(source["results"][name])
                     if (
                         binding["source"]["kind"] == "task"
                         and binding["source"]["id"] not in node["depends_on"]
@@ -275,7 +275,7 @@ class Tasks:
                 resolved[name] = ref
             elif item.get("semantic_binding"):
                 resolved[name] = ref
-        request["output_refs"] = resolved
+        request["results"] = resolved
         request["updated_at"] = now()
         self.stores.save_many(
             [("requests", request)],

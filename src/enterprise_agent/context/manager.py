@@ -67,7 +67,7 @@ class ContextManager:
                         "title",
                         "status",
                         "current_revision_id",
-                        "output_refs",
+                        "results",
                     )
                 }
                 for item in requests[-12:]
@@ -178,7 +178,7 @@ class ContextManager:
     def answer(self, request, query, completion=None, output_names=None):
         refs = [
             ref
-            for name, ref in request["output_refs"].items()
+            for name, ref in request["results"].items()
             if output_names is None or name in output_names
         ]
         artifact_ids = self.requests.artifact_scope(refs)

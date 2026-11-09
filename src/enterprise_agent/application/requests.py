@@ -74,7 +74,7 @@ class Requests:
                         and ref.output
                     ):
                         previous = self.stores.get("requests", ref.id)[
-                            "output_refs"
+                            "results"
                         ].get(ref.output)
                         if not previous:
                             raise ValueError("目标需求尚无可复用的该项结果")
@@ -141,7 +141,7 @@ class Requests:
                 == request["current_revision_id"]
             ):
                 return event["payload"]["plan"]["output_bindings"]
-        return dict(request["output_refs"])
+        return dict(request["results"])
 
     def artifact_scope(self, refs):
         allowed, pending, visited = set(), list(refs), set()
@@ -153,7 +153,7 @@ class Requests:
             visited.add(identity)
             if ref["kind"] == "request":
                 request = self.stores.get("requests", ref["id"])
-                values = request["output_refs"]
+                values = request["results"]
                 pending.extend(
                     [values[ref["output"]]]
                     if ref.get("output") and ref["output"] in values
@@ -216,7 +216,7 @@ class Requests:
         changes = []
         if old:
             changes, retained = self.invalidate(old, previous["spec"], spec_data)
-            request["output_refs"] = retained
+            request["results"] = retained
         expected = {request_id: previous["revision_id"] if previous else None}
         expected.update(
             {
@@ -316,9 +316,9 @@ class Requests:
         } - {request["request_id"]}:
             dependent = self.stores.get("requests", owner)
             dependent["status"], dependent["updated_at"] = "pending", now()
-            dependent["output_refs"] = {
+            dependent["results"] = {
                 name: ref
-                for name, ref in dependent["output_refs"].items()
+                for name, ref in dependent["results"].items()
                 if ref["id"] not in affected_artifacts and ref["id"] not in affected
             }
             changes.append(("requests", dependent))
@@ -327,7 +327,7 @@ class Requests:
             if changed_data
             else {
                 name: ref
-                for name, ref in request["output_refs"].items()
+                for name, ref in request["results"].items()
                 if name in new_outputs
                 and name not in changed_outputs
                 and ref["id"] not in affected_artifacts

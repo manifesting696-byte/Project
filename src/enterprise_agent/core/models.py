@@ -67,7 +67,7 @@ class Request(Model):
     status: Literal[
         "pending", "running", "needs_clarification", "completed", "failed", "archived"
     ]
-    output_refs: dict[str, ResourceRef] = Field(default_factory=dict)
+    results: dict[str, ResourceRef] = Field(default_factory=dict)
     created_at: str
     updated_at: str
 

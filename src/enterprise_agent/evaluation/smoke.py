@@ -53,7 +53,7 @@ class Smoke(unittest.TestCase):
             {"SemanticAgent", "QueryAgent", "AnalysisAgent", "PresentationAgent"},
         )
         self.assertEqual(work["plan_version"], 2)
-        self.assertEqual(set(work["output_refs"]), {"data", "chart", "report"})
+        self.assertEqual(set(work["results"]), {"data", "chart", "report"})
         self.assertEqual(result["blocks"][0]["request_id"], mean["request_id"])
         self.assertEqual(
             {item["type"] for item in result["artifacts"]},
@@ -79,11 +79,11 @@ class Smoke(unittest.TestCase):
         self.assertEqual(
             {block["kind"] for block in second["blocks"]}, {"text", "chart"}
         )
-        chart_id = after["output_refs"]["chart"]["id"]
+        chart_id = after["results"]["chart"]["id"]
         chart = self.engine.artifacts.content(chart_id)
         self.assertEqual(chart["yAxis"]["type"], "category")
         self.assertEqual(
-            chart["selection"]["source_id"], before["output_refs"]["data"]["id"]
+            chart["selection"]["source_id"], before["results"]["data"]["id"]
         )
         for key, content in original.items():
             self.assertEqual(self.engine.artifacts.content(key), content)
@@ -104,7 +104,7 @@ class Smoke(unittest.TestCase):
         self.assertEqual(
             len(
                 self.engine.artifacts.content(
-                    second["requests"][0]["output_refs"]["data"]["id"]
+                    second["requests"][0]["results"]["data"]["id"]
                 )
             ),
             2,
@@ -113,7 +113,7 @@ class Smoke(unittest.TestCase):
         self.assertEqual(
             len(
                 self.engine.artifacts.content(
-                    first["requests"][0]["output_refs"]["data"]["id"]
+                    first["requests"][0]["results"]["data"]["id"]
                 )
             ),
             5,
@@ -131,12 +131,10 @@ class Smoke(unittest.TestCase):
             if node["assigned_agent"] == "PresentationAgent"
         )
         self.assertEqual(
-            task["input_bindings"][0]["source"], data_request["output_refs"]["data"]
+            task["input_bindings"][0]["source"], data_request["results"]["data"]
         )
-        chart = self.engine.artifacts.inspect(
-            chart_request["output_refs"]["chart"]["id"]
-        )
-        self.assertEqual(chart["source_refs"], [data_request["output_refs"]["data"]])
+        chart = self.engine.artifacts.inspect(chart_request["results"]["chart"]["id"])
+        self.assertEqual(chart["source_refs"], [data_request["results"]["data"]])
 
     def test_cross_request_update_invalidates_dependent_result(self):
         first = self.completed("先给统计结果画图，再列出前五个产品")
@@ -168,7 +166,7 @@ class Smoke(unittest.TestCase):
         second = self.completed("只统计前两个产品", first["session_id"])
         dependent = self.engine.stores.get("requests", chart["request_id"])
         self.assertEqual(dependent["status"], "pending")
-        self.assertEqual(dependent["output_refs"], {})
+        self.assertEqual(dependent["results"], {})
         self.assertTrue(
             any(
                 node["status"] == "superseded"
@@ -192,7 +190,7 @@ class Smoke(unittest.TestCase):
         )
         self.assertEqual(
             [
-                len(self.engine.artifacts.content(item["output_refs"]["data"]["id"]))
+                len(self.engine.artifacts.content(item["results"]["data"]["id"]))
                 for item in result["requests"]
             ],
             [2, 3],
@@ -210,7 +208,7 @@ class Smoke(unittest.TestCase):
                                 "update_task",
                                 "result_interaction",
                                 context["query"],
-                                [request["output_refs"]["data"]],
+                                [request["results"]["data"]],
                             )
                         ],
                         "clarifications": [],
@@ -296,7 +294,7 @@ class Smoke(unittest.TestCase):
         first = self.completed()
         second = self.completed("保留刚才前两个产品", first["session_id"])
         output = self.engine.artifacts.inspect(
-            second["requests"][0]["output_refs"]["data"]["id"]
+            second["requests"][0]["results"]["data"]["id"]
         )
         self.assertEqual(self.model.calls.count("QueryAgent"), 1)
         self.assertEqual(output["payload"]["provenance"]["method"], "artifact_compute")
@@ -442,7 +440,7 @@ class Smoke(unittest.TestCase):
         other = self.engine.ask(2, "什么是平均值？")
         with self.assertRaises(PermissionError):
             self.engine.requests.validate_ref(
-                other["session_id"], first["requests"][0]["output_refs"]["data"]
+                other["session_id"], first["requests"][0]["results"]["data"]
             )
         with self.assertRaises(ValidationError):
             ResourceRef(kind="artifact", id="result_001", output="dataset")
@@ -487,6 +485,51 @@ class Smoke(unittest.TestCase):
             self.engine.stores.list("requests", "session_id", session["session_id"]), []
         )
 
+    def test_renamed_request_results_preserve_existing_ledger(self):
+        result = self.completed()
+        request = result["requests"][0]
+        artifact_id = request["results"]["data"]["id"]
+        original_content = self.engine.artifacts.content(artifact_id)
+        original_events = self.engine.stores.list(
+            "session_events", "session_id", result["session_id"]
+        )
+        previous = deepcopy(request)
+        previous["output_refs"] = previous.pop("results")
+        with self.engine.stores.db() as db:
+            db.execute(
+                "UPDATE requests SET body=? WHERE id=?",
+                (json.dumps(previous), request["request_id"]),
+            )
+
+        stores = Stores(Path(self.directory.name))
+        self.assertEqual(stores.get("requests", request["request_id"]), request)
+        self.assertEqual(
+            stores.list("requests", "session_id", result["session_id"]), [request]
+        )
+        with stores.db() as db:
+            persisted = json.loads(
+                db.execute(
+                    "SELECT body FROM requests WHERE id=?", (request["request_id"],)
+                ).fetchone()[0]
+            )
+        self.assertNotIn("output_refs", persisted)
+        self.assertEqual(persisted["results"], request["results"])
+        self.assertEqual(
+            stores.list("session_events", "session_id", result["session_id"]),
+            original_events,
+        )
+        engine = Application(stores, self.model)
+        self.assertEqual(engine.artifacts.content(artifact_id), original_content)
+        self.assertEqual(
+            engine.tasks.resolve(
+                result["session_id"],
+                {"kind": "request", "id": request["request_id"], "output": "data"},
+            ),
+            {"artifact_id": artifact_id},
+        )
+        reopened = Stores(Path(self.directory.name))
+        self.assertEqual(reopened.get("requests", request["request_id"]), request)
+
     def test_atomic_revision_compare_and_swap(self):
         result = self.completed()
         request = result["requests"][0]
@@ -512,7 +555,7 @@ class Smoke(unittest.TestCase):
         task = next(
             node for node in result["tasks"] if node["assigned_agent"] == "QueryAgent"
         )
-        artifact_id = request["output_refs"]["data"]["id"]
+        artifact_id = request["results"]["data"]["id"]
         before = self.engine.artifacts.content(artifact_id)
         request["status"], task["status"] = "running", "running"
         self.engine.stores.save_many([("requests", request), ("tasks", task)])
@@ -642,7 +685,7 @@ class Smoke(unittest.TestCase):
                     ).status_code,
                     200,
                 )
-                artifact = request["output_refs"]["data"]["id"]
+                artifact = request["results"]["data"]["id"]
                 self.assertEqual(
                     client.get(f"/artifacts/{artifact}/sql", headers=headers).json()[
                         "provenance"

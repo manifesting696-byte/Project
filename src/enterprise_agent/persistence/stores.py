@@ -17,7 +17,7 @@ from ..core.models import (
     SessionSummary,
     Task,
 )
-from .migration import migrate_legacy
+from .migration import migrate_legacy, migrate_request_results
 
 
 def now():
@@ -69,6 +69,7 @@ class Stores:
                 "CREATE INDEX IF NOT EXISTS result_request ON artifacts(request_id)",
             ):
                 db.execute(statement)
+            migrate_request_results(db)
             db.execute("PRAGMA user_version=3")
             if legacy:
                 for table, model in RECORD_MODELS.items():
