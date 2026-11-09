@@ -19,6 +19,7 @@ from ..core.models import (
     Task,
 )
 from .migration import migrate_legacy, migrate_request_specs
+from .unified_migration import migrate_unified_artifacts
 
 
 def now():
@@ -31,7 +32,7 @@ TABLES = {
     "requests": ("request_id", "session_id"),
     "request_revisions": ("revision_id", "request_id"),
     "tasks": ("task_id", "request_id"),
-    "artifacts": ("artifact_id", "request_id"),
+    "artifacts": ("artifact_id", "session_id"),
     "session_summaries": ("summary_id", "session_id"),
 }
 RECORD_MODELS = {
@@ -52,6 +53,19 @@ class Stores:
         self.directory.mkdir(parents=True, exist_ok=True)
         self.path = self.directory / "agent.sqlite"
         with self.db() as db:
+            if (
+                db.execute("PRAGMA user_version").fetchone()[0] < 4
+                and db.execute(
+                    "SELECT 1 FROM sqlite_master WHERE name='artifacts'"
+                ).fetchone()
+            ):
+                backup = self.directory / "agent.before-unified-artifacts.sqlite"
+                if not backup.exists():
+                    destination = sqlite3.connect(backup)
+                    try:
+                        db.backup(destination)
+                    finally:
+                        destination.close()
             legacy = "session_id" in {
                 row[1] for row in db.execute("PRAGMA table_info(tasks)")
             }
@@ -71,7 +85,7 @@ class Stores:
             ):
                 db.execute(statement)
             migrate_request_specs(db)
-            db.execute("PRAGMA user_version=3")
+            migrate_unified_artifacts(db, self.directory)
             if legacy:
                 for table, model in RECORD_MODELS.items():
                     for row in db.execute(f"SELECT body FROM {table}"):
@@ -168,6 +182,9 @@ class Stores:
         if table == "session_events":
             columns.insert(2, "seq")
             values.insert(2, item["seq"])
+        if table == "artifacts":
+            columns.insert(2, "request_id")
+            values.insert(2, item.get("request_id") or "")
         db.execute(
             f"INSERT INTO {table} ({','.join(columns)}) VALUES ({','.join('?' for _ in values)}) "
             "ON CONFLICT(id) DO UPDATE SET body=excluded.body",
@@ -210,7 +227,10 @@ class Stores:
         return self.save_many([(table, record)])[0]
 
     def list(self, table, parent, value):
-        if table not in TABLES or parent != TABLES[table][1]:
+        if table not in TABLES or (
+            parent != TABLES[table][1]
+            and (table, parent) != ("artifacts", "request_id")
+        ):
             raise ValueError("无效存储检索")
         with self.db() as db:
             rows = db.execute(

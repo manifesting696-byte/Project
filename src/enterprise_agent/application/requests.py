@@ -21,7 +21,7 @@ class Requests:
             "event": "session_events",
         }[kind]
         item = self.stores.get(table, key)
-        if kind in ("task", "artifact"):
+        if kind == "task":
             origin = self.stores.get("requests", item["request_id"])["session_id"]
         else:
             origin = item["session_id"]
@@ -80,10 +80,7 @@ class Requests:
                         if not previous:
                             raise ValueError("目标需求尚无可复用的该项结果")
                         ref.kind, ref.id = previous["kind"], previous["id"]
-                        ref.output, ref.block_id = (
-                            previous.get("output"),
-                            previous.get("block_id"),
-                        )
+                        ref.output = previous.get("output")
         for item in intent.clarifications:
             item.request_id = aliases.get(item.request_id, item.request_id)
             for ref in item.refs:
@@ -149,6 +146,8 @@ class Requests:
             spec = specs[key]
             for binding in spec.inputs:
                 source = binding.source
+                if source.kind not in ("request", "artifact"):
+                    raise ValueError("需求输入使用 Request 命名交付或具体 Artifact")
                 if source.kind == "request":
                     if source.id == key:
                         raise ValueError(
@@ -282,8 +281,23 @@ class Requests:
             raise ValueError("该回答交付需要依据当前输入重新生成")
         if value.get("artifact_id"):
             artifact = self.stores.get("artifacts", value["artifact_id"])
-            if self.stores.exists("tasks", artifact["task_id"]):
-                producer = self.stores.get("tasks", artifact["task_id"])
+            provenance = artifact["payload"].get("provenance", {})
+            if (
+                not artifact.get("task_id")
+                and artifact.get("request_id") == request["request_id"]
+                and "input_artifact_ids" in provenance
+            ):
+                current_inputs = []
+                for binding in request["spec"]["inputs"]:
+                    source = self.resolve(
+                        request["session_id"], binding["source"], visiting
+                    )
+                    if source.get("artifact_id"):
+                        current_inputs.append(source["artifact_id"])
+                if sorted(set(current_inputs)) != provenance["input_artifact_ids"]:
+                    raise ValueError("该文字交付需要依据当前输入重新生成")
+            if self.stores.exists("tasks", artifact.get("task_id")):
+                producer = self.stores.get("tasks", artifact.get("task_id"))
                 if producer["status"] != "completed":
                     explicit = self.artifact_scope(
                         [
@@ -299,16 +313,19 @@ class Requests:
 
     def outputs(self, request):
         resolved = {}
+        specs = {item["name"]: item for item in request["spec"]["outputs"]}
         for name, ref in self.plan_bindings(request).items():
             try:
                 item = self.resolve_delivery(request, ref)
             except ValueError:
                 continue
-            resolved[name] = (
-                {"kind": "artifact", "id": item["artifact_id"]}
-                if item.get("artifact_id")
-                else ref
-            )
+            key = item.get("artifact_id")
+            if (
+                key
+                and self.stores.get("artifacts", key)["content_type"]
+                == specs[name]["content_type"]
+            ):
+                resolved[name] = {"kind": "artifact", "id": key}
         return resolved
 
     def artifact_scope(self, refs, follow_requests=True):
@@ -335,10 +352,17 @@ class Requests:
                 event = self.stores.get("session_events", ref["id"])
                 for block in event["payload"].get("blocks", []):
                     if not ref.get("block_id") or block["block_id"] == ref["block_id"]:
-                        pending.extend(block.get("refs", []))
+                        pending.extend(
+                            [{"kind": "artifact", "id": block["artifact_id"]}]
+                        )
             elif ref["kind"] == "artifact" and ref["id"] not in allowed:
                 allowed.add(ref["id"])
-                pending.extend(self.stores.get("artifacts", ref["id"])["source_refs"])
+                pending.extend(
+                    {"kind": "artifact", "id": key}
+                    for key in self.stores.get("artifacts", ref["id"])[
+                        "source_artifact_ids"
+                    ]
+                )
         return allowed
 
     def revise(self, session_id, turn_id, operation, spec, event_id):
@@ -541,7 +565,7 @@ class Requests:
         new = {item["slot"]: item for item in current["inputs"]}
         outputs = {item["name"]: item for item in current["outputs"]}
         if not changed_outputs or any(
-            outputs.get(name, {}).get("kind") not in ("chart", "report")
+            outputs.get(name, {}).get("content_type") not in ("chart", "report")
             for name in changed_outputs
         ):
             return False
@@ -553,7 +577,7 @@ class Requests:
                 return False
             artifact = self.stores.get("artifacts", ref["id"])
             if artifact["request_id"] != request["request_id"] or artifact[
-                "type"
+                "content_type"
             ] not in ("chart", "report"):
                 return False
         return True

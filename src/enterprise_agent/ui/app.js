@@ -81,26 +81,37 @@ async function loadSessions(){
 function newConversation(){state.sessionId=null;state.result=null;rememberSession();closeArtifact();clear($('conversationLog'));$('resultEmpty').classList.remove('hidden');$('chatTitle').textContent='新会话';$('question').value='';$('startDate').value='';$('endDate').value='';document.querySelectorAll('.session-item').forEach(b=>b.classList.remove('active'));currentView('ask');$('question').focus()}
 function messageShell(type){const article=node('article',`conversation-message ${type==='user'?'user-message':'assistant-message'}`);if(type==='assistant'){const meta=node('div','message-meta');meta.append(node('span','message-avatar','∴'),node('span','','问析助手'));article.append(meta)}const body=node('div','message-body');article.append(body);return {article,body}}
 function addMessageText(body,content){if(!content)return;const text=node('div','message-text',content);body.append(text)}
-function artifactLabel(type){return {query_result:'数据表',chart:'图表',analysis_result:'分析',report:'报告'}[type]||'产物'}
-function artifactHeader(item){const head=node('div','artifact-heading'),left=node('div');left.append(node('span','artifact-kicker',artifactLabel(item.type)),node('h3','',item.title));head.append(left,node('span','artifact-id',item.artifact_id));return head}
+function artifactLabel(type){return {table:'数据表',chart:'图表',text:'文字',report:'报告'}[type]||'产物'}
+function artifactHeader(item){const head=node('div','artifact-heading'),left=node('div');left.append(node('span','artifact-kicker',artifactLabel(item.content_type)),node('h3','',item.title));head.append(left,node('span','artifact-id',item.artifact_id));return head}
 async function renderInlineArtifact(id,host){
   const card=node('section','inline-artifact');card.append(node('p','muted','正在读取产物…'));host.append(card);
   try{
-    const item=await api(`/artifacts/${encodeURIComponent(id)}`);clear(card);card.append(artifactHeader(item));
-    if(item.type==='query_result'){
+    const item=await api(`/artifacts/${encodeURIComponent(id)}`);clear(card);
+    if(item.content_type==='text'){
+      const data=await api(`/artifacts/${id}/content`);
+      card.className='message-text';
+      card.append(renderMarkdown(String(data.content||'')));
+      const detail=node('button','artifact-open','查看依据');
+      detail.type='button';
+      detail.onclick=()=>showArtifact(id);
+      card.append(detail);
+      return;
+    }
+    card.append(artifactHeader(item));
+    if(item.content_type==='table'){
       const data=await api(`/artifacts/${id}/content?offset=0&limit=6`);
       card.append(node('p','artifact-summary',`${item.summary||'查询结果'} · ${fmt(data.total_rows)} 行`));
       card.append(data.rows.length?makeTable(data.rows):node('p','muted','结果为空'));
       if(data.has_more)card.append(node('p','preview-note',`预览前 ${data.rows.length} 行，完整数据可分页查看`));
-    }else if(item.type==='chart'){
+    }else if(item.content_type==='chart'){
       const data=await api(`/artifacts/${id}/content`);card.append(renderChart(data.content));
     }else{
       const data=await api(`/artifacts/${id}/content`),content=String(data.content||'');
-      card.append(node('p','artifact-summary',item.summary||artifactLabel(item.type)));
+      card.append(node('p','artifact-summary',item.summary||artifactLabel(item.content_type)));
       card.append(node('p','document-preview',content.slice(0,260)+(content.length>260?'…':'')));
     }
     const actions=node('div','artifact-actions'),open=node('button','artifact-open','查看详情与依据 ↗');open.type='button';open.onclick=()=>showArtifact(id);actions.append(open);
-    if(item.type==='chart'){const source=item.source_refs?.find(ref=>ref.kind==='artifact');if(source){const dataButton=node('button','artifact-open','查看图表数据');dataButton.type='button';dataButton.onclick=()=>showArtifact(source.id);actions.append(dataButton)}}
+    if(item.content_type==='chart'){const source=item.source_artifact_ids?.[0];if(source){const dataButton=node('button','artifact-open','查看图表数据');dataButton.type='button';dataButton.onclick=()=>showArtifact(source);actions.append(dataButton)}}
     card.append(actions);
   }catch(error){clear(card);card.append(node('p','form-error',`产物读取失败：${error.message}`))}
 }
@@ -117,8 +128,7 @@ async function loadConversation(){
       else{
         const seen=new Set();
         for(const block of event.payload.blocks||[]){
-          addMessageText(view.body,block.content);
-          for(const ref of block.refs||[]){if(ref.kind==='artifact'&&!seen.has(ref.id)){seen.add(ref.id);pendingCards.push(renderInlineArtifact(ref.id,view.body))}}
+          if(block.artifact_id&&!seen.has(block.artifact_id)){seen.add(block.artifact_id);pendingCards.push(renderInlineArtifact(block.artifact_id,view.body))}
         }
       }
       box.append(view.article);
@@ -156,23 +166,31 @@ function closeArtifact(){$('artifactDrawer').classList.add('hidden');$('drawerBa
 async function showArtifact(id){
   currentView('ask');$('artifactDrawer').classList.remove('hidden');$('drawerBackdrop').classList.remove('hidden');document.body.classList.add('drawer-open');
   const box=$('drawerContent');clear(box);box.append(node('p','muted','正在读取完整产物…'));$('drawerTitle').textContent='查看结果';$('drawerMeta').textContent='';
-  try{const item=await api(`/artifacts/${encodeURIComponent(id)}`);$('drawerType').textContent=artifactLabel(item.type);$('drawerTitle').textContent=item.title;$('drawerMeta').textContent=`${item.artifact_id} · ${item.summary}`;clear(box);await renderArtifactDetail(item,box)}
+  try{const item=await api(`/artifacts/${encodeURIComponent(id)}`);$('drawerType').textContent=artifactLabel(item.content_type);$('drawerTitle').textContent=item.title;$('drawerMeta').textContent=`${item.artifact_id} · ${item.summary}`;clear(box);await renderArtifactDetail(item,box)}
   catch(error){box.replaceChildren(node('p','form-error',error.message))}
   $('closeDrawer').focus();
 }
 async function renderArtifactDetail(item,box){
   const id=item.artifact_id;
-  if(item.type==='query_result'){
+  if(item.content_type==='table'){
     const origin=item.payload?.provenance?.method;
-    if(origin)box.append(node('p','artifact-summary',origin==='business_sql'?'来源：业务数据库只读查询':'来源：已有数据结果的精确计算'));
+    if(origin)box.append(node('p','artifact-summary',({business_sql:'来源：业务数据库只读查询',artifact_compute:'来源：已有数据结果的精确计算',table_compose:'来源：根据需求制作的表格'})[origin]||`来源：${origin}`));
     let offset=0;const dataBox=node('div'),controls=node('div','artifact-controls');box.append(dataBox,controls);
     async function page(){const data=await api(`/artifacts/${id}/content?offset=${offset}&limit=20`);clear(dataBox);clear(controls);dataBox.append(data.rows.length?makeTable(data.rows):node('p','muted','没有匹配记录'));controls.append(node('span','muted',`${fmt(data.total_rows)} 行 · 当前 ${data.rows.length?offset+1:0}–${offset+data.rows.length}`));
       if(offset>0){const previous=node('button','text-button','上一页');previous.onclick=()=>{offset=Math.max(0,offset-20);page()};controls.append(previous)}
       if(data.has_more){const next=node('button','text-button','下一页');next.onclick=()=>{offset+=20;page()};controls.append(next)}}
     await page();
-    const details=node('details','evidence-details'),summary=node('summary','','查看 SQL 与语义口径');details.append(summary);details.ontoggle=async()=>{if(!details.open||details.dataset.loaded)return;try{const data=await api(`/artifacts/${id}/sql`);details.append(node('pre','sql-block',data.sql||'来自已有产物的精确计算'),node('pre','sql-block',JSON.stringify(data.semantic_binding||item.payload,null,2)));details.dataset.loaded='1'}catch(error){details.append(node('p','form-error',error.message))}};box.append(details);
-  }else{const data=await api(`/artifacts/${id}/content`);if(item.type==='chart')box.append(renderChart(data.content));else{box.append(renderMarkdown(String(data.content||'')));const download=node('button','artifact-open','下载 Markdown');download.onclick=()=>downloadArtifact(id);box.append(download)}}
-  const refs=item.source_refs||[];box.append(node('p','evidence-list',`来源：${refs.map(ref=>ref.id).join('、')||'业务数据源'}`));
+    const details=node('details','evidence-details'),summary=node('summary','','查看 SQL 与语义口径');details.append(summary);details.ontoggle=async()=>{if(!details.open||details.dataset.loaded)return;try{const data=await api(`/artifacts/${id}/sql`);details.append(node('pre','sql-block',data.sql||'相关依据见来源产物'),node('pre','sql-block',JSON.stringify(data.semantic_binding||item.payload,null,2)));details.dataset.loaded='1'}catch(error){details.append(node('p','form-error',error.message))}};box.append(details);
+  }else{const data=await api(`/artifacts/${id}/content`);if(item.content_type==='chart')box.append(renderChart(data.content));else{box.append(renderMarkdown(String(data.content||'')));const download=node('button','artifact-open','下载 Markdown');download.onclick=()=>downloadArtifact(id);box.append(download)}}
+  const refs=item.source_artifact_ids||[],sources=node('div','evidence-list');
+  sources.append(node('span','',refs.length?'来源：':'来源：'+(item.producer||'系统')));
+  for(const id of refs){
+    const button=node('button','artifact-open',id);
+    button.type='button';
+    button.onclick=()=>showArtifact(id);
+    sources.append(button);
+  }
+  box.append(sources);
 }
 function renderMarkdown(content){const wrap=node('div','document-body');for(const line of content.split('\n')){const heading=line.match(/^(#{1,3})\s+(.+)$/);if(heading)wrap.append(node(`h${Math.min(heading[1].length+1,4)}`,'',heading[2]));else if(/^[-*]\s+/.test(line))wrap.append(node('p','document-list',line.replace(/^[-*]\s+/,'')));else if(line.trim())wrap.append(node('p','',line));}return wrap}
 async function downloadArtifact(id){const response=await fetch(`/artifacts/${id}/download`,{headers:{Authorization:`Bearer ${state.token}`}});if(!response.ok)throw Error('下载失败');const url=URL.createObjectURL(await response.blob()),link=node('a');link.href=url;link.download=`${id}.md`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}

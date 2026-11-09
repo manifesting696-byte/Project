@@ -109,14 +109,15 @@ class SpecialistToolbox:
     def save(self, kind, title, summary, content, source_ids, payload=None, sql=None):
         for key in source_ids:
             self.authorize(key)
-        refs = [{"kind": "artifact", "id": key} for key in dict.fromkeys(source_ids)]
-        refs.extend(
-            binding["source"]
-            for binding in self.node["input_bindings"]
-            if binding["source"]["kind"] == "event" and binding["source"] not in refs
-        )
         result = self.artifacts.save(
-            self.node, kind, title, summary, content, refs, payload, sql
+            self.node,
+            kind,
+            title,
+            summary,
+            content,
+            list(dict.fromkeys(source_ids)),
+            payload,
+            sql,
         )
         self.created.add(result["artifact_id"])
         return {**result, "overview": self.artifacts.inspect(result["artifact_id"])}
@@ -191,7 +192,7 @@ class SpecialistToolbox:
                     raise ValueError("实体 ID 列不存在")
                 payload["entity_id_column"] = entity_id_column
             result = self.save(
-                "query_result",
+                "table",
                 title,
                 summary,
                 rows,
@@ -210,7 +211,7 @@ class SpecialistToolbox:
                 "按字段、授权表、只读和登记关系校验 SQL", validate, sql=STRING
             ),
             "execute_readonly_sql": tool(
-                "执行已绑定语义下的只读 SQL 并持久化 query_result；大结果只返回概览与切片",
+                "执行已绑定语义下的只读 SQL 并持久化 table Artifact；大结果只返回概览与切片",
                 execute,
                 sql=STRING,
                 title=STRING,
@@ -223,14 +224,18 @@ class SpecialistToolbox:
         def compute(artifact_ids, sql, title, summary):
             for key in artifact_ids:
                 self.authorize(key)
-            rows = self.artifacts.compute(artifact_ids, sql)
+            rows, columns = self.artifacts.compute(artifact_ids, sql, with_columns=True)
             result = self.save(
-                "query_result",
+                "table",
                 title,
                 summary,
                 rows,
                 artifact_ids,
-                {"computation_sql": sql, "provenance": {"method": "artifact_compute"}},
+                {
+                    "columns": columns,
+                    "computation_sql": sql,
+                    "provenance": {"method": "artifact_compute"},
+                },
                 sql,
             )
             result["data"] = self.artifacts.read(result["artifact_id"], {"limit": 30})
@@ -255,9 +260,7 @@ class SpecialistToolbox:
                 payload["conclusion"] = conclusion
             if next_steps:
                 payload["next_steps"] = next_steps
-            return self.save(
-                "analysis_result", title, summary, body, source_ids, payload
-            )
+            return self.save("text", title, summary, body, source_ids, payload)
 
         return {
             "compute_artifact": tool(
@@ -269,7 +272,7 @@ class SpecialistToolbox:
                 summary=STRING,
             ),
             "save_artifact": tool(
-                "保存完整分析正文、轻量发现和实际来源，返回 analysis_result 引用",
+                "保存完整分析正文、轻量发现和实际来源，返回 text Artifact 引用",
                 save_analysis,
                 title=STRING,
                 summary=STRING,
@@ -289,7 +292,7 @@ class SpecialistToolbox:
             if chart_type not in ("bar", "line", "scatter"):
                 raise ValueError("支持 bar/line/scatter 图表")
             source = self.inspect(source_id)
-            if source["type"] != "query_result":
+            if source["content_type"] != "table":
                 raise ValueError("图表数据必须来自查询产物")
             columns = {col["name"] for col in source["payload"]["columns"]}
             if (
@@ -359,7 +362,26 @@ class SpecialistToolbox:
                 {"title": title, "format": "markdown"},
             )
 
+        def compose_table(title, summary, rows, source_ids, columns=None):
+            return self.save(
+                "table",
+                title,
+                summary,
+                rows,
+                source_ids,
+                {"columns": columns or [], "provenance": {"method": "table_compose"}},
+            )
+
         return {
+            "compose_table": tool(
+                "制作用户要求的展示表，保留真实来源。数值运算交给 compute_artifact，不能编造数据",
+                compose_table,
+                title=STRING,
+                summary=STRING,
+                rows={"type": "array", "items": OBJECT},
+                source_ids=ARRAY,
+                columns=ARRAY,
+            ),
             "render_chart": tool(
                 "按真实查询列生成 ECharts 配置；保存数据、轴映射、系列名、颜色；支持横向图与多系列",
                 render_chart,

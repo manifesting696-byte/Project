@@ -7,7 +7,7 @@ from ..agents.supervisor import Supervisor
 from ..context.manager import ContextManager
 from ..core.config import MAX_REPLANS
 from ..core.model import ModelClient
-from ..core.models import Answer, AnswerBlock, Plan, RequestSpec
+from ..core.models import AnswerDraft, AnswerDraftBlock, RequestSpec, Response
 from ..persistence.artifacts import Artifacts
 from ..persistence.stores import Stores, now
 from ..persistence.summaries import compress
@@ -15,6 +15,7 @@ from ..pipeline.scheduler import Scheduler
 from ..query.gateway import QueryGateway
 from ..semantic.registry import Registry
 from .requests import Requests
+from .responses import Responses
 from .tasks import Tasks
 
 
@@ -50,6 +51,9 @@ class Application:
             overrides=specialist_overrides,
         )
         self.scheduler = Scheduler(self.stores, self.context, self.specialists)
+        self.responses = Responses(
+            self.stores, self.artifacts, self.requests, self.tasks
+        )
         self._locks, self._guard = {}, Lock()
 
     def _lock(self, session_id):
@@ -78,19 +82,27 @@ class Application:
                 session_id, turn_id, "user_message", "User", {"content": query}
             )
             emit = self.emitter(session_id, turn_id)
-            feedback = None
-            for attempt in range(2):
-                intent = self.supervisor.intent(session_id, query, emit, feedback)
-                try:
-                    ordered = self.requests.normalize(session_id, intent)
-                    break
-                except ValueError as exc:
-                    if attempt:
-                        raise
-                    feedback = {
-                        "error": str(exc),
-                        "rejected_intent": intent.model_dump(exclude_none=True),
-                    }
+            try:
+                feedback = None
+                for attempt in range(2):
+                    intent = self.supervisor.intent(session_id, query, emit, feedback)
+                    try:
+                        ordered = self.requests.normalize(session_id, intent)
+                        break
+                    except ValueError as exc:
+                        if attempt:
+                            raise
+                        feedback = {
+                            "error": str(exc),
+                            "rejected_intent": intent.model_dump(exclude_none=True),
+                        }
+            except Exception as exc:
+                block = self.responses.message(
+                    session_id, turn_id, "本轮未完成：" + str(exc)[:600]
+                )
+                return self.respond(
+                    session_id, turn_id, Response(blocks=[block]), [], "failed"
+                )
             event = self.stores.event(
                 session_id,
                 turn_id,
@@ -190,13 +202,14 @@ class Application:
                         {"summary": str(exc)[:600], "status": "failed"},
                         request_id=operation.request_id,
                     )
+                    owner = (
+                        self.stores.get("requests", operation.request_id)
+                        if operation.request_id in touched
+                        else None
+                    )
                     answers[operation.request_id] = [
-                        AnswerBlock(
-                            request_id=operation.request_id
-                            if operation.request_id in touched
-                            else None,
-                            kind="text",
-                            content="本项未完成：" + str(exc)[:600],
+                        self.responses.message(
+                            session_id, turn_id, "本项未完成：" + str(exc)[:600], owner
                         )
                     ]
                     states[operation.request_id] = "failed"
@@ -206,19 +219,27 @@ class Application:
                 for block in answers.get(operation.request_id, [])
             ]
             for item in intent.clarifications:
+                owner = (
+                    self.stores.get("requests", item.request_id)
+                    if item.request_id
+                    and self.stores.exists("requests", item.request_id)
+                    else None
+                )
+                sources = sorted(
+                    self.requests.artifact_scope(
+                        [ref.model_dump(exclude_none=True) for ref in item.refs]
+                    )
+                )
                 blocks.append(
-                    AnswerBlock(
-                        request_id=item.request_id,
-                        kind="text",
-                        content=item.question,
-                        refs=item.refs,
+                    self.responses.message(
+                        session_id, turn_id, item.question, owner, sources
                     )
                 )
             status = self.turn_status(
                 list(states.values()), bool(intent.clarifications)
             )
             return self.respond(
-                session_id, turn_id, Answer(blocks=blocks), touched, status
+                session_id, turn_id, Response(blocks=blocks), touched, status
             )
 
     @staticmethod
@@ -259,7 +280,7 @@ class Application:
                     "outputs": [
                         {
                             "name": "answer",
-                            "kind": "text",
+                            "content_type": "text",
                             "description": operation.instruction,
                         }
                     ],
@@ -285,7 +306,6 @@ class Application:
     def process_operation(
         self, session_id, turn_id, operation, request, previous, pause, preview
     ):
-        spec = RequestSpec.model_validate(request["spec"])
         emit = self.emitter(session_id, turn_id, operation.request_id)
         visible_names = None
         if previous:
@@ -300,12 +320,6 @@ class Application:
             }
             if changed or old_outputs.keys() != current_outputs.keys():
                 visible_names = sorted(changed)
-        direct_update = (
-            operation.action == "update_task"
-            and operation.category in ("general_qa", "business_knowledge")
-            and not self.stores.list("tasks", "request_id", request["request_id"])
-            and all(output.kind == "text" for output in spec.outputs)
-        )
         # Resolve named cross-request inputs before allowing a consumer to query or calculate.
         for binding in request["spec"]["inputs"]:
             ref = binding["source"]
@@ -314,17 +328,19 @@ class Application:
                     self.requests.resolve(session_id, ref)
                 except ValueError:
                     request["status"] = "needs_clarification"
-                    answer = Answer(
+                    answer = AnswerDraft(
                         blocks=[
-                            AnswerBlock(
-                                kind="text",
+                            AnswerDraftBlock(
+                                content_type="text",
                                 content="本项依赖的上游结果尚未交付，请先补全上游需求。",
                             )
                         ]
                     )
-                    self.finish_operation(request, turn_id, answer, operation.refs)
+                    answer = self.finish_operation(
+                        request, turn_id, answer, operation.refs
+                    )
                     return request, answer, "needs_clarification"
-        if operation.action == "none" or direct_update:
+        if operation.action == "none":
             context = {
                 **self.context.initial(session_id, operation.instruction),
                 "operation": operation.model_dump(exclude_none=True),
@@ -337,24 +353,27 @@ class Application:
             }
             answer = self.supervisor.answer(session_id, context, emit)
             request["status"] = "completed"
-            self.finish_operation(request, turn_id, answer, operation.refs, direct=True)
+            answer = self.finish_operation(
+                request, turn_id, answer, operation.refs, direct=True
+            )
             return request, answer, "completed"
         plan = self.supervisor.plan(request, emit)
         self.apply_plan(request, turn_id, plan)
         if preview:
-            answer = Answer(
+            answer = AnswerDraft(
                 blocks=[
-                    AnswerBlock(
-                        kind="text", content="已保存完整需求和执行计划，等待继续执行。"
+                    AnswerDraftBlock(
+                        content_type="text",
+                        content="已保存完整需求和执行计划，等待继续执行。",
                     )
                 ]
             )
-            self.finish_operation(request, turn_id, answer, operation.refs)
+            answer = self.finish_operation(request, turn_id, answer, operation.refs)
             return request, answer, "waiting_input"
         answer, state = self.run(
             request, turn_id, operation.instruction, pause, visible_names
         )
-        self.finish_operation(
+        answer = self.finish_operation(
             request, turn_id, answer, operation.refs, output_names=visible_names
         )
         return request, answer, state
@@ -394,15 +413,17 @@ class Application:
         self.stores.put("requests", request)
         emit = self.emitter(request["session_id"], turn_id, request["request_id"])
         completion = None
+        answer = None
         for _ in range(MAX_REPLANS + 1):
             execution = self.scheduler.run(request, turn_id, pause)
             pause = False
             if execution.get("paused"):
                 request["status"] = "pending"
-                answer = Answer(
+                answer = AnswerDraft(
                     blocks=[
-                        AnswerBlock(
-                            kind="text", content="本批执行已保存，可以继续执行。"
+                        AnswerDraftBlock(
+                            content_type="text",
+                            content="本批执行已保存，可以继续执行。",
                         )
                     ]
                 )
@@ -414,10 +435,32 @@ class Application:
                     self.supervisor.plan(request, emit, execution["new_results"]),
                 )
                 continue
+            missing_text = any(
+                item["content_type"] == "text"
+                and item["name"] not in self.requests.outputs(request)
+                for item in request["spec"]["outputs"]
+            )
+            if missing_text and not any(
+                node["status"]
+                in ("pending", "running", "needs_clarification", "failed")
+                for node in self.stores.list(
+                    "tasks", "request_id", request["request_id"]
+                )
+                if node["status"] not in ("superseded", "cancelled")
+            ):
+                draft = self.supervisor.answer(
+                    request["session_id"],
+                    self.context.answer(request, query, output_names=output_names),
+                    emit,
+                )
+                answer = self.responses.materialize(
+                    request, turn_id, draft, output_names=output_names, bind=True
+                )
             completion = self.supervisor.check(request, query, emit)
             self.validate_completion(request, completion)
             if completion.next_action != "replan":
                 break
+            answer = None
             self.apply_plan(
                 request,
                 turn_id,
@@ -442,6 +485,8 @@ class Application:
             and all(item.status == "completed" for item in completion.outputs)
             and not pending
         )
+        if not complete:
+            answer = None
         if complete:
             request["status"], state = "completed", "completed"
         elif completion and (
@@ -464,11 +509,12 @@ class Application:
             {"summary": completion_data["reason"], "completion": completion_data},
             request_id=request["request_id"],
         )
-        answer = self.supervisor.answer(
-            request["session_id"],
-            self.context.answer(request, query, completion_data, output_names),
-            emit,
-        )
+        if answer is None:
+            answer = self.supervisor.answer(
+                request["session_id"],
+                self.context.answer(request, query, completion_data, output_names),
+                emit,
+            )
         return answer, state
 
     def validate_completion(self, request, completion):
@@ -490,63 +536,28 @@ class Application:
             actual_id = resolved.get("artifact_id", actual["id"])
             if actual_id not in {ref.id for ref in check.refs}:
                 raise ValueError("验收证据没有指向该项实际交付")
-            kind = outputs[check.name]["kind"]
-            if kind != "text":
-                if not resolved.get("artifact_id"):
-                    raise ValueError("展示交付需要实际 Artifact")
-                expected = {
-                    "table": "query_result",
-                    "chart": "chart",
-                    "report": "report",
-                }[kind]
-                if self.artifacts.inspect(resolved["artifact_id"])["type"] != expected:
-                    raise ValueError("实际产物类型与交付要求不一致")
-
-    def validate_answer(self, request, answer, extra_refs=(), output_names=None):
-        allowed = self.requests.artifact_scope(
-            [
-                ref
-                for name, ref in self.requests.outputs(request).items()
-                if output_names is None or name in output_names
-            ]
-            + [binding["source"] for binding in request["spec"]["inputs"]]
-            + [ref.model_dump(exclude_none=True) for ref in extra_refs]
-        )
-        names = {item["name"] for item in request["spec"]["outputs"]}
-        for index, block in enumerate(answer.blocks, 1):
-            if block.output_name is not None and block.output_name not in names:
-                raise ValueError("回答块的 output_name 不属于当前交付")
-            if block.request_id not in (None, request["request_id"]):
-                raise ValueError("本轮回答包含其他 Request 的交付")
-            block.request_id = request["request_id"]
-            block.block_id = f"block_{index:03d}"
-            for ref in block.refs:
-                self.requests.validate_ref(
-                    request["session_id"], ref.model_dump(exclude_none=True)
-                )
-                if ref.kind == "artifact" and ref.id not in allowed:
-                    raise ValueError("回答产物不属于本轮需求的输入或交付")
-            if block.kind != "text":
-                if not block.refs or any(ref.kind != "artifact" for ref in block.refs):
-                    raise ValueError("展示块必须引用真实 Artifact")
-                expected = {
-                    "table": "query_result",
-                    "chart": "chart",
-                    "report": "report",
-                }[block.kind]
-                if any(
-                    self.artifacts.inspect(ref.id)["type"] != expected
-                    for ref in block.refs
-                ):
-                    raise ValueError("展示块类型与实际产物不一致")
+            content_type = outputs[check.name]["content_type"]
+            if not resolved.get("artifact_id"):
+                raise ValueError("交付需要实际 Artifact")
+            if (
+                self.artifacts.inspect(resolved["artifact_id"])["content_type"]
+                != content_type
+            ):
+                raise ValueError("实际产物类型与交付要求不一致")
 
     def finish_operation(
         self, request, turn_id, answer, extra_refs=(), direct=False, output_names=None
     ):
-        self.validate_answer(request, answer, extra_refs, output_names)
-        if direct and not answer.blocks:
-            raise ValueError("直接回答需要实际内容")
-        event = self.stores.event(
+        response = self.responses.materialize(
+            request, turn_id, answer, extra_refs, output_names, bind=direct
+        )
+        if direct and (
+            not response.blocks
+            or set(self.requests.outputs(request))
+            != {item["name"] for item in request["spec"]["outputs"]}
+        ):
+            raise ValueError("直接回答需要完整的实际交付")
+        self.stores.event(
             request["session_id"],
             turn_id,
             "agent_output",
@@ -554,62 +565,49 @@ class Application:
             {
                 "summary": "本项回答已生成",
                 "revision_id": request["current_revision_id"],
+                "schema_version": 2,
                 "blocks": [
-                    block.model_dump(exclude_none=True) for block in answer.blocks
+                    block.model_dump(exclude_none=True) for block in response.blocks
                 ],
             },
             request_id=request["request_id"],
         )
-        if direct and answer.blocks:
-            names = [item["name"] for item in request["spec"]["outputs"]]
-            bindings = {}
-            for name in names:
-                ref = {"kind": "event", "id": event["event_id"]}
-                if len(names) > 1:
-                    blocks = [
-                        block for block in answer.blocks if block.output_name == name
-                    ]
-                    if len(blocks) != 1:
-                        raise ValueError(
-                            "多项直接交付需各自提供一个带 output_name 的回答块"
-                        )
-                    ref["block_id"] = blocks[0].block_id
-                bindings[name] = ref
-            self.tasks.apply_plan(
-                request,
-                turn_id,
-                Plan(
-                    output_bindings=bindings,
-                    reason="直接回答的交付绑定",
-                ),
-            )
         request["updated_at"] = now()
         self.stores.save_many(
             [("requests", request)],
             expected_revisions={request["request_id"]: request["current_revision_id"]},
         )
+        return response
 
     def respond(self, session_id, turn_id, answer, request_ids, status="completed"):
         for index, block in enumerate(answer.blocks, 1):
             block.block_id = f"block_{index:03d}"
-            for ref in block.refs:
-                self.requests.validate_ref(
-                    session_id, ref.model_dump(exclude_none=True)
-                )
+            self.requests.validate_ref(
+                session_id, {"kind": "artifact", "id": block.artifact_id}
+            )
         event = self.stores.event(
             session_id,
             turn_id,
             "assistant_response",
             "Supervisor",
             {
+                "schema_version": 2,
+                "status": status,
                 "blocks": [
                     block.model_dump(exclude_none=True) for block in answer.blocks
-                ]
+                ],
             },
         )
         result = self.snapshot(session_id, turn_id, request_ids, status)
+        visible = {block.artifact_id for block in answer.blocks}
+        known = {item["artifact_id"] for item in result["artifacts"]}
+        result["artifacts"].extend(
+            self.artifacts.inspect(key) for key in sorted(visible - known)
+        )
         result.update(
-            blocks=event["payload"]["blocks"], response_event_id=event["event_id"]
+            schema_version=2,
+            blocks=event["payload"]["blocks"],
+            response_event_id=event["event_id"],
         )
         try:
             compress(self.stores, self.model, session_id, self.requests.validate_ref)
@@ -631,6 +629,15 @@ class Application:
             ]
         )
         requests = [self.stores.get("requests", key) for key in dict.fromkeys(selected)]
+        artifact_ids = self.requests.artifact_scope(
+            [ref for item in requests for ref in self.requests.outputs(item).values()]
+            + [
+                binding["source"]
+                for item in requests
+                for binding in item["spec"]["inputs"]
+            ]
+        )
+        selected_ids = set(selected)
         return {
             "status": status
             or (
@@ -654,11 +661,10 @@ class Application:
                 for node in self.stores.list("tasks", "request_id", item["request_id"])
             ],
             "artifacts": [
-                artifact
-                for item in requests
-                for artifact in self.stores.list(
-                    "artifacts", "request_id", item["request_id"]
-                )
+                item
+                for item in self.stores.list("artifacts", "session_id", session_id)
+                if item.get("request_id") in selected_ids
+                or item["artifact_id"] in artifact_ids
             ],
             "blocks": [],
             "snapshot_id": self.registry.snapshot_id,
@@ -681,16 +687,31 @@ class Application:
                 {"content": "继续执行：" + query},
                 request_id=request_id,
             )
-            if continue_analysis:
-                answer, state = self.run(request, turn_id, query)
-            else:
-                answer = self.supervisor.answer(
-                    request["session_id"],
-                    self.context.answer(request, query),
-                    self.emitter(request["session_id"], turn_id, request_id),
+            try:
+                if continue_analysis:
+                    answer, state = self.run(request, turn_id, query)
+                else:
+                    answer = self.supervisor.answer(
+                        request["session_id"],
+                        self.context.answer(request, query),
+                        self.emitter(request["session_id"], turn_id, request_id),
+                    )
+                    state = "partial"
+                answer = self.finish_operation(request, turn_id, answer)
+            except Exception as exc:
+                request.update(status="failed", updated_at=now())
+                self.stores.put("requests", request)
+                answer = Response(
+                    blocks=[
+                        self.responses.message(
+                            request["session_id"],
+                            turn_id,
+                            "本项未完成：" + str(exc)[:600],
+                            request,
+                        )
+                    ]
                 )
-                state = "partial"
-            self.finish_operation(request, turn_id, answer)
+                state = "failed"
             return self.respond(
                 request["session_id"], turn_id, answer, [request_id], state
             )

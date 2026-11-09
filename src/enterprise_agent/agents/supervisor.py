@@ -1,6 +1,6 @@
 """One Supervisor owns intent, full specification, planning, checking and answers."""
 
-from ..core.models import Answer, Completion, Plan, RequestSpec
+from ..core.models import AnswerDraft, Completion, Plan, RequestSpec
 from ..intent.models import Intent
 from .base import ModelAgent
 from .prompt import (
@@ -87,7 +87,7 @@ class Supervisor(ModelAgent):
             "UnifiedSupervisor.Answer",
             SUPERVISOR_ANSWER,
             context,
-            Answer,
+            AnswerDraft,
             self.tools(session_id),
             emit,
         )

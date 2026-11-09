@@ -35,7 +35,7 @@ class SemanticAgent(SpecialistAgent):
 class QueryAgent(ArtifactAgent):
     role = "QueryAgent"
     instruction = QUERY
-    output_types = frozenset({"query_result"})
+    output_types = frozenset({"table"})
 
     def role_tools(self, toolbox, context):
         return toolbox.query_tools(context)
@@ -44,7 +44,7 @@ class QueryAgent(ArtifactAgent):
 class AnalysisAgent(ArtifactAgent):
     role = "AnalysisAgent"
     instruction = ANALYSIS
-    output_types = frozenset({"analysis_result", "query_result"})
+    output_types = frozenset({"text", "table"})
 
     def role_tools(self, toolbox, context):
         return toolbox.analysis_tools()
@@ -53,7 +53,7 @@ class AnalysisAgent(ArtifactAgent):
 class PresentationAgent(ArtifactAgent):
     role = "PresentationAgent"
     instruction = PRESENTATION
-    output_types = frozenset({"chart", "report"})
+    output_types = frozenset({"table", "chart", "report"})
 
     def role_tools(self, toolbox, context):
         return toolbox.presentation_tools()

@@ -3,6 +3,8 @@
 import json
 import re
 import sqlite3
+from copy import deepcopy
+
 from ..core.config import READ_ROWS
 from ..core.models import Artifact
 from .stores import now
@@ -29,36 +31,69 @@ class Artifacts:
     def save(
         self,
         task,
-        kind,
+        content_type,
         title,
         summary,
         content,
-        source_refs=None,
+        source_artifact_ids=None,
         payload=None,
         sql=None,
     ):
+        request = (
+            self.stores.get("requests", task["request_id"])
+            if task.get("request_id")
+            else {}
+        )
+        session_id = task.get("session_id") or request["session_id"]
+        self.stores.get("sessions", session_id)
+        if request and request["session_id"] != session_id:
+            raise PermissionError("生产需求不属于当前会话")
+        if task.get("revision_id"):
+            revision = self.stores.get("request_revisions", task["revision_id"])
+            if revision["request_id"] != task.get("request_id"):
+                raise ValueError("生产版本与需求不匹配")
+        if content_type in ("text", "report") and not isinstance(content, str):
+            raise ValueError("文字和报告必须使用正文字符串")
+        if content_type == "chart" and not isinstance(content, dict):
+            raise ValueError("图表必须使用配置对象")
+        sources = list(dict.fromkeys(source_artifact_ids or []))
+        for key in sources:
+            if self.inspect(key)["session_id"] != session_id:
+                raise PermissionError("来源产物不属于当前会话")
         artifact_id = self.stores.new_id("result")
+        while (self.root / artifact_id).exists() or self.stores.exists(
+            "artifacts", artifact_id
+        ):
+            artifact_id = self.stores.new_id("result")
         filename = {
-            "query_result": "data.json",
-            "analysis_result": "analysis.md",
+            "table": "data.json",
+            "text": "text.md",
             "chart": "chart.json",
             "report": "report.md",
-        }[kind]
+        }[content_type]
         directory = self.root / artifact_id
-        directory.mkdir()
         body = (
             content
             if isinstance(content, str)
             else json.dumps(content, ensure_ascii=False, default=str)
         )
-        (directory / filename).write_text(body, encoding="utf-8")
-        payload = dict(payload or {})
+        payload = deepcopy(payload or {})
         payload.setdefault(
             "provenance",
-            {"method": "analysis" if kind == "analysis_result" else "presentation"},
+            {"method": "analysis" if content_type == "text" else "presentation"},
         )
-        if kind == "query_result":
+        if content_type == "table":
+            if not isinstance(content, list) or any(
+                not isinstance(row, dict) for row in content
+            ):
+                raise ValueError("表格必须使用行对象列表")
             columns = list(content[0]) if content else payload.pop("columns", [])
+            if any(
+                not isinstance(column, str) or not column for column in columns
+            ) or len(columns) != len(set(columns)):
+                raise ValueError("表格列名必须为唯一的非空字符串")
+            if any(set(row) != set(columns) for row in content):
+                raise ValueError("表格各行字段必须一致")
             payload.update(
                 {
                     "columns": [
@@ -84,28 +119,36 @@ class Artifacts:
                 if payload["provenance"]["method"] == "artifact_compute"
                 else "query.sql"
             )
-            (directory / sql_file).write_text(sql, encoding="utf-8")
             payload["sql_ref"] = f"storage://artifacts/{artifact_id}/{sql_file}"
             payload["provenance"]["sql_ref"] = payload["sql_ref"]
-        refs = source_refs or []
-        for ref in refs:
-            if ref["kind"] == "artifact":
-                self.inspect(ref["id"])
         item = Artifact(
             artifact_id=artifact_id,
-            type=kind,
-            task_id=task["task_id"],
-            revision_id=task["revision_id"],
-            request_id=task["request_id"],
-            producer=task["assigned_agent"],
+            content_type=content_type,
+            session_id=session_id,
+            created_by_turn_id=task["created_by_turn_id"],
+            task_id=task.get("task_id"),
+            revision_id=task.get("revision_id"),
+            request_id=task.get("request_id"),
+            producer=task.get("assigned_agent", task.get("producer", "Supervisor")),
             title=title,
             summary=summary,
-            source_refs=refs,
+            source_artifact_ids=sources,
             content_ref=f"storage://artifacts/{artifact_id}/{filename}",
             payload=payload,
             created_at=now(),
         ).model_dump(exclude_none=True)
-        self.stores.put("artifacts", item)
+        directory.mkdir()
+        try:
+            (directory / filename).write_text(body, encoding="utf-8")
+            if sql:
+                (directory / sql_file).write_text(sql, encoding="utf-8")
+            self.stores.put("artifacts", item)
+        except Exception:
+            (directory / filename).unlink(missing_ok=True)
+            if sql:
+                (directory / sql_file).unlink(missing_ok=True)
+            directory.rmdir()
+            raise
         return {
             "artifact_id": artifact_id,
             "summary": summary,
@@ -121,7 +164,7 @@ class Artifacts:
                 "semantic_binding": item["payload"].get("semantic_binding"),
             }
         content = self.content(artifact_id)
-        if item["type"] != "query_result":
+        if item["content_type"] != "table":
             if isinstance(content, str):
                 offset = max(0, int(selector.get("offset", 0)))
                 size = min(12000, max(1, int(selector.get("limit", 8000))))
@@ -160,7 +203,7 @@ class Artifacts:
             "has_more": offset + len(selected) < len(rows),
         }
 
-    def compute(self, artifact_ids, sql):
+    def compute(self, artifact_ids, sql, with_columns=False):
         """SQL runs only over in-memory copies of authorized Artifacts, never the business DB."""
         from ..query.validation import validate_readonly
 
@@ -170,7 +213,7 @@ class Artifacts:
         try:
             for artifact_id in artifact_ids:
                 item = self.inspect(artifact_id)
-                if item["type"] != "query_result" or not re.fullmatch(
+                if item["content_type"] != "table" or not re.fullmatch(
                     r"result_[A-Za-z0-9_-]+", artifact_id
                 ):
                     raise ValueError("计算仅支持查询产物")
@@ -197,6 +240,8 @@ class Artifacts:
             rows = [dict(row) for row in cursor.fetchmany(100001)]
             if len(rows) > 100000:
                 raise ValueError("计算结果过大，请聚合")
+            if with_columns:
+                return rows, [column[0] for column in cursor.description]
             return rows
         finally:
             db.close()

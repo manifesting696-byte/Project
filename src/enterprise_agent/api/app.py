@@ -288,7 +288,7 @@ def resume(task_id: str, body: Resume, user=Depends(require("admin", "analyst"))
 def authorize_artifact(artifact_id, user):
     engine = application()
     item = engine.artifacts.inspect(artifact_id)
-    engine.stores.owned_request(user["id"], item["request_id"])
+    engine.stores.session(user["id"], item["session_id"])
     return engine, item
 
 
@@ -307,7 +307,7 @@ def content(
         raise ValueError("无效分页范围")
     return (
         engine.artifacts.read(artifact_id, {"offset": offset, "limit": limit})
-        if item["type"] == "query_result"
+        if item["content_type"] == "table"
         else {"content": engine.artifacts.content(artifact_id)}
     )
 
@@ -319,14 +319,14 @@ def sql(artifact_id: str, user=Depends(current_user)):
         "sql": engine.artifacts.sql(artifact_id),
         "semantic_binding": item["payload"].get("semantic_binding"),
         "provenance": item["payload"].get("provenance"),
-        "source_refs": item["source_refs"],
+        "source_artifact_ids": item["source_artifact_ids"],
     }
 
 
 @app.get("/artifacts/{artifact_id}/download")
 def download(artifact_id: str, user=Depends(current_user)):
     engine, item = authorize_artifact(artifact_id, user)
-    if item["type"] not in ("analysis_result", "report"):
+    if item["content_type"] not in ("text", "report"):
         raise ValueError("该产物不是 Markdown 文档")
     return Response(
         engine.artifacts.content(artifact_id),

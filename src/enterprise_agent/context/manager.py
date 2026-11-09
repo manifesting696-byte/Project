@@ -12,27 +12,26 @@ class ContextManager:
     @staticmethod
     def overview(item):
         return {
-            key: item[key]
+            key: item.get(key)
             for key in (
                 "artifact_id",
-                "type",
+                "content_type",
                 "request_id",
                 "title",
                 "summary",
-                "source_refs",
+                "source_artifact_ids",
+                "session_id",
+                "revision_id",
+                "task_id",
+                "producer",
+                "created_by_turn_id",
                 "content_ref",
                 "payload",
             )
         }
 
     def session_artifacts(self, session_id):
-        return [
-            item
-            for request in self.stores.list("requests", "session_id", session_id)
-            for item in self.stores.list(
-                "artifacts", "request_id", request["request_id"]
-            )
-        ]
+        return self.stores.list("artifacts", "session_id", session_id)
 
     def initial(self, session_id, query):
         session = self.stores.get("sessions", session_id)
@@ -160,7 +159,7 @@ class ContextManager:
             if value.get("artifact_id"):
                 artifact = self.overview(self.artifacts.inspect(value["artifact_id"]))
                 if (
-                    artifact["type"] == "query_result"
+                    artifact["content_type"] == "table"
                     and artifact["payload"]["row_count"] <= 20
                 ):
                     artifact["exact_data"] = self.artifacts.read(
@@ -197,7 +196,7 @@ class ContextManager:
             self.overview(self.artifacts.inspect(key)) for key in sorted(artifact_ids)
         ]
         for item in results:
-            if item["type"] == "query_result" and item["payload"]["row_count"] <= 20:
+            if item["content_type"] == "table" and item["payload"]["row_count"] <= 20:
                 item["exact_data"] = self.artifacts.read(
                     item["artifact_id"], {"limit": 20}
                 )

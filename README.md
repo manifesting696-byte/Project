@@ -21,7 +21,9 @@
 - application/requests.py 管理请求身份、版本、输入依赖、交付解析和失效传播。
 - application/tasks.py 校验执行 DAG，绑定真实输入及交付。
 - application/service.py 组织同轮多个请求，按本轮范围回答。
+- application/responses.py 将文字草稿保存为 Artifact，组装只含产物引用的 Response 块。前端据此展示正文和结果卡片。
 - persistence/migration.py 自动备份并事务迁移旧账本。
+- persistence/unified_migration.py 统一历史 Artifact 类型和回答结构，保留原数据与 SQL。
 - agents/prompt.py 集中说明角色和字段取值。
 
 ## 验证
@@ -35,6 +37,6 @@
 
 ## 原项目记录
 
-main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改造前源码。新实现位于 refactor/request-task-model 分支。.env、虚拟环境和 runtime 被 Git 排除。旧账本首次迁移前会生成 runtime/agent.before-request-model.sqlite。
+main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改造前源码。新实现位于 refactor/request-task-model 分支。.env、虚拟环境和 runtime 被 Git 排除。旧账本首次迁移前会生成 runtime/agent.before-request-model.sqlite。统一 Artifact/Response 升级前会另存 runtime/agent.before-unified-artifacts.sqlite。
 
 旧设计材料保存在 docs/第一版设计 和 docs/第二版设计。

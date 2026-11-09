@@ -59,6 +59,6 @@ class ArtifactAgent(SpecialistAgent, ABC):
         for ref in result.produced_outputs.values():
             if ref.kind != "artifact" or ref.id not in toolbox.created:
                 raise ValueError("输出必须引用当前 Agent 实际生成的产物")
-            if self.artifacts.inspect(ref.id)["type"] not in self.output_types:
+            if self.artifacts.inspect(ref.id)["content_type"] not in self.output_types:
                 raise ValueError("产物类型不符合 Agent 的职责")
         return {"status": "completed", **result.model_dump(exclude_none=True)}

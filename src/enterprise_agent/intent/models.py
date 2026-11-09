@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from ..core.models import Category, Model, ResourceRef
+from ..core.models import Category, IntentRef, Model
 
 
 class RequestOperation(Model):
@@ -12,14 +12,23 @@ class RequestOperation(Model):
     action: Literal["none", "create_task", "update_task"]
     category: Category
     instruction: str = Field(min_length=1)
-    refs: list[ResourceRef] = Field(default_factory=list)
+    refs: list[IntentRef] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def route_category(self):
+        direct = self.category in ("general_qa", "business_knowledge")
+        if direct != (self.action == "none"):
+            raise ValueError(
+                "知识问答使用 none，数据分析和结果交互使用 create_task/update_task"
+            )
+        return self
 
 
 class Clarification(Model):
     request_id: str | None = None
     subject: str = Field(min_length=1)
     question: str = Field(min_length=1)
-    refs: list[ResourceRef] = Field(default_factory=list)
+    refs: list[IntentRef] = Field(default_factory=list)
 
 
 class Intent(Model):

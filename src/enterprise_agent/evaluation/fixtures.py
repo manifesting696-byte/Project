@@ -192,18 +192,22 @@ class FixtureModel:
                 "parameters": {},
                 "inputs": [{"slot": "data", "source": operation["refs"][0]}],
                 "outputs": [
-                    {"name": "chart", "kind": "chart", "description": "产品条形图"}
+                    {
+                        "name": "chart",
+                        "content_type": "chart",
+                        "description": "产品条形图",
+                    }
                 ],
             }
         limit = 2 if "两个" in text else 3 if "三个" in text else 5
-        outputs = [{"name": "data", "kind": "table", "description": "产品数据"}]
+        outputs = [{"name": "data", "content_type": "table", "description": "产品数据"}]
         if "图表" in text:
             outputs.append(
-                {"name": "chart", "kind": "chart", "description": "产品图表"}
+                {"name": "chart", "content_type": "chart", "description": "产品图表"}
             )
         if "报告" in text:
             outputs.append(
-                {"name": "report", "kind": "report", "description": "产品报告"}
+                {"name": "report", "content_type": "report", "description": "产品报告"}
             )
         return {
             "description": text,
@@ -459,10 +463,16 @@ class FixtureModel:
                 else "Products 表包含产品编号和名称等字段。"
             )
             return {
-                "blocks": [{"request_id": request_id, "kind": "text", "content": text}]
+                "blocks": [
+                    {"request_id": request_id, "content_type": "text", "content": text}
+                ]
             }
         blocks = [
-            {"request_id": request_id, "kind": "text", "content": "已处理当前请求。"}
+            {
+                "request_id": request_id,
+                "content_type": "text",
+                "content": "已处理当前请求。",
+            }
         ]
         visible = context.get("response_output_names")
         for item in context["spec"]["outputs"]:
@@ -470,8 +480,12 @@ class FixtureModel:
             if visible is not None and name not in visible:
                 continue
             ref = context["deliveries"].get(name)
-            if ref and item["kind"] != "text":
+            if ref and item["content_type"] != "text":
                 blocks.append(
-                    {"request_id": request_id, "kind": item["kind"], "refs": [ref]}
+                    {
+                        "request_id": request_id,
+                        "content_type": item["content_type"],
+                        "refs": [ref],
+                    }
                 )
         return {"blocks": blocks}

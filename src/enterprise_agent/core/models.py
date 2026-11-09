@@ -12,6 +12,9 @@ class Model(BaseModel):
 Category = Literal[
     "general_qa", "business_knowledge", "data_analysis", "result_interaction"
 ]
+ContentType = Literal["text", "table", "chart", "report"]
+
+
 AgentName = Literal["SemanticAgent", "QueryAgent", "AnalysisAgent", "PresentationAgent"]
 
 
@@ -30,6 +33,20 @@ class ResourceRef(Model):
         return self
 
 
+class IntentRef(Model):
+    kind: Literal["request", "artifact"]
+    id: str = Field(min_length=1)
+    output: str | None = None
+
+    @model_validator(mode="after")
+    def select_output(self):
+        if self.kind == "request" and not self.output:
+            raise ValueError("Request 引用必须指定 output")
+        if self.kind == "artifact" and self.output is not None:
+            raise ValueError("Artifact 直接通过 id 定位")
+        return self
+
+
 class InputBinding(Model):
     slot: str = Field(min_length=1)
     source: ResourceRef
@@ -37,7 +54,7 @@ class InputBinding(Model):
 
 class OutputSpec(Model):
     name: str = Field(min_length=1)
-    kind: Literal["text", "table", "chart", "report"]
+    content_type: ContentType
     description: str = Field(min_length=1)
     options: dict[str, Any] = Field(default_factory=dict)
 
@@ -162,29 +179,50 @@ class Completion(Model):
     reason: str
 
 
-class AnswerBlock(Model):
-    block_id: str = ""
+class AnswerDraftBlock(Model):
+    """Transient model output, materialized before publishing a response."""
+
     request_id: str | None = None
     output_name: str | None = None
-    kind: Literal["text", "table", "chart", "report"]
+    content_type: ContentType
     content: str | None = None
-    refs: list[ResourceRef] = Field(default_factory=list)
+    refs: list[IntentRef] = Field(default_factory=list)
 
 
-class Answer(Model):
-    blocks: list[AnswerBlock]
+class AnswerDraft(Model):
+    blocks: list[AnswerDraftBlock]
+
+
+class ResponseBlock(Model):
+    block_id: str
+    artifact_id: str
+    request_id: str | None = None
+    revision_id: str | None = None
+
+
+class Response(Model):
+    blocks: list[ResponseBlock]
 
 
 class Artifact(Model):
     artifact_id: str
-    type: Literal["query_result", "analysis_result", "chart", "report"]
-    request_id: str
-    revision_id: str
-    task_id: str
-    producer: AgentName
+    content_type: ContentType
+    session_id: str
+    created_by_turn_id: str
+    request_id: str | None = None
+    revision_id: str | None = None
+    task_id: str | None = None
+    producer: Literal[
+        "Supervisor",
+        "System",
+        "SemanticAgent",
+        "QueryAgent",
+        "AnalysisAgent",
+        "PresentationAgent",
+    ]
     title: str
     summary: str
-    source_refs: list[ResourceRef]
+    source_artifact_ids: list[str] = Field(default_factory=list)
     content_ref: str
     payload: dict[str, Any]
     created_at: str
@@ -236,9 +274,9 @@ class SessionEvent(Model):
         }
         if any(key not in self.payload for key in required[self.event_type]):
             raise ValueError("事件缺少必要字段")
-        if "blocks" in self.payload:
+        if "blocks" in self.payload and self.payload.get("schema_version") == 2:
             for block in self.payload["blocks"]:
-                AnswerBlock.model_validate(block)
+                ResponseBlock.model_validate(block)
         return self
 
 

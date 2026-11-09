@@ -21,10 +21,16 @@ class Tasks:
         self.requests.validate_ref(
             request["session_id"], {"kind": "artifact", "id": artifact_id}
         )
-        if self.stores.exists("tasks", artifact["task_id"]):
-            producer = self.stores.get("tasks", artifact["task_id"])
+        if self.stores.exists("tasks", artifact.get("task_id")):
+            producer = self.stores.get("tasks", artifact.get("task_id"))
             if producer["status"] == "completed":
                 return
+        if (
+            not artifact.get("task_id")
+            and artifact.get("request_id") == request["request_id"]
+            and artifact.get("revision_id") == request["current_revision_id"]
+        ):
+            return
         if artifact_id not in explicit:
             raise ValueError("失效执行的产物需要在当前需求输入中明确指定后才能复用")
 
