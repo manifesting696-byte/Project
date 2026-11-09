@@ -18,8 +18,10 @@ class Supervisor(ModelAgent):
         super().__init__(model)
         self.context, self.stores, self.artifacts = context, stores, artifacts
 
-    def tools(self, session_id):
-        return supervisor_tools(session_id, self.context, self.stores, self.artifacts)
+    def tools(self, session_id, drafts=None):
+        return supervisor_tools(
+            session_id, self.context, self.stores, self.artifacts, drafts
+        )
 
     def intent(self, session_id, query, emit, feedback=None):
         context = self.context.initial(session_id, query)
@@ -34,13 +36,24 @@ class Supervisor(ModelAgent):
             emit,
         )
 
-    def define(self, session_id, operation, previous, parameters, emit):
+    def define(
+        self,
+        session_id,
+        operation,
+        previous,
+        parameters,
+        emit,
+        drafts=None,
+        required_outputs=None,
+    ):
         return self.invoke(
             "UnifiedSupervisor.Definition",
             SUPERVISOR_DEFINITION,
-            self.context.definition(session_id, operation, previous, parameters),
+            self.context.definition(
+                session_id, operation, previous, parameters, drafts, required_outputs
+            ),
             RequestSpec,
-            self.tools(session_id),
+            self.tools(session_id, drafts),
             emit,
         )
 

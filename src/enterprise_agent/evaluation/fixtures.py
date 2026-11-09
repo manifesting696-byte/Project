@@ -127,12 +127,18 @@ class FixtureModel:
                     "根据上游绘图",
                     [{"kind": "request", "id": "data", "output": "data"}],
                 ),
-                self.operation("data", "create_task", "data_analysis", "列出前五个产品"),
+                self.operation(
+                    "data", "create_task", "data_analysis", "列出前五个产品"
+                ),
             ]
         elif query == "分别列出前两个和前三个产品":
             operations = [
-                self.operation("first", "create_task", "data_analysis", "列出前两个产品"),
-                self.operation("second", "create_task", "data_analysis", "列出前三个产品"),
+                self.operation(
+                    "first", "create_task", "data_analysis", "列出前两个产品"
+                ),
+                self.operation(
+                    "second", "create_task", "data_analysis", "列出前三个产品"
+                ),
             ]
         elif "横向" in query or query == "只统计前两个产品":
             candidates = context["candidate_requests"]
@@ -142,7 +148,7 @@ class FixtureModel:
             state = tools["get_request_state"].call(request_id=candidate["request_id"])
             refs = []
             if "横向" in query:
-                refs = [state["request"]["results"]["chart"]]
+                refs = [state["deliveries"]["chart"]]
             operations = [
                 self.operation(
                     candidate["request_id"],
@@ -240,7 +246,7 @@ class FixtureModel:
         }
 
     def plan(self, context, tools):
-        spec = context["revision"]["spec"]
+        spec = context["spec"]
         outputs = {item["name"]: item for item in spec["outputs"]}
         nodes = context["tasks"]
         semantic_gap = next(
@@ -381,7 +387,7 @@ class FixtureModel:
                     )
                 )
                 bindings["chart"] = {"kind": "task", "id": "chart", "output": "chart"}
-        elif "report" in outputs and "report" not in context["request"]["results"]:
+        elif "report" in outputs and "report" not in context["deliveries"]:
             analysis = next(
                 node
                 for node in nodes
@@ -422,9 +428,9 @@ class FixtureModel:
 
     @staticmethod
     def completion(context):
-        refs = context["request"]["results"]
+        refs = context["deliveries"]
         checks = []
-        for item in context["revision"]["spec"]["outputs"]:
+        for item in context["spec"]["outputs"]:
             completed = item["name"] in refs
             checks.append(
                 {
@@ -459,11 +465,11 @@ class FixtureModel:
             {"request_id": request_id, "kind": "text", "content": "已处理当前请求。"}
         ]
         visible = context.get("response_output_names")
-        for item in context["revision"]["spec"]["outputs"]:
+        for item in context["spec"]["outputs"]:
             name = item["name"]
             if visible is not None and name not in visible:
                 continue
-            ref = context["request"]["results"].get(name)
+            ref = context["deliveries"].get(name)
             if ref and item["kind"] != "text":
                 blocks.append(
                     {"request_id": request_id, "kind": item["kind"], "refs": [ref]}

@@ -30,6 +30,14 @@ class Scheduler:
             node.update(status="running", started_at=now())
             self.stores.save_many([("tasks", node)], expected_revisions=expected)
             try:
+                for binding in node["input_bindings"]:
+                    value = self.context.requests.resolve(session_id, binding["source"])
+                    if value.get("artifact_id"):
+                        binding["source"] = {
+                            "kind": "artifact",
+                            "id": value["artifact_id"],
+                        }
+                self.stores.save_many([("tasks", node)], expected_revisions=expected)
                 context, allowed = self.context.task(node)
                 result = self.specialists.execute(context, allowed, emit)
             except Exception as exc:

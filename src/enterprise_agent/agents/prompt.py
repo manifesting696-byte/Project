@@ -2,6 +2,7 @@
 
 SUPERVISOR_INTENT = (
     "识别本轮所有独立用户要求，返回 operations 和 clarifications。Request 是可跨轮修改的业务工作，Task 是后续 Agent 执行节点。"
+    "候选 Request 的 spec 已包含当前完整输入、参数和预期交付。"
     "每项 operation 必须包含 request_id/action/category/instruction/refs。"
     "request_id 对 none/create_task 使用本轮唯一局部名称，如 new_1；代码分配全局 req_xxx。"
     "update_task 必须使用通过上下文或 get_request_state 确认的真实 request_id；不能默认最近一个，不生成 target_task_id。"
@@ -24,6 +25,8 @@ SUPERVISOR_DEFINITION = (
     "description 是完整业务目标；parameters 是本请求参数；inputs 是 slot/source 形式的显式输入；"
     "outputs 每项含 name/kind/description/options，name 为此 Request 内稳定的交付名称，"
     "kind 只为 text/table/chart/report，它描述交付形式，底层数据仍由 query_result Artifact 保存。"
+    "required_output_names 是本轮下游将引用的交付名称，需要与 outputs.name 一致；若与实际需求冲突应澄清。"
+    "inputs 中 kind=request 表示跟随上游指定交付，引用历史固定数据用真实 Artifact ID，历史文字用 event/block_id。"
     "create_task 按用户实际要求建立完整 spec；update_task 继承所有未修改参数、输入、交付，不能仅返回增量。"
     "只改图表样式时保留原数据目标和参数，把变化写在对应输出 options/description。"
     "operation.refs 中实际要复用的历史数据或图表，必须落实成 inputs。对目标 Request 自身的定位无需作为自身数据输入。"
@@ -34,7 +37,8 @@ SUPERVISOR_DEFINITION = (
 )
 
 SUPERVISOR_PLANNING = (
-    "依据当前 RequestRevision.spec 动态生成 Agent 执行 Task DAG，返回 tasks/cancel_task_ids/output_bindings/reason。"
+    "request.spec 和 context.spec 是当前完整要求，deliveries 是按执行记录解析出的实际交付。"
+    "依据当前 Request.spec 动态生成 Agent 执行 Task DAG，返回 tasks/cancel_task_ids/output_bindings/reason。"
     "tasks 只提交新增节点，用局部 task_id；不能重复提交已有节点。四个专业角色为 SemanticAgent/QueryAgent/AnalysisAgent/PresentationAgent。"
     "objective 说明本步工作；depends_on 管执行顺序；input_bindings 的 slot/source 管真实输入；expected_outputs 管命名 Artifact 输出。"
     "SemanticAgent 的 expected_outputs 必须为空，轻量结果通过 task 引用的 output=semantic_binding 传递。"
@@ -52,7 +56,7 @@ SUPERVISOR_PLANNING = (
 )
 
 SUPERVISOR_COMPLETION = (
-    "逐项检查当前 RequestSpec.outputs，返回 outputs 列表、next_action 和 reason。"
+    "逐项检查当前 request.spec.outputs，返回 outputs 列表、next_action 和 reason。"
     "每个 name 必须覆盖一次，completed 必须引用实际交付绑定所解析的 Artifact、已完成 Task 或事件。"
     "检查实际内容和类型，不能只看最后一个节点完成。缺口用 unfulfilled/needs_clarification。"
     "还能通过当前目标内的工作补足时 next_action=replan；可回答时 answer；需要用户确认时 clarify。"
@@ -63,6 +67,8 @@ SUPERVISOR_ANSWER = (
     "根据本轮当前 Request 的 instruction/query 和真实证据生成有序 blocks。"
     "只回答 scope_request_ids 或 operation 指定的本项要求，不重复交付其他历史问题。"
     "response_output_names 有值时仅交付其中的输出；空列表表示只需文字说明删除或调整结果。"
+    "request.spec 定义预期交付，deliveries 给出实际交付引用。"
+    "直接文字回答有多项交付时，每项使用一个块并填写对应 output_name；单项交付可以分多块回答。"
     "每块可填写 request_id，系统会校验并分配 block_id。text 写简明正文，table/chart/report 引用对应真实 Artifact。"
     "数字、排名、具体事实从真实产物读取，文本事实也附 Artifact refs；不能根据摘要猜测。"
     "大结果通过工具精确筛选或读取，不能把预览当全量。图表解释读取实际配置，口径解释读取原 SQL 和语义绑定。"

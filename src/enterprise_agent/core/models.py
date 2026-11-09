@@ -57,7 +57,9 @@ class RequestSpec(Model):
         return self
 
 
-class Request(Model):
+class RequestRecord(Model):
+    """Stored identity and state; the specification lives in an immutable revision."""
+
     request_id: str
     session_id: str
     title: str
@@ -67,9 +69,14 @@ class Request(Model):
     status: Literal[
         "pending", "running", "needs_clarification", "completed", "failed", "archived"
     ]
-    results: dict[str, ResourceRef] = Field(default_factory=dict)
     created_at: str
     updated_at: str
+
+
+class Request(RequestRecord):
+    """Complete request returned to callers with its current specification."""
+
+    spec: RequestSpec
 
 
 class RequestRevision(Model):
@@ -158,6 +165,7 @@ class Completion(Model):
 class AnswerBlock(Model):
     block_id: str = ""
     request_id: str | None = None
+    output_name: str | None = None
     kind: Literal["text", "table", "chart", "report"]
     content: str | None = None
     refs: list[ResourceRef] = Field(default_factory=list)

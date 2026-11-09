@@ -11,13 +11,14 @@ from ..core.config import WORK
 from ..core.models import (
     Artifact,
     Request,
+    RequestRecord,
     RequestRevision,
     Session,
     SessionEvent,
     SessionSummary,
     Task,
 )
-from .migration import migrate_legacy, migrate_request_results
+from .migration import migrate_legacy, migrate_request_specs
 
 
 def now():
@@ -36,7 +37,7 @@ TABLES = {
 RECORD_MODELS = {
     "sessions": Session,
     "session_events": SessionEvent,
-    "requests": Request,
+    "requests": RequestRecord,
     "request_revisions": RequestRevision,
     "tasks": Task,
     "artifacts": Artifact,
@@ -69,7 +70,7 @@ class Stores:
                 "CREATE INDEX IF NOT EXISTS result_request ON artifacts(request_id)",
             ):
                 db.execute(statement)
-            migrate_request_results(db)
+            migrate_request_specs(db)
             db.execute("PRAGMA user_version=3")
             if legacy:
                 for table, model in RECORD_MODELS.items():
@@ -110,9 +111,27 @@ class Stores:
             raise ValueError("未知存储")
         with self.db() as db:
             row = db.execute(f"SELECT body FROM {table} WHERE id=?", (key,)).fetchone()
-        if row is None:
-            raise ValueError(f"对象不存在：{key}")
-        return json.loads(row[0])
+            if row is None:
+                raise ValueError(f"对象不存在：{key}")
+            item = json.loads(row[0])
+            return self.request_view(db, item) if table == "requests" else item
+
+    @staticmethod
+    def request_view(db, item):
+        revision = db.execute(
+            "SELECT body FROM request_revisions WHERE id=?",
+            (item["current_revision_id"],),
+        ).fetchone()
+        if revision is None:
+            raise ValueError("Request 缺少当前规格版本")
+        revision = json.loads(revision[0])
+        if revision["request_id"] != item["request_id"]:
+            raise ValueError("规格版本不属于该 Request")
+        if "spec" in item and item["spec"] != revision["spec"]:
+            raise ValueError("当前规格与版本快照不一致，请通过需求更新操作修改")
+        return Request.model_validate({**item, "spec": revision["spec"]}).model_dump(
+            exclude_none=True
+        )
 
     def exists(self, table, key):
         if table not in TABLES:
@@ -125,6 +144,9 @@ class Stores:
 
     def _put(self, db, table, item):
         key, parent = TABLES[table]
+        if table == "requests":
+            self.request_view(db, item)
+            item = {name: value for name, value in item.items() if name != "spec"}
         encoded = json.dumps(item, ensure_ascii=False)
         if table in IMMUTABLE:
             old = db.execute(
@@ -156,7 +178,13 @@ class Stores:
         validated = [
             (
                 table,
-                RECORD_MODELS[table].model_validate(item).model_dump(exclude_none=True),
+                (
+                    Request
+                    if table == "requests" and "spec" in item
+                    else RECORD_MODELS[table]
+                )
+                .model_validate(item)
+                .model_dump(exclude_none=True),
             )
             for table, item in records
         ]
@@ -173,7 +201,10 @@ class Stores:
                 self._put(db, table, item)
             if event:
                 self._append_event(db, **event)
-        return [item for _, item in validated]
+            return [
+                self.request_view(db, item) if table == "requests" else item
+                for table, item in validated
+            ]
 
     def put(self, table, record):
         return self.save_many([(table, record)])[0]
@@ -186,7 +217,12 @@ class Stores:
                 f"SELECT body FROM {table} WHERE {parent}=? ORDER BY rowid",
                 (str(value),),
             ).fetchall()
-        return [json.loads(row[0]) for row in rows]
+            return [
+                self.request_view(db, json.loads(row[0]))
+                if table == "requests"
+                else json.loads(row[0])
+                for row in rows
+            ]
 
     def session(self, user_id, session_id=None, title="新会话"):
         if session_id:

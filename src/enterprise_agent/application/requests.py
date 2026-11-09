@@ -29,8 +29,7 @@ class Requests:
             raise PermissionError("引用不属于当前会话")
         output = ref.get("output")
         if kind == "request" and output:
-            revision = self.stores.get("request_revisions", item["current_revision_id"])
-            if output not in {value["name"] for value in revision["spec"]["outputs"]}:
+            if output not in {value["name"] for value in item["spec"]["outputs"]}:
                 raise ValueError("Request 未声明该交付名称")
         if kind == "task" and output:
             semantic = (
@@ -58,7 +57,9 @@ class Requests:
                     raise PermissionError("更新目标不属于当前可用需求")
             else:
                 if self.stores.exists("requests", operation.request_id):
-                    raise ValueError("新请求应使用本轮局部 ID，已有工作请使用 update_task")
+                    raise ValueError(
+                        "新请求应使用本轮局部 ID，已有工作请使用 update_task"
+                    )
                 aliases[operation.request_id] = self.stores.new_id("req")
         for operation in intent.operations:
             operation.request_id = aliases.get(
@@ -73,9 +74,9 @@ class Requests:
                         and operation.action == "update_task"
                         and ref.output
                     ):
-                        previous = self.stores.get("requests", ref.id)[
-                            "results"
-                        ].get(ref.output)
+                        previous = self.outputs(
+                            self.stores.get("requests", ref.id)
+                        ).get(ref.output)
                         if not previous:
                             raise ValueError("目标需求尚无可复用的该项结果")
                         ref.kind, ref.id = previous["kind"], previous["id"]
@@ -110,7 +111,7 @@ class Requests:
         return self.order_operations(intent.operations)
 
     @staticmethod
-    def order_operations(operations):
+    def order_operations(operations, specs=None):
         by_id = {item.request_id: item for item in operations}
         ordered, visiting, done = [], set(), set()
 
@@ -120,7 +121,12 @@ class Requests:
             if key in done:
                 return
             visiting.add(key)
-            for ref in by_id[key].refs:
+            refs = (
+                [binding.source for binding in specs[key].inputs]
+                if specs is not None and key in specs
+                else by_id[key].refs
+            )
+            for ref in refs:
                 if ref.kind == "request" and ref.id in by_id and ref.id != key:
                     visit(ref.id)
             visiting.remove(key)
@@ -131,19 +137,181 @@ class Requests:
             visit(operation.request_id)
         return ordered
 
+    def validate_specs(self, session_id, specs, targets=None):
+        graph = {
+            item["request_id"]: item["spec"]
+            for item in self.stores.list("requests", "session_id", session_id)
+        }
+        graph.update(
+            {key: spec.model_dump(exclude_none=True) for key, spec in specs.items()}
+        )
+        for key in targets if targets is not None else specs:
+            spec = specs[key]
+            for binding in spec.inputs:
+                source = binding.source
+                if source.kind == "request":
+                    if source.id == key:
+                        raise ValueError(
+                            "历史输入应使用具体 Artifact，需求不能依赖自身交付"
+                        )
+                    if source.id not in graph:
+                        raise ValueError("输入引用的 Request 不存在于当前会话")
+                    names = [item["name"] for item in graph[source.id]["outputs"]]
+                    if source.output is None and len(names) == 1:
+                        source.output = names[0]
+                    if source.output not in names:
+                        raise ValueError("输入引用的上游交付名称未声明")
+                else:
+                    self.validate_ref(session_id, source.model_dump(exclude_none=True))
+            graph[key] = spec.model_dump(exclude_none=True)
+        visiting, done = set(), set()
+
+        def visit(key):
+            if key in visiting:
+                raise ValueError("Request 输入依赖存在循环")
+            if key in done:
+                return
+            visiting.add(key)
+            for binding in graph[key]["inputs"]:
+                source = binding["source"]
+                if source["kind"] == "request" and source["id"] in graph:
+                    visit(source["id"])
+            visiting.remove(key)
+            done.add(key)
+
+        for key in targets if targets is not None else specs:
+            visit(key)
+
     def plan_bindings(self, request):
         events = self.stores.list("session_events", "session_id", request["session_id"])
-        for event in reversed(events):
+        revision = self.stores.get("request_revisions", request["current_revision_id"])
+        names = {item["name"] for item in request["spec"]["outputs"]}
+        while names:
+            for event in reversed(events):
+                if (
+                    event["event_type"] == "plan_updated"
+                    and event.get("request_id") == request["request_id"]
+                    and event["payload"].get("revision_id") == revision["revision_id"]
+                ):
+                    return {
+                        name: ref
+                        for name, ref in event["payload"]["plan"][
+                            "output_bindings"
+                        ].items()
+                        if name in names
+                    }
+            if not revision.get("parent_revision_id"):
+                break
+            previous = self.stores.get(
+                "request_revisions", revision["parent_revision_id"]
+            )
+            old = {item["name"]: item for item in previous["spec"]["outputs"]}
+            current = {item["name"]: item for item in revision["spec"]["outputs"]}
+            changed = {name for name, item in old.items() if current.get(name) != item}
             if (
-                event["event_type"] == "plan_updated"
-                and event.get("request_id") == request["request_id"]
-                and event["payload"].get("revision_id")
-                == request["current_revision_id"]
+                previous["spec"]["description"] != revision["spec"]["description"]
+                or previous["spec"]["parameters"] != revision["spec"]["parameters"]
+                or (
+                    previous["spec"]["inputs"] != revision["spec"]["inputs"]
+                    and not self.presentation_only_inputs(
+                        request, previous["spec"], revision["spec"], changed
+                    )
+                )
             ):
-                return event["payload"]["plan"]["output_bindings"]
-        return dict(request["results"])
+                break
+            names &= {name for name, item in current.items() if old.get(name) == item}
+            revision = previous
+        return {}
 
-    def artifact_scope(self, refs):
+    def resolve(self, session_id, ref, visiting=None):
+        self.validate_ref(session_id, ref)
+        identity = (ref["kind"], ref["id"], ref.get("output"), ref.get("block_id"))
+        visiting = set(visiting or ())
+        if identity in visiting:
+            raise ValueError("交付引用存在循环")
+        visiting.add(identity)
+        kind, key = ref["kind"], ref["id"]
+        if kind == "artifact":
+            return {"artifact_id": key}
+        if kind == "event":
+            event = deepcopy(self.stores.get("session_events", key))
+            if ref.get("block_id"):
+                event["payload"]["blocks"] = [
+                    block
+                    for block in event["payload"]["blocks"]
+                    if block["block_id"] == ref["block_id"]
+                ]
+            return {"event": event}
+        if kind == "request":
+            request = self.stores.get("requests", key)
+            declared = [item["name"] for item in request["spec"]["outputs"]]
+            name = ref.get("output")
+            if name is None:
+                if len(declared) != 1:
+                    raise ValueError("多个交付需要明确 output 名称")
+                name = declared[0]
+            bindings = self.plan_bindings(request)
+            if name not in bindings:
+                raise ValueError("上游 Request 的交付尚未完成")
+            return self.resolve_delivery(request, bindings[name], visiting)
+        task = self.stores.get("tasks", key)
+        if task["status"] != "completed":
+            raise ValueError("上游执行 Task 尚未完成")
+        if task.get("semantic_binding") and ref.get("output") in (
+            None,
+            "semantic_binding",
+        ):
+            return {"semantic_binding": task["semantic_binding"]}
+        outputs = task["produced_outputs"]
+        name = ref.get("output")
+        if name is None:
+            if len(outputs) != 1:
+                raise ValueError("多个上游输出必须指定 output")
+            name = next(iter(outputs))
+        if name not in outputs:
+            raise ValueError("上游未生成声明的输出")
+        return self.resolve(session_id, outputs[name], visiting)
+
+    def resolve_delivery(self, request, ref, visiting=None):
+        value = self.resolve(request["session_id"], ref, visiting)
+        if (
+            value.get("event")
+            and value["event"].get("request_id") == request["request_id"]
+            and request["status"] != "completed"
+        ):
+            raise ValueError("该回答交付需要依据当前输入重新生成")
+        if value.get("artifact_id"):
+            artifact = self.stores.get("artifacts", value["artifact_id"])
+            if self.stores.exists("tasks", artifact["task_id"]):
+                producer = self.stores.get("tasks", artifact["task_id"])
+                if producer["status"] != "completed":
+                    explicit = self.artifact_scope(
+                        [
+                            binding["source"]
+                            for binding in request["spec"]["inputs"]
+                            if binding["source"]["kind"] in ("artifact", "event")
+                        ],
+                        follow_requests=False,
+                    )
+                    if artifact["artifact_id"] not in explicit:
+                        raise ValueError("该交付的执行结果已经失效")
+        return value
+
+    def outputs(self, request):
+        resolved = {}
+        for name, ref in self.plan_bindings(request).items():
+            try:
+                item = self.resolve_delivery(request, ref)
+            except ValueError:
+                continue
+            resolved[name] = (
+                {"kind": "artifact", "id": item["artifact_id"]}
+                if item.get("artifact_id")
+                else ref
+            )
+        return resolved
+
+    def artifact_scope(self, refs, follow_requests=True):
         allowed, pending, visited = set(), list(refs), set()
         while pending:
             ref = pending.pop()
@@ -151,14 +319,15 @@ class Requests:
             if identity in visited:
                 continue
             visited.add(identity)
-            if ref["kind"] == "request":
+            if ref["kind"] == "request" and follow_requests:
                 request = self.stores.get("requests", ref["id"])
-                values = request["results"]
-                pending.extend(
-                    [values[ref["output"]]]
-                    if ref.get("output") and ref["output"] in values
-                    else values.values()
-                )
+                values = self.outputs(request)
+                if ref.get("output"):
+                    pending.extend(
+                        [values[ref["output"]]] if ref["output"] in values else []
+                    )
+                else:
+                    pending.extend(values.values())
             elif ref["kind"] == "task":
                 task = self.stores.get("tasks", ref["id"])
                 pending.extend(task["produced_outputs"].values())
@@ -210,13 +379,13 @@ class Requests:
             current_revision_id=revision["revision_id"],
             plan_version=old["plan_version"] if old else 0,
             status="pending",
+            spec=spec,
             created_at=old["created_at"] if old else now(),
             updated_at=now(),
         ).model_dump(exclude_none=True)
         changes = []
         if old:
-            changes, retained = self.invalidate(old, previous["spec"], spec_data)
-            request["results"] = retained
+            changes = self.invalidate(old, previous["spec"], spec_data)
         expected = {request_id: previous["revision_id"] if previous else None}
         expected.update(
             {
@@ -241,40 +410,87 @@ class Requests:
 
     def invalidate(self, request, previous, current):
         nodes = self.stores.session_tasks(request["session_id"])
+        owners = {
+            item["request_id"]: item
+            for item in self.stores.list(
+                "requests", "session_id", request["session_id"]
+            )
+        }
         old_outputs = {item["name"]: item for item in previous["outputs"]}
         new_outputs = {item["name"]: item for item in current["outputs"]}
         changed_outputs = {
             name for name, item in old_outputs.items() if new_outputs.get(name) != item
         }
-        presentation_inputs = self.presentation_only_inputs(
-            request, previous, current, changed_outputs
-        )
         changed_data = (
             previous["description"] != current["description"]
             or previous["parameters"] != current["parameters"]
-            or (previous["inputs"] != current["inputs"] and not presentation_inputs)
+            or (
+                previous["inputs"] != current["inputs"]
+                and not self.presentation_only_inputs(
+                    request, previous, current, changed_outputs
+                )
+            )
         )
         bindings = self.plan_bindings(request)
-        affected = set()
-        for node in nodes:
-            if node["request_id"] != request["request_id"] or node["status"] in (
-                "superseded",
-                "cancelled",
-            ):
-                continue
-            if changed_data:
-                affected.add(node["task_id"])
-            elif changed_outputs:
-                sources = {
-                    bindings[name]["id"]
-                    for name in changed_outputs
-                    if name in bindings and bindings[name]["kind"] == "task"
-                }
-                if node["task_id"] in sources or (
-                    not sources and node["assigned_agent"] == "PresentationAgent"
-                ):
-                    affected.add(node["task_id"])
+        sources = {
+            bindings[name]["id"]
+            for name in changed_outputs
+            if name in bindings and bindings[name]["kind"] == "task"
+        }
+        affected = {
+            node["task_id"]
+            for node in nodes
+            if node["request_id"] == request["request_id"]
+            and node["status"] not in ("superseded", "cancelled")
+            and (
+                changed_data
+                or node["task_id"] in sources
+                or (
+                    changed_outputs
+                    and not sources
+                    and node["assigned_agent"] == "PresentationAgent"
+                )
+            )
+        }
+        changed_deliveries = {
+            request["request_id"]: set(old_outputs) if changed_data else changed_outputs
+        }
+        fixed_inputs = {
+            key: self.artifact_scope(
+                [
+                    binding["source"]
+                    for binding in owner["spec"]["inputs"]
+                    if binding["source"]["kind"] in ("artifact", "event")
+                ],
+                follow_requests=False,
+            )
+            for key, owner in owners.items()
+        }
         while True:
+            previous_affected = set(affected)
+            previous_owners = set(changed_deliveries)
+            for key, owner in owners.items():
+                if key in changed_deliveries:
+                    continue
+                if any(
+                    binding["source"]["kind"] == "request"
+                    and changed_deliveries.get(binding["source"]["id"])
+                    and (
+                        binding["source"].get("output") is None
+                        or binding["source"]["output"]
+                        in changed_deliveries[binding["source"]["id"]]
+                    )
+                    for binding in owner["spec"]["inputs"]
+                ):
+                    changed_deliveries[key] = {
+                        item["name"] for item in owner["spec"]["outputs"]
+                    }
+                    affected.update(
+                        node["task_id"]
+                        for node in nodes
+                        if node["request_id"] == key
+                        and node["status"] not in ("superseded", "cancelled")
+                    )
             artifacts = {
                 ref["id"]
                 for node in nodes
@@ -282,7 +498,7 @@ class Requests:
                 for ref in node["produced_outputs"].values()
                 if ref["kind"] == "artifact"
             }
-            expanded = affected | {
+            affected.update(
                 node["task_id"]
                 for node in nodes
                 if node["status"] not in ("superseded", "cancelled")
@@ -291,50 +507,34 @@ class Requests:
                     or any(
                         binding["source"]["kind"] == "artifact"
                         and binding["source"]["id"] in artifacts
+                        and binding["source"]["id"]
+                        not in fixed_inputs[node["request_id"]]
                         for binding in node["input_bindings"]
                     )
                 )
-            }
-            if expanded == affected:
+            )
+            for node in nodes:
+                key = node["request_id"]
+                if node["task_id"] in affected and key not in changed_deliveries:
+                    changed_deliveries[key] = {
+                        item["name"] for item in owners[key]["spec"]["outputs"]
+                    }
+            if (
+                affected == previous_affected
+                and set(changed_deliveries) == previous_owners
+            ):
                 break
-            affected = expanded
         changes = []
-        affected_artifacts = {
-            ref["id"]
-            for node in nodes
-            if node["task_id"] in affected
-            for ref in node["produced_outputs"].values()
-            if ref["kind"] == "artifact"
-        }
         for node in nodes:
             if node["task_id"] in affected:
                 updated = deepcopy(node)
                 updated["status"] = "superseded"
                 changes.append(("tasks", updated))
-        for owner in {
-            node["request_id"] for node in nodes if node["task_id"] in affected
-        } - {request["request_id"]}:
-            dependent = self.stores.get("requests", owner)
+        for key in changed_deliveries.keys() - {request["request_id"]}:
+            dependent = owners[key]
             dependent["status"], dependent["updated_at"] = "pending", now()
-            dependent["results"] = {
-                name: ref
-                for name, ref in dependent["results"].items()
-                if ref["id"] not in affected_artifacts and ref["id"] not in affected
-            }
             changes.append(("requests", dependent))
-        retained = (
-            {}
-            if changed_data
-            else {
-                name: ref
-                for name, ref in request["results"].items()
-                if name in new_outputs
-                and name not in changed_outputs
-                and ref["id"] not in affected_artifacts
-                and ref["id"] not in affected
-            }
-        )
-        return changes, retained
+        return changes
 
     def presentation_only_inputs(self, request, previous, current, changed_outputs):
         old = {item["slot"]: item for item in previous["inputs"]}

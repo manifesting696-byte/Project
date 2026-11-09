@@ -1,6 +1,6 @@
 # 企业数据智能问析系统
 
-当前实现采用持久 Request、完整 RequestRevision、执行 Task 和可追溯 Artifact。Supervisor 负责意图、要求合并、动态规划、验收与回答，四个专业 Agent 负责语义、查询、分析和展示。
+当前实现采用包含完整 spec 的 Request 读取对象、不可覆盖的 RequestRevision、执行 Task 和可追溯 Artifact。当前规格由版本表统一加载，实际交付通过执行记录按需解析。Supervisor 负责意图、要求合并、动态规划、验收与回答，四个专业 Agent 负责语义、查询、分析和展示。
 
 ## 启动
 
@@ -18,7 +18,7 @@
 
 - intent/models.py 定义 none/create_task/update_task 和四类 category。
 - core/models.py 定义 Request、快照、执行节点、交付与引用。
-- application/requests.py 管理请求身份、版本、引用和失效传播。
+- application/requests.py 管理请求身份、版本、输入依赖、交付解析和失效传播。
 - application/tasks.py 校验执行 DAG，绑定真实输入及交付。
 - application/service.py 组织同轮多个请求，按本轮范围回答。
 - persistence/migration.py 自动备份并事务迁移旧账本。

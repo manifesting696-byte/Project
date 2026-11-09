@@ -4,13 +4,15 @@ from ..core.model import ARRAY, OBJECT, STRING, tool
 from .capabilities import CAPABILITIES
 
 
-def supervisor_tools(session_id, context, stores, artifacts):
+def supervisor_tools(session_id, context, stores, artifacts, drafts=None):
     def request_state(request_id):
+        if request_id in (drafts or {}):
+            return {"request": drafts[request_id], "deliveries": {}, "tasks": []}
         context.requests.validate_ref(session_id, {"kind": "request", "id": request_id})
         request = stores.get("requests", request_id)
         return {
             "request": request,
-            "revision": stores.get("request_revisions", request["current_revision_id"]),
+            "deliveries": context.requests.outputs(request),
             "tasks": stores.list("tasks", "request_id", request_id),
         }
 
@@ -33,7 +35,7 @@ def supervisor_tools(session_id, context, stores, artifacts):
         if block_id:
             ref["block_id"] = block_id
         context.requests.validate_ref(session_id, ref)
-        return context.tasks.resolve(session_id, ref)["event"]
+        return context.requests.resolve(session_id, ref)["event"]
 
     return {
         "get_request_state": tool(
@@ -108,6 +110,11 @@ class SpecialistToolbox:
         for key in source_ids:
             self.authorize(key)
         refs = [{"kind": "artifact", "id": key} for key in dict.fromkeys(source_ids)]
+        refs.extend(
+            binding["source"]
+            for binding in self.node["input_bindings"]
+            if binding["source"]["kind"] == "event" and binding["source"] not in refs
+        )
         result = self.artifacts.save(
             self.node, kind, title, summary, content, refs, payload, sql
         )

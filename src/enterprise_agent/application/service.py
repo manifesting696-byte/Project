@@ -7,7 +7,7 @@ from ..agents.supervisor import Supervisor
 from ..context.manager import ContextManager
 from ..core.config import MAX_REPLANS
 from ..core.model import ModelClient
-from ..core.models import Answer, AnswerBlock, RequestSpec
+from ..core.models import Answer, AnswerBlock, Plan, RequestSpec
 from ..persistence.artifacts import Artifacts
 from ..persistence.stores import Stores, now
 from ..persistence.summaries import compress
@@ -98,16 +98,76 @@ class Application:
                 "Supervisor",
                 {"intent": intent.model_dump(exclude_none=True)},
             )
+            definitions, drafts, preparation_errors = {}, {}, {}
+            for operation in ordered:
+                try:
+                    required_outputs = [
+                        ref.output
+                        for other in ordered
+                        for ref in other.refs
+                        if ref.kind == "request"
+                        and ref.id == operation.request_id
+                        and ref.output
+                    ]
+                    spec, previous = self.define_operation(
+                        session_id,
+                        turn_id,
+                        operation,
+                        constraints or {},
+                        drafts,
+                        required_outputs,
+                    )
+                    definitions[operation.request_id] = (spec, previous)
+                    drafts[operation.request_id] = {
+                        "request_id": operation.request_id,
+                        "session_id": session_id,
+                        "spec": spec.model_dump(exclude_none=True),
+                    }
+                except Exception as exc:
+                    preparation_errors[operation.request_id] = exc
+            prepared = {}
+            specs = {key: value[0] for key, value in definitions.items()}
+            for key in specs:
+                try:
+                    self.requests.validate_specs(session_id, specs, [key])
+                except Exception as exc:
+                    preparation_errors[key] = exc
+            ordered = self.requests.order_operations(
+                ordered,
+                {
+                    key: spec
+                    for key, spec in specs.items()
+                    if key not in preparation_errors
+                },
+            )
+            for operation in ordered:
+                if operation.request_id in preparation_errors:
+                    continue
+                try:
+                    spec, previous = definitions[operation.request_id]
+                    request, revision = self.requests.revise(
+                        session_id,
+                        turn_id,
+                        operation,
+                        spec,
+                        event["event_id"],
+                    )
+                    prepared[operation.request_id] = (request, previous)
+                except Exception as exc:
+                    preparation_errors[operation.request_id] = exc
             answers, states = {}, {}
             touched = []
             for operation in ordered:
                 try:
+                    if operation.request_id in preparation_errors:
+                        raise preparation_errors[operation.request_id]
+                    request, previous = prepared[operation.request_id]
                     request, answer, state = self.process_operation(
                         session_id,
                         turn_id,
                         operation,
-                        event["event_id"],
-                        constraints or {},
+                        request,
+                        previous,
                         pause,
                         preview,
                     )
@@ -177,8 +237,8 @@ class Application:
             return "needs_clarification"
         return "partial"
 
-    def process_operation(
-        self, session_id, turn_id, operation, event_id, parameters, pause, preview
+    def define_operation(
+        self, session_id, turn_id, operation, parameters, drafts, required_outputs
     ):
         previous = None
         if operation.action == "update_task":
@@ -207,21 +267,31 @@ class Application:
             )
         else:
             spec = self.supervisor.define(
-                session_id, operation, previous, parameters, emit
+                session_id,
+                operation,
+                previous,
+                parameters,
+                emit,
+                drafts,
+                required_outputs,
             )
             for key, value in parameters.items():
                 if value is None:
                     spec.parameters.pop(key, None)
                 else:
                     spec.parameters[key] = value
-        request, revision = self.requests.revise(
-            session_id, turn_id, operation, spec, event_id
-        )
+        return spec, previous
+
+    def process_operation(
+        self, session_id, turn_id, operation, request, previous, pause, preview
+    ):
+        spec = RequestSpec.model_validate(request["spec"])
+        emit = self.emitter(session_id, turn_id, operation.request_id)
         visible_names = None
         if previous:
             old_outputs = {item["name"]: item for item in previous["spec"]["outputs"]}
             current_outputs = {
-                item["name"]: item for item in revision["spec"]["outputs"]
+                item["name"]: item for item in request["spec"]["outputs"]
             }
             changed = {
                 name
@@ -236,27 +306,12 @@ class Application:
             and not self.stores.list("tasks", "request_id", request["request_id"])
             and all(output.kind == "text" for output in spec.outputs)
         )
-        if operation.action == "none" or direct_update:
-            context = {
-                **self.context.initial(session_id, operation.instruction),
-                "operation": operation.model_dump(exclude_none=True),
-                "request": request,
-                "scope_request_ids": [request["request_id"]],
-                "referenced_inputs": self.context.ref_views(
-                    session_id,
-                    [ref.model_dump(exclude_none=True) for ref in operation.refs],
-                ),
-            }
-            answer = self.supervisor.answer(session_id, context, emit)
-            request["status"] = "completed"
-            self.finish_operation(request, turn_id, answer, operation.refs, direct=True)
-            return request, answer, "completed"
         # Resolve named cross-request inputs before allowing a consumer to query or calculate.
-        for binding in revision["spec"]["inputs"]:
+        for binding in request["spec"]["inputs"]:
             ref = binding["source"]
             if ref["kind"] == "request":
                 try:
-                    self.tasks.resolve(session_id, ref)
+                    self.requests.resolve(session_id, ref)
                 except ValueError:
                     request["status"] = "needs_clarification"
                     answer = Answer(
@@ -269,6 +324,21 @@ class Application:
                     )
                     self.finish_operation(request, turn_id, answer, operation.refs)
                     return request, answer, "needs_clarification"
+        if operation.action == "none" or direct_update:
+            context = {
+                **self.context.initial(session_id, operation.instruction),
+                "operation": operation.model_dump(exclude_none=True),
+                "request": request,
+                "scope_request_ids": [request["request_id"]],
+                "referenced_inputs": self.context.ref_views(
+                    session_id,
+                    [binding["source"] for binding in request["spec"]["inputs"]],
+                ),
+            }
+            answer = self.supervisor.answer(session_id, context, emit)
+            request["status"] = "completed"
+            self.finish_operation(request, turn_id, answer, operation.refs, direct=True)
+            return request, answer, "completed"
         plan = self.supervisor.plan(request, emit)
         self.apply_plan(request, turn_id, plan)
         if preview:
@@ -327,7 +397,6 @@ class Application:
         for _ in range(MAX_REPLANS + 1):
             execution = self.scheduler.run(request, turn_id, pause)
             pause = False
-            self.tasks.refresh_outputs(request)
             if execution.get("paused"):
                 request["status"] = "pending"
                 answer = Answer(
@@ -403,8 +472,7 @@ class Application:
         return answer, state
 
     def validate_completion(self, request, completion):
-        revision = self.stores.get("request_revisions", request["current_revision_id"])
-        outputs = {item["name"]: item for item in revision["spec"]["outputs"]}
+        outputs = {item["name"]: item for item in request["spec"]["outputs"]}
         names = [item.name for item in completion.outputs]
         if len(names) != len(set(names)) or set(names) != set(outputs):
             raise ValueError("验收必须覆盖当前 Request 的每个交付名称")
@@ -415,10 +483,10 @@ class Application:
                 )
             if check.status != "completed":
                 continue
-            actual = request["results"].get(check.name)
+            actual = self.requests.outputs(request).get(check.name)
             if not actual or not check.refs:
                 raise ValueError("完成的交付必须绑定真实输出并提供证据")
-            resolved = self.tasks.resolve(request["session_id"], actual)
+            resolved = self.requests.resolve(request["session_id"], actual)
             actual_id = resolved.get("artifact_id", actual["id"])
             if actual_id not in {ref.id for ref in check.refs}:
                 raise ValueError("验收证据没有指向该项实际交付")
@@ -435,17 +503,19 @@ class Application:
                     raise ValueError("实际产物类型与交付要求不一致")
 
     def validate_answer(self, request, answer, extra_refs=(), output_names=None):
-        revision = self.stores.get("request_revisions", request["current_revision_id"])
         allowed = self.requests.artifact_scope(
             [
                 ref
-                for name, ref in request["results"].items()
+                for name, ref in self.requests.outputs(request).items()
                 if output_names is None or name in output_names
             ]
-            + [binding["source"] for binding in revision["spec"]["inputs"]]
+            + [binding["source"] for binding in request["spec"]["inputs"]]
             + [ref.model_dump(exclude_none=True) for ref in extra_refs]
         )
+        names = {item["name"] for item in request["spec"]["outputs"]}
         for index, block in enumerate(answer.blocks, 1):
+            if block.output_name is not None and block.output_name not in names:
+                raise ValueError("回答块的 output_name 不属于当前交付")
             if block.request_id not in (None, request["request_id"]):
                 raise ValueError("本轮回答包含其他 Request 的交付")
             block.request_id = request["request_id"]
@@ -474,6 +544,8 @@ class Application:
         self, request, turn_id, answer, extra_refs=(), direct=False, output_names=None
     ):
         self.validate_answer(request, answer, extra_refs, output_names)
+        if direct and not answer.blocks:
+            raise ValueError("直接回答需要实际内容")
         event = self.stores.event(
             request["session_id"],
             turn_id,
@@ -481,6 +553,7 @@ class Application:
             "Supervisor",
             {
                 "summary": "本项回答已生成",
+                "revision_id": request["current_revision_id"],
                 "blocks": [
                     block.model_dump(exclude_none=True) for block in answer.blocks
                 ],
@@ -488,17 +561,28 @@ class Application:
             request_id=request["request_id"],
         )
         if direct and answer.blocks:
-            revision = self.stores.get(
-                "request_revisions", request["current_revision_id"]
+            names = [item["name"] for item in request["spec"]["outputs"]]
+            bindings = {}
+            for name in names:
+                ref = {"kind": "event", "id": event["event_id"]}
+                if len(names) > 1:
+                    blocks = [
+                        block for block in answer.blocks if block.output_name == name
+                    ]
+                    if len(blocks) != 1:
+                        raise ValueError(
+                            "多项直接交付需各自提供一个带 output_name 的回答块"
+                        )
+                    ref["block_id"] = blocks[0].block_id
+                bindings[name] = ref
+            self.tasks.apply_plan(
+                request,
+                turn_id,
+                Plan(
+                    output_bindings=bindings,
+                    reason="直接回答的交付绑定",
+                ),
             )
-            request["results"] = {
-                item["name"]: {
-                    "kind": "event",
-                    "id": event["event_id"],
-                    "block_id": answer.blocks[0].block_id,
-                }
-                for item in revision["spec"]["outputs"]
-            }
         request["updated_at"] = now()
         self.stores.save_many(
             [("requests", request)],
@@ -557,6 +641,9 @@ class Application:
             "session_id": session_id,
             "turn_id": turn_id,
             "requests": requests,
+            "deliveries": {
+                item["request_id"]: self.requests.outputs(item) for item in requests
+            },
             "revisions": [
                 self.stores.get("request_revisions", item["current_revision_id"])
                 for item in requests
@@ -581,12 +668,11 @@ class Application:
     def resume(self, user_id, request_id, continue_analysis=True):
         request = self.stores.owned_request(user_id, request_id)
         with self._lock(request["session_id"]):
+            request = self.stores.owned_request(user_id, request_id)
             if request["status"] == "archived":
                 raise ValueError("历史归档需求不能直接恢复")
             turn_id = self.stores.new_id("turn")
-            query = self.stores.get(
-                "request_revisions", request["current_revision_id"]
-            )["spec"]["description"]
+            query = request["spec"]["description"]
             self.stores.event(
                 request["session_id"],
                 turn_id,

@@ -67,7 +67,7 @@ class ContextManager:
                         "title",
                         "status",
                         "current_revision_id",
-                        "results",
+                        "spec",
                     )
                 }
                 for item in requests[-12:]
@@ -80,32 +80,44 @@ class ContextManager:
             "available_capabilities": CAPABILITIES,
         }
 
-    def definition(self, session_id, operation, previous, parameters):
+    def definition(
+        self,
+        session_id,
+        operation,
+        previous,
+        parameters,
+        drafts=None,
+        required_outputs=None,
+    ):
         return {
             "stage": "definition",
             "operation": operation.model_dump(exclude_none=True),
             "previous_revision": previous,
             "supplied_parameters": parameters,
+            "required_output_names": required_outputs or [],
             "referenced_inputs": self.ref_views(
                 session_id,
                 [ref.model_dump(exclude_none=True) for ref in operation.refs],
+                drafts,
             ),
             "database_metadata": self.registry.overview(),
         }
 
-    def ref_views(self, session_id, refs):
+    def ref_views(self, session_id, refs, drafts=None):
         values = []
         for ref in refs:
-            self.requests.validate_ref(session_id, ref)
+            self.requests.validate_ref(session_id, ref, set(drafts or {}))
             if ref["kind"] == "request":
-                item = self.stores.get("requests", ref["id"])
+                item = (drafts or {}).get(ref["id"]) or self.stores.get(
+                    "requests", ref["id"]
+                )
                 values.append(
                     {
                         "ref": ref,
                         "request": item,
-                        "revision": self.stores.get(
-                            "request_revisions", item["current_revision_id"]
-                        ),
+                        "deliveries": {}
+                        if ref["id"] in (drafts or {})
+                        else self.requests.outputs(item),
                     }
                 )
             elif ref["kind"] == "artifact":
@@ -118,16 +130,15 @@ class ContextManager:
             elif ref["kind"] == "task":
                 values.append({"ref": ref, "task": self.stores.get("tasks", ref["id"])})
             else:
-                values.append({"ref": ref, **self.tasks.resolve(session_id, ref)})
+                values.append({"ref": ref, **self.requests.resolve(session_id, ref)})
         return values
 
     def planning(self, request):
         return {
             "stage": "planning",
             "request": request,
-            "revision": self.stores.get(
-                "request_revisions", request["current_revision_id"]
-            ),
+            "spec": request["spec"],
+            "deliveries": self.requests.outputs(request),
             "tasks": self.stores.list("tasks", "request_id", request["request_id"]),
             "output_bindings": self.requests.plan_bindings(request),
             "existing_results": [
@@ -144,7 +155,7 @@ class ContextManager:
         for binding in node["input_bindings"]:
             value = {
                 "slot": binding["slot"],
-                **self.tasks.resolve(request["session_id"], binding["source"]),
+                **self.requests.resolve(request["session_id"], binding["source"]),
             }
             if value.get("artifact_id"):
                 artifact = self.overview(self.artifacts.inspect(value["artifact_id"]))
@@ -178,7 +189,7 @@ class ContextManager:
     def answer(self, request, query, completion=None, output_names=None):
         refs = [
             ref
-            for name, ref in request["results"].items()
+            for name, ref in self.requests.outputs(request).items()
             if output_names is None or name in output_names
         ]
         artifact_ids = self.requests.artifact_scope(refs)
@@ -195,9 +206,8 @@ class ContextManager:
             "query": query,
             "scope_request_ids": [request["request_id"]],
             "request": request,
-            "revision": self.stores.get(
-                "request_revisions", request["current_revision_id"]
-            ),
+            "spec": request["spec"],
+            "deliveries": self.requests.outputs(request),
             "completion": completion,
             "results": results,
             "response_output_names": output_names,

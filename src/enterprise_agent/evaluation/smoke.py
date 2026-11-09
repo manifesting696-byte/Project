@@ -53,7 +53,9 @@ class Smoke(unittest.TestCase):
             {"SemanticAgent", "QueryAgent", "AnalysisAgent", "PresentationAgent"},
         )
         self.assertEqual(work["plan_version"], 2)
-        self.assertEqual(set(work["results"]), {"data", "chart", "report"})
+        self.assertEqual(
+            set(self.engine.requests.outputs(work)), {"data", "chart", "report"}
+        )
         self.assertEqual(result["blocks"][0]["request_id"], mean["request_id"])
         self.assertEqual(
             {item["type"] for item in result["artifacts"]},
@@ -79,11 +81,12 @@ class Smoke(unittest.TestCase):
         self.assertEqual(
             {block["kind"] for block in second["blocks"]}, {"text", "chart"}
         )
-        chart_id = after["results"]["chart"]["id"]
+        chart_id = self.engine.requests.outputs(after)["chart"]["id"]
         chart = self.engine.artifacts.content(chart_id)
         self.assertEqual(chart["yAxis"]["type"], "category")
         self.assertEqual(
-            chart["selection"]["source_id"], before["results"]["data"]["id"]
+            chart["selection"]["source_id"],
+            self.engine.requests.outputs(before)["data"]["id"],
         )
         for key, content in original.items():
             self.assertEqual(self.engine.artifacts.content(key), content)
@@ -104,26 +107,310 @@ class Smoke(unittest.TestCase):
         self.assertEqual(
             len(
                 self.engine.artifacts.content(
-                    second["requests"][0]["results"]["data"]["id"]
+                    self.engine.requests.outputs(second["requests"][0])["data"]["id"]
                 )
             ),
             2,
         )
         self.assertTrue(any(node["status"] == "superseded" for node in second["tasks"]))
+        self.assertNotEqual(
+            self.engine.requests.outputs(first["requests"][0]).get("data"),
+            second["deliveries"][second["requests"][0]["request_id"]]["data"],
+        )
         self.assertEqual(
             len(
                 self.engine.artifacts.content(
-                    first["requests"][0]["results"]["data"]["id"]
+                    first["deliveries"][first["requests"][0]["request_id"]]["data"][
+                        "id"
+                    ]
                 )
             ),
             5,
         )
+
+    def test_request_spec_is_complete_and_has_one_stored_source(self):
+        result = self.completed()
+        request = result["requests"][0]
+        self.assertNotIn("results", request)
+        self.assertEqual(request["spec"], result["revisions"][0]["spec"])
+        self.assertEqual(
+            self.engine.stores.list("requests", "session_id", result["session_id"]),
+            [request],
+        )
+        with self.engine.stores.db() as db:
+            stored = json.loads(
+                db.execute(
+                    "SELECT body FROM requests WHERE id=?", (request["request_id"],)
+                ).fetchone()[0]
+            )
+        self.assertNotIn("spec", stored)
+        self.assertNotIn("results", stored)
+        edited = deepcopy(request)
+        edited["spec"]["parameters"]["limit"] = 100
+        with self.assertRaises(ValueError):
+            self.engine.stores.put("requests", edited)
+        self.assertEqual(
+            self.engine.stores.get("requests", request["request_id"]), request
+        )
+
+    def test_fixed_artifact_input_survives_upstream_update(self):
+        class HistoryModel(FixtureModel):
+            def intent(self, context, tools):
+                if context["query"] == "use-history":
+                    return {
+                        "operations": [
+                            self.operation(
+                                "history",
+                                "create_task",
+                                "result_interaction",
+                                "根据上游绘图",
+                                [{"kind": "artifact", "id": self.historical_artifact}],
+                            )
+                        ]
+                    }
+                if context["query"] == "update-source":
+                    return {
+                        "operations": [
+                            self.operation(
+                                self.source_request,
+                                "update_task",
+                                "data_analysis",
+                                "只统计前两个产品",
+                            )
+                        ]
+                    }
+                return super().intent(context, tools)
+
+        self.model = HistoryModel()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        first = self.completed("先给统计结果画图，再列出前五个产品")
+        source = next(
+            item for item in first["requests"] if item["title"] == "列出前五个产品"
+        )
+        dynamic = next(
+            item for item in first["requests"] if item["title"] == "绘制产品图"
+        )
+        self.model.source_request = source["request_id"]
+        self.model.historical_artifact = first["deliveries"][source["request_id"]][
+            "data"
+        ]["id"]
+        second = self.completed("use-history", first["session_id"])
+        fixed = second["requests"][0]
+        chart_id = second["deliveries"][fixed["request_id"]]["chart"]["id"]
+        self.completed("update-source", first["session_id"])
+        current_dynamic = self.engine.stores.get("requests", dynamic["request_id"])
+        current_fixed = self.engine.stores.get("requests", fixed["request_id"])
+        self.assertEqual(current_dynamic["status"], "pending")
+        self.assertEqual(self.engine.requests.outputs(current_dynamic), {})
+        self.assertEqual(current_fixed["status"], "completed")
+        self.assertEqual(
+            self.engine.requests.outputs(current_fixed)["chart"]["id"], chart_id
+        )
+        self.assertEqual(
+            len(self.engine.artifacts.content(self.model.historical_artifact)), 5
+        )
+        self.assertEqual(
+            len(self.engine.artifacts.content(chart_id)["dataset"]["source"]), 5
+        )
+        later = self.completed("use-history", first["session_id"])
+        later_chart = later["deliveries"][later["requests"][0]["request_id"]]["chart"][
+            "id"
+        ]
+        self.assertEqual(
+            len(self.engine.artifacts.content(later_chart)["dataset"]["source"]), 5
+        )
+        self.assertEqual(self.model.calls.count("QueryAgent"), 2)
+
+    def test_multiple_direct_outputs_bind_to_their_own_answer_blocks(self):
+        class MultipleAnswers(FixtureModel):
+            def intent(self, context, tools):
+                if context["query"] == "add-example":
+                    request = context["candidate_requests"][-1]
+                    return {
+                        "operations": [
+                            self.operation(
+                                request["request_id"],
+                                "update_task",
+                                "general_qa",
+                                "add-example",
+                            )
+                        ]
+                    }
+                return super().intent(context, tools)
+
+            @staticmethod
+            def definition(context):
+                return {
+                    "description": "解释平均值并给出例子",
+                    "outputs": [
+                        {"name": "definition", "kind": "text", "description": "定义"},
+                        {"name": "example", "kind": "text", "description": "例子"},
+                    ],
+                }
+
+            @staticmethod
+            def answer(context):
+                if context.get("operation", {}).get("instruction") == "add-example":
+                    return {
+                        "blocks": [
+                            {
+                                "output_name": "definition",
+                                "kind": "text",
+                                "content": "总和除以数量。",
+                            },
+                            {
+                                "output_name": "example",
+                                "kind": "text",
+                                "content": "2和4的平均值是3。",
+                            },
+                        ]
+                    }
+                return FixtureModel.answer(context)
+
+        self.model = MultipleAnswers()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        first = self.completed("什么是平均值？")
+        second = self.completed("add-example", first["session_id"])
+        request_id = second["requests"][0]["request_id"]
+        for name, content in (
+            ("definition", "总和除以数量。"),
+            ("example", "2和4的平均值是3。"),
+        ):
+            event = self.engine.requests.resolve(
+                second["session_id"],
+                {
+                    "kind": "request",
+                    "id": request_id,
+                    "output": name,
+                },
+            )["event"]
+            self.assertEqual(len(event["payload"]["blocks"]), 1)
+            self.assertEqual(event["payload"]["blocks"][0]["content"], content)
+        self.assertFalse(second["tasks"])
+
+    def test_previous_answer_block_is_an_explicit_input(self):
+        class AnswerHistoryModel(FixtureModel):
+            def intent(self, context, tools):
+                if context["query"] == "reuse-answer":
+                    return {
+                        "operations": [
+                            self.operation(
+                                "explanation",
+                                "none",
+                                "result_interaction",
+                                "reuse-answer",
+                                [self.previous],
+                            )
+                        ]
+                    }
+                return super().intent(context, tools)
+
+            def answer(self, context):
+                if context.get("operation", {}).get("instruction") == "reuse-answer":
+                    previous = context["referenced_inputs"][0]["event"]["payload"][
+                        "blocks"
+                    ]
+                    self.seen_blocks = previous
+                    return {
+                        "blocks": [
+                            {
+                                "kind": "text",
+                                "content": previous[0]["content"],
+                                "refs": [self.previous],
+                            }
+                        ]
+                    }
+                return FixtureModel.answer(context)
+
+        self.model = AnswerHistoryModel()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        first = self.completed("什么是平均值？")
+        self.model.previous = {
+            "kind": "event",
+            "id": first["response_event_id"],
+            "block_id": first["blocks"][0]["block_id"],
+        }
+        second = self.completed("reuse-answer", first["session_id"])
+        request = second["requests"][0]
+        self.assertEqual(request["spec"]["inputs"][0]["source"], self.model.previous)
+        self.assertEqual(self.model.seen_blocks, first["blocks"])
+        self.assertEqual(second["blocks"][0]["content"], first["blocks"][0]["content"])
+        resolved = self.engine.requests.resolve(
+            second["session_id"],
+            {
+                "kind": "request",
+                "id": request["request_id"],
+                "output": "answer",
+            },
+        )
+        self.assertEqual(
+            resolved["event"]["payload"]["blocks"][0]["content"],
+            first["blocks"][0]["content"],
+        )
+        self.assertFalse(second["tasks"])
+
+    def test_spec_dependency_cycles_are_rejected_before_execution(self):
+        class CyclicSpecModel(FixtureModel):
+            def intent(self, context, tools):
+                return {
+                    "operations": [
+                        self.operation("a", "create_task", "data_analysis", "A"),
+                        self.operation("b", "create_task", "data_analysis", "B"),
+                    ]
+                }
+
+            @staticmethod
+            def definition(context):
+                other = (
+                    "req_002"
+                    if context["operation"]["instruction"] == "A"
+                    else "req_001"
+                )
+                return {
+                    "description": context["operation"]["instruction"],
+                    "inputs": [
+                        FixtureModel.binding("upstream", "request", other, "data")
+                    ],
+                    "outputs": [
+                        {"name": "data", "kind": "table", "description": "Data"}
+                    ],
+                }
+
+        self.model = CyclicSpecModel()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        result = self.engine.ask(1, "create cyclic requirements")
+        self.assertEqual(result["status"], "failed")
+        self.assertFalse(result["tasks"])
+        self.assertFalse(result["artifacts"])
+        self.assertEqual(
+            self.engine.stores.list("requests", "session_id", result["session_id"]), []
+        )
+        self.assertNotIn("QueryAgent", self.model.calls)
 
     def test_same_turn_request_dependency_is_ordered_and_materialized(self):
         result = self.completed("先给统计结果画图，再列出前五个产品")
         requests = {item["title"]: item for item in result["requests"]}
         chart_request = requests["绘制产品图"]
         data_request = requests["列出前五个产品"]
+        self.assertEqual(
+            chart_request["spec"]["inputs"][0]["source"],
+            {
+                "kind": "request",
+                "id": data_request["request_id"],
+                "output": "data",
+            },
+        )
+        last_definition = max(
+            index
+            for index, role in enumerate(self.model.calls)
+            if role == "UnifiedSupervisor.Definition"
+        )
+        first_execution = min(
+            index
+            for index, role in enumerate(self.model.calls)
+            if role in ("SemanticAgent", "QueryAgent", "PresentationAgent")
+        )
+        self.assertLess(last_definition, first_execution)
         self.assertEqual(result["blocks"][0]["request_id"], chart_request["request_id"])
         task = next(
             node
@@ -131,10 +418,71 @@ class Smoke(unittest.TestCase):
             if node["assigned_agent"] == "PresentationAgent"
         )
         self.assertEqual(
-            task["input_bindings"][0]["source"], data_request["results"]["data"]
+            task["input_bindings"][0]["source"],
+            self.engine.requests.outputs(data_request)["data"],
         )
-        chart = self.engine.artifacts.inspect(chart_request["results"]["chart"]["id"])
-        self.assertEqual(chart["source_refs"], [data_request["results"]["data"]])
+        chart = self.engine.artifacts.inspect(
+            self.engine.requests.outputs(chart_request)["chart"]["id"]
+        )
+        self.assertEqual(
+            chart["source_refs"], [self.engine.requests.outputs(data_request)["data"]]
+        )
+
+    def test_invalid_input_preserves_independent_request_execution(self):
+        class PartialModel(FixtureModel):
+            def intent(self, context, tools):
+                return {
+                    "operations": [
+                        self.operation(
+                            "invalid", "create_task", "data_analysis", "invalid-input"
+                        ),
+                        self.operation(
+                            "valid", "create_task", "data_analysis", "列出前五个产品"
+                        ),
+                    ]
+                }
+
+            @staticmethod
+            def definition(context):
+                spec = FixtureModel.definition(context)
+                if context["operation"]["instruction"] == "invalid-input":
+                    spec["inputs"] = [
+                        FixtureModel.binding(
+                            "missing", "request", "req_missing", "data"
+                        )
+                    ]
+                return spec
+
+        self.model = PartialModel()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        result = self.engine.ask(1, "one invalid and one valid request")
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(len(result["requests"]), 1)
+        self.assertEqual(result["requests"][0]["status"], "completed")
+        self.assertEqual(self.model.calls.count("QueryAgent"), 1)
+
+    def test_conflicting_legacy_deliveries_roll_back_migration(self):
+        result = self.completed("分别列出前两个和前三个产品")
+        with self.engine.stores.db() as db:
+            for index, request in enumerate(result["requests"]):
+                stored = {key: value for key, value in request.items() if key != "spec"}
+                stored["results"] = result["deliveries"][request["request_id"]]
+                if index:
+                    stored["output_refs"] = {}
+                db.execute(
+                    "UPDATE requests SET body=? WHERE id=?",
+                    (json.dumps(stored), request["request_id"]),
+                )
+            before = db.execute("SELECT id, body FROM requests ORDER BY id").fetchall()
+            before = [tuple(row) for row in before]
+        with self.assertRaises(ValueError):
+            Stores(Path(self.directory.name))
+        with self.engine.stores.db() as db:
+            after = [
+                tuple(row)
+                for row in db.execute("SELECT id, body FROM requests ORDER BY id")
+            ]
+        self.assertEqual(after, before)
 
     def test_cross_request_update_invalidates_dependent_result(self):
         first = self.completed("先给统计结果画图，再列出前五个产品")
@@ -166,7 +514,7 @@ class Smoke(unittest.TestCase):
         second = self.completed("只统计前两个产品", first["session_id"])
         dependent = self.engine.stores.get("requests", chart["request_id"])
         self.assertEqual(dependent["status"], "pending")
-        self.assertEqual(dependent["results"], {})
+        self.assertEqual(self.engine.requests.outputs(dependent), {})
         self.assertTrue(
             any(
                 node["status"] == "superseded"
@@ -190,7 +538,11 @@ class Smoke(unittest.TestCase):
         )
         self.assertEqual(
             [
-                len(self.engine.artifacts.content(item["results"]["data"]["id"]))
+                len(
+                    self.engine.artifacts.content(
+                        self.engine.requests.outputs(item)["data"]["id"]
+                    )
+                )
                 for item in result["requests"]
             ],
             [2, 3],
@@ -208,7 +560,11 @@ class Smoke(unittest.TestCase):
                                 "update_task",
                                 "result_interaction",
                                 context["query"],
-                                [request["results"]["data"]],
+                                [
+                                    tools["get_request_state"].call(
+                                        request_id=request["request_id"]
+                                    )["deliveries"]["data"]
+                                ],
                             )
                         ],
                         "clarifications": [],
@@ -238,10 +594,7 @@ class Smoke(unittest.TestCase):
                 return FixtureModel.definition(context)
 
             def plan(self, context, tools):
-                if (
-                    context["revision"]["spec"]["description"]
-                    == "从已有结果保留前两个产品"
-                ):
+                if context["spec"]["description"] == "从已有结果保留前两个产品":
                     return {
                         "reason": "精确计算历史数据",
                         "tasks": [
@@ -249,7 +602,7 @@ class Smoke(unittest.TestCase):
                                 "filter",
                                 "AnalysisAgent",
                                 "保留前两行",
-                                inputs=context["revision"]["spec"]["inputs"],
+                                inputs=context["spec"]["inputs"],
                                 outputs=["filtered"],
                                 params={"filter_only": True},
                             )
@@ -294,7 +647,7 @@ class Smoke(unittest.TestCase):
         first = self.completed()
         second = self.completed("保留刚才前两个产品", first["session_id"])
         output = self.engine.artifacts.inspect(
-            second["requests"][0]["results"]["data"]["id"]
+            self.engine.requests.outputs(second["requests"][0])["data"]["id"]
         )
         self.assertEqual(self.model.calls.count("QueryAgent"), 1)
         self.assertEqual(output["payload"]["provenance"]["method"], "artifact_compute")
@@ -440,7 +793,8 @@ class Smoke(unittest.TestCase):
         other = self.engine.ask(2, "什么是平均值？")
         with self.assertRaises(PermissionError):
             self.engine.requests.validate_ref(
-                other["session_id"], first["requests"][0]["results"]["data"]
+                other["session_id"],
+                first["deliveries"][first["requests"][0]["request_id"]]["data"],
             )
         with self.assertRaises(ValidationError):
             ResourceRef(kind="artifact", id="result_001", output="dataset")
@@ -485,50 +839,81 @@ class Smoke(unittest.TestCase):
             self.engine.stores.list("requests", "session_id", session["session_id"]), []
         )
 
-    def test_renamed_request_results_preserve_existing_ledger(self):
-        result = self.completed()
-        request = result["requests"][0]
-        artifact_id = request["results"]["data"]["id"]
-        original_content = self.engine.artifacts.content(artifact_id)
-        original_events = self.engine.stores.list(
-            "session_events", "session_id", result["session_id"]
-        )
-        previous = deepcopy(request)
-        previous["output_refs"] = previous.pop("results")
-        with self.engine.stores.db() as db:
-            db.execute(
-                "UPDATE requests SET body=? WHERE id=?",
-                (json.dumps(previous), request["request_id"]),
-            )
-
-        stores = Stores(Path(self.directory.name))
-        self.assertEqual(stores.get("requests", request["request_id"]), request)
-        self.assertEqual(
-            stores.list("requests", "session_id", result["session_id"]), [request]
-        )
-        with stores.db() as db:
-            persisted = json.loads(
-                db.execute(
-                    "SELECT body FROM requests WHERE id=?", (request["request_id"],)
-                ).fetchone()[0]
-            )
-        self.assertNotIn("output_refs", persisted)
-        self.assertEqual(persisted["results"], request["results"])
-        self.assertEqual(
-            stores.list("session_events", "session_id", result["session_id"]),
-            original_events,
-        )
-        engine = Application(stores, self.model)
-        self.assertEqual(engine.artifacts.content(artifact_id), original_content)
-        self.assertEqual(
-            engine.tasks.resolve(
-                result["session_id"],
-                {"kind": "request", "id": request["request_id"], "output": "data"},
-            ),
-            {"artifact_id": artifact_id},
-        )
-        reopened = Stores(Path(self.directory.name))
-        self.assertEqual(reopened.get("requests", request["request_id"]), request)
+    def test_request_specs_and_legacy_deliveries_preserve_existing_ledger(self):
+        for field in ("results", "output_refs"):
+            with self.subTest(field=field):
+                result = self.completed()
+                request = result["requests"][0]
+                deliveries = self.engine.requests.outputs(request)
+                artifact_id = deliveries["data"]["id"]
+                original_content = self.engine.artifacts.content(artifact_id)
+                previous = {
+                    key: value for key, value in request.items() if key != "spec"
+                }
+                previous[field] = deliveries
+                with self.engine.stores.db() as db:
+                    db.execute(
+                        "UPDATE requests SET body=? WHERE id=?",
+                        (
+                            json.dumps(previous),
+                            request["request_id"],
+                        ),
+                    )
+                    for row in db.execute(
+                        "SELECT id, body FROM session_events WHERE session_id=?",
+                        (request["session_id"],),
+                    ).fetchall():
+                        event = json.loads(row[1])
+                        if event["event_type"] == "plan_updated":
+                            event["event_type"] = "agent_output"
+                            event["payload"]["summary"] = "Historical execution"
+                            db.execute(
+                                "UPDATE session_events SET body=? WHERE id=?",
+                                (json.dumps(event), row[0]),
+                            )
+                original_events = self.engine.stores.list(
+                    "session_events", "session_id", request["session_id"]
+                )
+                stores = Stores(Path(self.directory.name))
+                self.assertEqual(stores.get("requests", request["request_id"]), request)
+                with stores.db() as db:
+                    persisted = json.loads(
+                        db.execute(
+                            "SELECT body FROM requests WHERE id=?",
+                            (request["request_id"],),
+                        ).fetchone()[0]
+                    )
+                self.assertNotIn("results", persisted)
+                self.assertNotIn("output_refs", persisted)
+                self.assertNotIn("spec", persisted)
+                self.assertEqual(
+                    stores.list("session_events", "session_id", request["session_id"])[
+                        :-1
+                    ],
+                    original_events,
+                )
+                engine = Application(stores, self.model)
+                self.assertEqual(
+                    engine.artifacts.content(artifact_id), original_content
+                )
+                self.assertEqual(engine.requests.outputs(request), deliveries)
+                self.assertEqual(
+                    engine.requests.resolve(
+                        request["session_id"],
+                        {
+                            "kind": "request",
+                            "id": request["request_id"],
+                            "output": "data",
+                        },
+                    ),
+                    {"artifact_id": artifact_id},
+                )
+                self.assertEqual(
+                    Stores(Path(self.directory.name)).get(
+                        "requests", request["request_id"]
+                    ),
+                    request,
+                )
 
     def test_atomic_revision_compare_and_swap(self):
         result = self.completed()
@@ -555,7 +940,7 @@ class Smoke(unittest.TestCase):
         task = next(
             node for node in result["tasks"] if node["assigned_agent"] == "QueryAgent"
         )
-        artifact_id = request["results"]["data"]["id"]
+        artifact_id = self.engine.requests.outputs(request)["data"]["id"]
         before = self.engine.artifacts.content(artifact_id)
         request["status"], task["status"] = "running", "running"
         self.engine.stores.save_many([("requests", request), ("tasks", task)])
@@ -654,6 +1039,9 @@ class Smoke(unittest.TestCase):
                 result = response.json()
                 self.assertEqual(result["status"], "completed", result["blocks"])
                 request = result["requests"][-1]
+                self.assertIn("spec", request)
+                self.assertNotIn("results", request)
+                self.assertIn(request["request_id"], result["deliveries"])
                 self.assertEqual(
                     len(
                         client.get(
@@ -685,7 +1073,7 @@ class Smoke(unittest.TestCase):
                     ).status_code,
                     200,
                 )
-                artifact = request["results"]["data"]["id"]
+                artifact = self.engine.requests.outputs(request)["data"]["id"]
                 self.assertEqual(
                     client.get(f"/artifacts/{artifact}/sql", headers=headers).json()[
                         "provenance"
@@ -749,6 +1137,51 @@ class Smoke(unittest.TestCase):
             check=True,
             capture_output=True,
         )
+
+    def test_direct_answer_waits_for_its_request_input(self):
+        class DependentAnswerModel(FixtureModel):
+            def intent(self, context, tools):
+                return {
+                    "operations": [
+                        self.operation(
+                            "data", "create_task", "data_analysis", "列出前五个产品"
+                        ),
+                        self.operation(
+                            "explanation",
+                            "none",
+                            "result_interaction",
+                            "解释上游数据",
+                            [
+                                {"kind": "request", "id": "data", "output": "data"},
+                            ],
+                        ),
+                    ]
+                }
+
+        class MissingSemantics:
+            def execute(self, context, allowed, emit):
+                return {
+                    "status": "needs_clarification",
+                    "summary": "需要确认口径",
+                    "semantic_binding": {
+                        "status": "ambiguous",
+                        "explanation": "需要确认口径",
+                    },
+                    "produced_outputs": {},
+                }
+
+        engine = Application(
+            Stores(Path(self.directory.name) / "dependent-answer"),
+            DependentAnswerModel(),
+            specialist_overrides={"SemanticAgent": MissingSemantics()},
+        )
+        result = engine.ask(1, "query then explain")
+        self.assertEqual(result["status"], "needs_clarification", result["blocks"])
+        self.assertEqual(
+            [item["status"] for item in result["requests"]],
+            ["needs_clarification", "needs_clarification"],
+        )
+        self.assertFalse(result["artifacts"])
 
     def test_model_transport_tool_round_trip(self):
         class ScriptedTransport:

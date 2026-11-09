@@ -4,25 +4,96 @@ import json
 import sqlite3
 from pathlib import Path
 
-from ..core.models import Request
+from datetime import datetime, timezone
+
+from ..core.models import RequestRecord, SessionEvent
 
 
-def migrate_request_results(db):
-    """Rename persisted Request outputs in the same startup transaction."""
+def migrate_request_specs(db):
+    """Recover legacy delivery bindings before removing request result caches."""
     if not db.in_transaction:
         db.execute("BEGIN IMMEDIATE")
     for row in db.execute("SELECT id, body FROM requests").fetchall():
         request = json.loads(row[1])
-        if "output_refs" not in request:
+        if "results" not in request and "output_refs" not in request:
             continue
-        previous = request.pop("output_refs")
-        if "results" in request and request["results"] != previous:
-            raise ValueError("Request results conflicts with legacy output_refs")
-        request["results"] = previous
-        validated = Request.model_validate(request).model_dump(exclude_none=True)
+        cached = request.pop("results", request.get("output_refs", {}))
+        if "output_refs" in request and request["output_refs"] != cached:
+            raise ValueError("Conflicting legacy request deliveries")
+        request.pop("output_refs", None)
+        request.pop("spec", None)
+        RequestRecord.model_validate(request)
+        events = [
+            json.loads(event[0])
+            for event in db.execute(
+                "SELECT body FROM session_events WHERE session_id=? ORDER BY seq DESC",
+                (request["session_id"],),
+            )
+        ]
+        current = next(
+            (
+                event["payload"]["plan"]["output_bindings"]
+                for event in events
+                if event["event_type"] == "plan_updated"
+                and event.get("request_id") == request["request_id"]
+                and event["payload"].get("revision_id")
+                == request["current_revision_id"]
+            ),
+            {},
+        )
+        if any(name not in current for name in cached):
+            session = json.loads(
+                db.execute(
+                    "SELECT body FROM sessions WHERE id=?", (request["session_id"],)
+                ).fetchone()[0]
+            )
+            sequence = db.execute(
+                "INSERT INTO sequences VALUES('event',1) ON CONFLICT(kind) DO UPDATE SET value=value+1 RETURNING value"
+            ).fetchone()[0]
+            session["last_seq"] += 1
+            stamp = datetime.now(timezone.utc).isoformat()
+            event = SessionEvent(
+                event_id=f"event_{sequence:03d}",
+                session_id=session["session_id"],
+                seq=session["last_seq"],
+                turn_id=request["created_by_turn_id"],
+                event_type="plan_updated",
+                request_id=request["request_id"],
+                actor="Migration",
+                created_at=stamp,
+                payload={
+                    "revision_id": request["current_revision_id"],
+                    "plan_version": request["plan_version"],
+                    "plan": {
+                        "tasks": [],
+                        "cancel_task_ids": [],
+                        "output_bindings": {**cached, **current},
+                        "reason": "Recovered historical delivery bindings",
+                    },
+                },
+            ).model_dump(exclude_none=True)
+            db.execute(
+                "INSERT INTO session_events VALUES(?,?,?,?)",
+                (
+                    event["event_id"],
+                    event["session_id"],
+                    event["seq"],
+                    json.dumps(event, ensure_ascii=False),
+                ),
+            )
+            db.execute(
+                "UPDATE sessions SET body=? WHERE id=?",
+                (
+                    json.dumps(session, ensure_ascii=False),
+                    session["session_id"],
+                ),
+            )
         db.execute(
             "UPDATE requests SET body=? WHERE id=?",
-            (json.dumps(validated, ensure_ascii=False), row[0]),
+            (
+                json.dumps(request, ensure_ascii=False),
+                row[0],
+            ),
         )
 
 

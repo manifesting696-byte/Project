@@ -11,53 +11,9 @@ class Tasks:
     def __init__(self, stores, requests):
         self.stores, self.requests = stores, requests
 
-    def resolve(self, session_id, ref):
-        self.requests.validate_ref(session_id, ref)
-        kind, key = ref["kind"], ref["id"]
-        if kind == "artifact":
-            return {"artifact_id": key}
-        if kind == "event":
-            event = deepcopy(self.stores.get("session_events", key))
-            if ref.get("block_id"):
-                event["payload"]["blocks"] = [
-                    block
-                    for block in event["payload"]["blocks"]
-                    if block["block_id"] == ref["block_id"]
-                ]
-            return {"event": event}
-        if kind == "request":
-            request = self.stores.get("requests", key)
-            outputs = request["results"]
-            name = ref.get("output")
-            if name is None:
-                if len(outputs) != 1:
-                    raise ValueError("Request 有多个或尚无结果，请指定实际交付名称")
-                name = next(iter(outputs))
-            if name not in outputs:
-                raise ValueError("上游 Request 的交付尚未完成")
-            return self.resolve(session_id, outputs[name])
-        task = self.stores.get("tasks", key)
-        if task["status"] != "completed":
-            raise ValueError("上游执行 Task 尚未完成")
-        if task.get("semantic_binding") and ref.get("output") in (
-            None,
-            "semantic_binding",
-        ):
-            return {"semantic_binding": task["semantic_binding"]}
-        outputs = task["produced_outputs"]
-        name = ref.get("output")
-        if name is None:
-            if len(outputs) != 1:
-                raise ValueError("多个上游输出必须指定 output")
-            name = next(iter(outputs))
-        if name not in outputs:
-            raise ValueError("上游未生成声明的输出")
-        return self.resolve(session_id, outputs[name])
-
     def allowed_artifacts(self, request):
-        revision = self.stores.get("request_revisions", request["current_revision_id"])
         return self.requests.artifact_scope(
-            [binding["source"] for binding in revision["spec"]["inputs"]]
+            [binding["source"] for binding in request["spec"]["inputs"]]
         )
 
     def validate_artifact_input(self, request, artifact_id, explicit):
@@ -75,8 +31,7 @@ class Tasks:
     def apply_plan(self, request, turn_id, plan: Plan):
         nodes = self.stores.session_tasks(request["session_id"])
         existing = {node["task_id"]: node for node in nodes}
-        revision = self.stores.get("request_revisions", request["current_revision_id"])
-        output_names = {item["name"] for item in revision["spec"]["outputs"]}
+        output_names = {item["name"] for item in request["spec"]["outputs"]}
         cancelled = set(plan.cancel_task_ids)
         for key in cancelled:
             if (
@@ -118,12 +73,13 @@ class Tasks:
                         )
                     source = self.stores.get("requests", ref["id"])
                     self.requests.validate_ref(request["session_id"], ref)
+                    available = self.requests.outputs(source)
                     name = ref.get("output")
-                    if name is None and len(source["results"]) == 1:
-                        name = next(iter(source["results"]))
-                    if name not in source["results"]:
+                    if name is None and len(available) == 1:
+                        name = next(iter(available))
+                    if name not in available:
                         raise ValueError("上游 Request 的交付尚未完成")
-                    binding["source"] = deepcopy(source["results"][name])
+                    binding["source"] = deepcopy(available[name])
                     if (
                         binding["source"]["kind"] == "task"
                         and binding["source"]["id"] not in node["depends_on"]
@@ -178,7 +134,7 @@ class Tasks:
                         self.validate_artifact_input(request, ref["id"], explicit)
                     elif ref["kind"] == "request":
                         # Request dependencies are materialized before a consumer plan executes.
-                        value = self.resolve(request["session_id"], ref)
+                        value = self.requests.resolve(request["session_id"], ref)
                         if value.get("artifact_id"):
                             self.validate_artifact_input(
                                 request, value["artifact_id"], explicit
@@ -261,24 +217,3 @@ class Tasks:
             },
         )
         request.update(updated_request)
-
-    def refresh_outputs(self, request):
-        resolved = {}
-        for name, ref in self.requests.plan_bindings(request).items():
-            try:
-                item = self.resolve(request["session_id"], ref)
-            except ValueError:
-                continue
-            if item.get("artifact_id"):
-                resolved[name] = {"kind": "artifact", "id": item["artifact_id"]}
-            elif item.get("event"):
-                resolved[name] = ref
-            elif item.get("semantic_binding"):
-                resolved[name] = ref
-        request["results"] = resolved
-        request["updated_at"] = now()
-        self.stores.save_many(
-            [("requests", request)],
-            expected_revisions={request["request_id"]: request["current_revision_id"]},
-        )
-        return resolved
