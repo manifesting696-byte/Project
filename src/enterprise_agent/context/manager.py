@@ -79,7 +79,7 @@ class ContextManager:
             "available_capabilities": CAPABILITIES,
         }
 
-    def definition(
+    def preparation(
         self,
         session_id,
         operation,
@@ -87,9 +87,24 @@ class ContextManager:
         parameters,
         drafts=None,
         required_outputs=None,
+        feedback=None,
     ):
+        request = (
+            self.stores.get("requests", operation.request_id) if previous else None
+        )
         return {
-            "stage": "definition",
+            "stage": "preparation",
+            "request_id": operation.request_id,
+            "existing_tasks": self.stores.list(
+                "tasks", "request_id", operation.request_id
+            )
+            if request
+            else [],
+            "deliveries": self.requests.outputs(request) if request else {},
+            "output_bindings": self.requests.plan_bindings(request) if request else {},
+            "validation_feedback": feedback,
+            "upstream_requests": list((drafts or {}).values()),
+            "available_capabilities": CAPABILITIES,
             "operation": operation.model_dump(exclude_none=True),
             "previous_revision": previous,
             "supplied_parameters": parameters,

@@ -1,26 +1,80 @@
 """Role instructions and field semantics for the request/task runtime."""
 
-SUPERVISOR_INTENT = (
-    "识别本轮所有独立用户要求，返回 operations 和 clarifications。Request 是可跨轮修改的业务工作，Task 是后续 Agent 执行节点。"
-    "候选 Request 包含当前完整要求，可据此判断用户在修改哪一项。"
-    "每项 operation 必须包含 request_id/action/category/instruction/refs。"
-    "request_id 对 none/create_task 使用本轮唯一局部名称，如 new_1；代码分配全局 req_xxx。"
-    "update_task 必须使用通过上下文或 get_request_state 确认的真实 request_id；目标不明确则澄清。"
-    "action 只有 none/create_task/update_task。none 表示依据知识目录或已有产物直接回答，无需新数据计算；"
-    "create_task 表示创建需要查询、计算、绘图或报告的新工作；update_task 表示修改已存在工作的要求或展示。"
-    "category 独立描述本轮内容，只有 general_qa（系统/统计知识）、business_knowledge（企业表字段关系指标术语）、"
-    "data_analysis（明细统计排名趋势对比诊断）、result_interaction（已有结果的解释绘图报告修改）。"
-    "general_qa/business_knowledge 固定使用 none；data_analysis/result_interaction 固定使用 create_task 或 update_task。"
-    "instruction 完整保留本轮要求，修改仅描述用户实际提出的变化，不擅自新增交付。"
-    "refs 只允许 artifact 或 request。artifact 用 id 指向已存在的文字、数据表、图表或报告；request 必须包含 id 和 output 指定上游命名交付，"
-    "历史回复引用其 block.artifact_id，不引用事件、Task 或 block_id；artifact 不填写 output。"
-    "本轮后续请求可以通过 request 局部 ID 和 output 引用上游结果，不能猜测尚未生成的 result ID。none 的文字交付名称固定为 answer。"
-    "原话中的多项要求都需保留；同一目标 Request 的多处修改合成一项 update_task。"
-    "信息不足时在 clarifications 写 request_id（无法定位则 null）、subject、question、refs，"
-    "明确的其他请求仍可返回 operations；不要编造目标或业务定义。"
-)
+SUPERVISOR_INTENT = """
+识别本轮所有独立的用户要求，返回 operations 和 clarifications。
 
-SUPERVISOR_DEFINITION = (
+Request 是可跨轮修改的业务工作，Task 是后续 Agent 的执行节点。
+候选 Request 的 spec 包含当前完整的输入、参数和预期交付，可用于理解已有需求。
+这两个仅作为上下文提示，你不要输出，你需要按一下内容输出：
+
+每项 operation 必须包含 request_id、action、category、instruction 和 refs。
+
+1. action
+
+取值只有 none、create_task、update_task。
+
+- none 表示依据知识目录或已有产物直接回答，无需新增数据计算。
+- create_task 表示创建需要查询、计算、绘图或生成报告的新工作。
+- update_task 表示修改已有 Request 的要求或展示方式。
+
+2. request_id
+
+request_id 是需求的标识符。
+
+- none/create_task 使用本轮唯一的局部名称，如 new_1，后续由代码分配全局 req_xxx。
+- update_task 使用原本已存在的真实 request_id，必须通过上下文或
+  get_request_state 确认，不能默认选择最近一个 Request。
+
+3. category
+
+category 描述本轮要求的内容类型，取值只有以下四种。
+
+- general_qa 包括系统能力介绍、基本统计概念。
+- business_knowledge 包括企业数据表、字段、表关系、指标含义和业务术语。
+- data_analysis 包括明细查询、统计、排名、趋势、对比、关联和诊断分析。
+- result_interaction 包括图表生成、报告生成、指标解释、图表解释和结果解读。
+
+category 与 action 按以下规则对应。
+
+- general_qa、business_knowledge 固定使用 none。
+- data_analysis、result_interaction 新增工作时使用 create_task，
+  修改已有 Request 的要求时使用 update_task。
+
+4. instruction
+
+完整保留本轮要求。修改已有需求时，仅描述用户实际提出的变化，
+不擅自新增交付。
+
+如果用户引用前文，需根据上下文将指代补充完整。
+例如，用户问“之前那个字段是什么意思”，应明确写为
+“解释上一轮提到的字段‘xxx’的含义”。
+
+5. refs
+
+refs 表示本项要求需要引用的内容，使用 IntentRef 表达。
+
+kind 只有 request 和 artifact，id 表示对应对象的唯一标识符。
+
+- kind="request" 用于引用 Request 的命名交付，包括本轮 Request 之间的依赖。
+  必须填写 id 和 output。
+  output 表示被引用 Request 预期输出的名称，对应其 outputs 中的 name。
+- kind="artifact" 用于引用已存在的具体内容，包括历史轮次得到的文字、
+  数据表、图表和报告。通过 id 直接定位，不填写 output。
+
+对于 update_task，优先查看目标 Request 上一轮产生的 Artifact，
+再判断是否需要将其加入 refs。
+
+6. clarifications
+
+信息不足时，在 clarifications 中填写
+request_id、subject、question 和 refs。
+
+无法定位目标 Request 时，request_id 填 null。
+明确的其他要求仍可返回 operations，不要编造目标或业务定义。
+"""
+
+
+SUPERVISOR_PREPARATION_REQUIREMENTS = (
     "将本轮 operation 与 previous_revision 合并为一份完整 RequestSpec。"
     "description 是完整业务目标；parameters 是本请求参数；inputs 是 slot/source 形式的显式输入；"
     "outputs 每项含 name/content_type/description/options，name 为此 Request 内稳定的交付名称，"
@@ -37,7 +91,7 @@ SUPERVISOR_DEFINITION = (
 )
 
 SUPERVISOR_PLANNING = (
-    "request.spec 和 context.spec 是当前完整要求，deliveries 是按执行记录解析出的实际交付。"
+    "spec 是本次规划依据的完整要求，deliveries 是按执行记录解析出的实际交付。"
     "依据当前 Request.spec 动态生成 Agent 执行 Task DAG，返回 tasks/cancel_task_ids/output_bindings/reason。"
     "tasks 只提交新增节点，用局部 task_id；不能重复提交已有节点。四个专业角色为 SemanticAgent/QueryAgent/AnalysisAgent/PresentationAgent。"
     "objective 说明本步工作；depends_on 管执行顺序；input_bindings 的 slot/source 管真实输入；expected_outputs 管命名 Artifact 输出。"
@@ -55,6 +109,23 @@ SUPERVISOR_PLANNING = (
     "独立就绪节点可以并行，允许分支和动态重规划；缺少口径时可保持未完成并最终澄清。"
 )
 
+SUPERVISOR_PREPARATION = (
+    "根据 operation，一次返回完整 spec 和初始 plan，clarifications 为空。"
+    "若需求本身缺少必要信息，则仅返回 clarifications，spec 和 plan 为 null。"
+    "request_id 已由上下文确定，输出对象只有 spec、plan、clarifications。"
+    "previous_revision 是旧要求，existing_tasks、deliveries、output_bindings 是旧执行状态。"
+    "先在本次推理中合并完整要求，再依据新要求规划。"
+    "数据目标、参数或数据输入改变后，受影响的旧节点会失效，不能将它们作为新交付。"
+    "operation.refs 的引用身份沿用到 spec.inputs；新增来源需通过工具确认，不能遗漏用户明确引用的输入。"
+    "Task 的外部来源需落实到 spec.inputs，自己的中间结果使用 task/output。"
+    "upstream_requests 包含本轮上游的候选规格，尚未生成结果时用 request/id/output 保留逻辑依赖。"
+    "supplied_parameters 必须在本次规划时纳入 spec，null 表示清除对应参数。"
+    "validation_feedback 包含被拒绝的候选结果与原因，请同时修正 spec 和 plan 的对应关系。"
+    + SUPERVISOR_PREPARATION_REQUIREMENTS
+    + "以下执行规则用于 plan 字段。"
+    + SUPERVISOR_PLANNING
+)
+
 SUPERVISOR_COMPLETION = (
     "逐项检查当前 request.spec.outputs，返回 outputs 列表、next_action 和 reason。"
     "每个 name 必须覆盖一次，completed 必须引用实际交付绑定所解析的 Artifact。"
@@ -69,6 +140,8 @@ SUPERVISOR_ANSWER = (
     "response_output_names 有值时仅交付其中的输出；空列表表示只需文字说明删除或调整结果。"
     "request.spec 定义预期交付，deliveries 给出实际交付引用。"
     "直接文字回答有多项交付时，每项使用一个块并填写对应 output_name；单项交付可以分多块回答。"
+    "output_name 用于绑定同类型的交付。文字解释块仅在交付为 text 时填写 output_name；表格、图表、报告的配套说明文字省略 output_name，并在 refs 引用依据。"
+    "validation_feedback 若包含被拒绝的回答与原因，请修正引用、类型和交付名称的对应关系。"
     "每个内部草稿块含 content_type/content/refs，可填写 request_id 和 output_name。text 写简明正文，table/chart/report 的 refs 仅引用对应真实 Artifact。系统将文字保存为 Artifact，再生成只含 block_id/artifact_id/request_id/revision_id 的 Response 块。"
     "数字、排名、具体事实从真实产物读取，文本事实也附 Artifact refs；不能根据摘要猜测。"
     "大结果通过工具精确筛选或读取，不能把预览当全量。图表解释读取实际配置，口径解释读取原 SQL 和语义绑定。"

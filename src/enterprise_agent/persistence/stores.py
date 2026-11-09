@@ -191,7 +191,14 @@ class Stores:
             values,
         )
 
-    def save_many(self, records, expected_revisions=None, event=None):
+    def save_many(
+        self,
+        records,
+        expected_revisions=None,
+        event=None,
+        events=(),
+        expected_plan_versions=None,
+    ):
         validated = [
             (
                 table,
@@ -214,10 +221,17 @@ class Stores:
                 actual = json.loads(row[0])["current_revision_id"] if row else None
                 if actual != revision_id:
                     raise ValueError("需求已被其他执行更新，请重新读取当前版本")
+            for request_id, plan_version in (expected_plan_versions or {}).items():
+                row = db.execute(
+                    "SELECT body FROM requests WHERE id=?", (request_id,)
+                ).fetchone()
+                actual = json.loads(row[0])["plan_version"] if row else None
+                if actual != plan_version:
+                    raise ValueError("执行计划已被其他操作更新，请重新读取当前计划")
             for table, item in validated:
                 self._put(db, table, item)
-            if event:
-                self._append_event(db, **event)
+            for item in [*events, *([event] if event else [])]:
+                self._append_event(db, **item)
             return [
                 self.request_view(db, item) if table == "requests" else item
                 for table, item in validated

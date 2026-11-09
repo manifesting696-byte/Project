@@ -18,8 +18,8 @@ class FixtureModel:
         tools = tools or {}
         if role == "UnifiedSupervisor.Intent":
             data = self.intent(context, tools)
-        elif role == "UnifiedSupervisor.Definition":
-            data = self.definition(context)
+        elif role == "UnifiedSupervisor.Preparation":
+            data = self.prepare(context, tools)
         elif role == "UnifiedSupervisor.Planning":
             data = self.plan(context, tools)
         elif role == "SemanticAgent":
@@ -99,6 +99,46 @@ class FixtureModel:
         else:
             raise AssertionError(role)
         return output.model_validate(data)
+
+    def prepare(self, context, tools):
+        spec = self.definition(context)
+        for key, value in context["supplied_parameters"].items():
+            if value is None:
+                spec.get("parameters", {}).pop(key, None)
+            else:
+                spec.setdefault("parameters", {})[key] = value
+        previous = context["previous_revision"]
+        nodes = deepcopy(context["existing_tasks"])
+        deliveries = deepcopy(context["deliveries"])
+        if previous:
+            old = previous["spec"]
+            if old["description"] != spec["description"] or old[
+                "parameters"
+            ] != spec.get("parameters", {}):
+                for node in nodes:
+                    node["status"] = "superseded"
+                deliveries = {}
+            else:
+                old_outputs = {item["name"]: item for item in old["outputs"]}
+                changed = {
+                    item["name"]
+                    for item in spec["outputs"]
+                    if old_outputs.get(item["name"]) != item
+                }
+                for name in changed:
+                    deliveries.pop(name, None)
+                for node in nodes:
+                    if changed and node["assigned_agent"] == "PresentationAgent":
+                        node["status"] = "superseded"
+        planning = {
+            "stage": "replanning" if context.get("validation_feedback") else "planning",
+            "request": {"request_id": context["request_id"], "spec": spec},
+            "spec": spec,
+            "tasks": nodes,
+            "deliveries": deliveries,
+            "output_bindings": context["output_bindings"],
+        }
+        return {"spec": spec, "plan": self.plan(planning, tools), "clarifications": []}
 
     @staticmethod
     def operation(key, action, category, text, refs=None):

@@ -181,9 +181,11 @@ class Requests:
         for key in targets if targets is not None else specs:
             visit(key)
 
-    def plan_bindings(self, request):
+    def plan_bindings(self, request, revision=None):
         events = self.stores.list("session_events", "session_id", request["session_id"])
-        revision = self.stores.get("request_revisions", request["current_revision_id"])
+        revision = revision or self.stores.get(
+            "request_revisions", request["current_revision_id"]
+        )
         names = {item["name"] for item in request["spec"]["outputs"]}
         while names:
             for event in reversed(events):
@@ -365,7 +367,9 @@ class Requests:
                 )
         return allowed
 
-    def revise(self, session_id, turn_id, operation, spec, event_id):
+    def prepare_revision(
+        self, session_id, turn_id, operation, spec, event_id, pending=None
+    ):
         request_id = operation.request_id
         old = (
             self.stores.get("requests", request_id)
@@ -379,14 +383,20 @@ class Requests:
         )
         spec_data = spec.model_dump(exclude_none=True)
         for binding in spec_data["inputs"]:
-            self.validate_ref(session_id, binding["source"])
+            self.validate_ref(session_id, binding["source"], pending)
             if (
                 binding["source"]["kind"] == "request"
                 and binding["source"]["id"] == request_id
             ):
                 raise ValueError("复用目标需求的旧结果时，请绑定具体历史 Artifact")
         if previous and previous["spec"] == spec_data:
-            return old, previous
+            return {
+                "request": old,
+                "revision": previous,
+                "records": [],
+                "expected_revisions": {request_id: previous["revision_id"]},
+                "events": [],
+            }
         revision = RequestRevision(
             revision_id=self.stores.new_id("rev"),
             request_id=request_id,
@@ -418,19 +428,35 @@ class Requests:
                 if table == "requests"
             }
         )
+        return {
+            "request": request,
+            "revision": revision,
+            "records": [
+                *changes,
+                ("request_revisions", revision),
+                ("requests", request),
+            ],
+            "expected_revisions": expected,
+            "events": [
+                {
+                    "session_id": session_id,
+                    "turn_id": turn_id,
+                    "event_type": "request_revised",
+                    "actor": "Supervisor",
+                    "request_id": request_id,
+                    "payload": {"revision_id": revision["revision_id"]},
+                }
+            ],
+        }
+
+    def revise(self, session_id, turn_id, operation, spec, event_id):
+        prepared = self.prepare_revision(session_id, turn_id, operation, spec, event_id)
         self.stores.save_many(
-            [*changes, ("request_revisions", revision), ("requests", request)],
-            expected_revisions=expected,
-            event={
-                "session_id": session_id,
-                "turn_id": turn_id,
-                "event_type": "request_revised",
-                "actor": "Supervisor",
-                "request_id": request_id,
-                "payload": {"revision_id": revision["revision_id"]},
-            },
+            prepared["records"],
+            expected_revisions=prepared["expected_revisions"],
+            events=prepared["events"],
         )
-        return request, revision
+        return prepared["request"], prepared["revision"]
 
     def invalidate(self, request, previous, current):
         nodes = self.stores.session_tasks(request["session_id"])

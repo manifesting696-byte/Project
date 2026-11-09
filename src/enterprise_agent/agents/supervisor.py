@@ -1,12 +1,12 @@
 """One Supervisor owns intent, full specification, planning, checking and answers."""
 
-from ..core.models import AnswerDraft, Completion, Plan, RequestSpec
-from ..intent.models import Intent
+from ..core.models import AnswerDraft, Completion, Plan
+from ..intent.models import Intent, RequestPreparation
 from .base import ModelAgent
 from .prompt import (
     SUPERVISOR_ANSWER,
     SUPERVISOR_COMPLETION,
-    SUPERVISOR_DEFINITION,
+    SUPERVISOR_PREPARATION,
     SUPERVISOR_INTENT,
     SUPERVISOR_PLANNING,
 )
@@ -18,9 +18,14 @@ class Supervisor(ModelAgent):
         super().__init__(model)
         self.context, self.stores, self.artifacts = context, stores, artifacts
 
-    def tools(self, session_id, drafts=None):
+    def tools(self, session_id, drafts=None, confirmed_refs=None):
         return supervisor_tools(
-            session_id, self.context, self.stores, self.artifacts, drafts
+            session_id,
+            self.context,
+            self.stores,
+            self.artifacts,
+            drafts,
+            confirmed_refs,
         )
 
     def intent(self, session_id, query, emit, feedback=None):
@@ -36,7 +41,7 @@ class Supervisor(ModelAgent):
             emit,
         )
 
-    def define(
+    def prepare(
         self,
         session_id,
         operation,
@@ -45,15 +50,23 @@ class Supervisor(ModelAgent):
         emit,
         drafts=None,
         required_outputs=None,
+        feedback=None,
+        confirmed_refs=None,
     ):
         return self.invoke(
-            "UnifiedSupervisor.Definition",
-            SUPERVISOR_DEFINITION,
-            self.context.definition(
-                session_id, operation, previous, parameters, drafts, required_outputs
+            "UnifiedSupervisor.Preparation",
+            SUPERVISOR_PREPARATION,
+            self.context.preparation(
+                session_id,
+                operation,
+                previous,
+                parameters,
+                drafts,
+                required_outputs,
+                feedback,
             ),
-            RequestSpec,
-            self.tools(session_id, drafts),
+            RequestPreparation,
+            self.tools(session_id, drafts, confirmed_refs),
             emit,
         )
 

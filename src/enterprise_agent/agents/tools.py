@@ -4,12 +4,24 @@ from ..core.model import ARRAY, OBJECT, STRING, tool
 from .capabilities import CAPABILITIES
 
 
-def supervisor_tools(session_id, context, stores, artifacts, drafts=None):
+def supervisor_tools(
+    session_id, context, stores, artifacts, drafts=None, confirmed_refs=None
+):
     def request_state(request_id):
         if request_id in (drafts or {}):
+            if confirmed_refs is not None:
+                confirmed_refs.update(
+                    ("request", request_id, item["name"])
+                    for item in drafts[request_id]["spec"]["outputs"]
+                )
             return {"request": drafts[request_id], "deliveries": {}, "tasks": []}
         context.requests.validate_ref(session_id, {"kind": "request", "id": request_id})
         request = stores.get("requests", request_id)
+        if confirmed_refs is not None:
+            confirmed_refs.update(
+                ("request", request_id, item["name"])
+                for item in request["spec"]["outputs"]
+            )
         return {
             "request": request,
             "deliveries": context.requests.outputs(request),
@@ -24,6 +36,8 @@ def supervisor_tools(session_id, context, stores, artifacts, drafts=None):
         context.requests.validate_ref(
             session_id, {"kind": "artifact", "id": artifact_id}
         )
+        if confirmed_refs is not None:
+            confirmed_refs.add(("artifact", artifact_id, None))
         return context.overview(artifacts.inspect(artifact_id))
 
     def read(artifact_id, selector=None):

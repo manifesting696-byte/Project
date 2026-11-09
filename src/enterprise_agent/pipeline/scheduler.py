@@ -90,10 +90,21 @@ class Scheduler:
                     status="skipped", summary="依赖没有可用输出", completed_at=now()
                 )
                 self.stores.save_many([("tasks", node)], expected_revisions=expected)
+            waiting = set()
+            for node in pending:
+                for binding in node["input_bindings"]:
+                    if binding["source"]["kind"] != "request":
+                        continue
+                    try:
+                        self.context.requests.resolve(session_id, binding["source"])
+                    except ValueError:
+                        waiting.add(node["task_id"])
+                        break
             ready = [
                 node
                 for node in pending
                 if node not in blocked
+                and node["task_id"] not in waiting
                 and all(
                     by_id[dep]["status"] == "completed" for dep in node["depends_on"]
                 )
@@ -105,6 +116,7 @@ class Scheduler:
                     "new_results": new_results,
                     "decision_required": False,
                     "blocked": "上游执行尚未完成",
+                    "waiting_for_requests": bool(waiting),
                 }
             with ThreadPoolExecutor(max_workers=MAX_PARALLEL) as pool:
                 futures = [pool.submit(execute, node) for node in ready[:MAX_PARALLEL]]

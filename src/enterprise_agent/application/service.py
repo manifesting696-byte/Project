@@ -7,13 +7,14 @@ from ..agents.supervisor import Supervisor
 from ..context.manager import ContextManager
 from ..core.config import MAX_REPLANS
 from ..core.model import ModelClient
-from ..core.models import AnswerDraft, AnswerDraftBlock, RequestSpec, Response
+from ..core.models import AnswerDraft, AnswerDraftBlock, Response
 from ..persistence.artifacts import Artifacts
 from ..persistence.stores import Stores, now
 from ..persistence.summaries import compress
 from ..pipeline.scheduler import Scheduler
 from ..query.gateway import QueryGateway
 from ..semantic.registry import Registry
+from .preparation import Preparation
 from .requests import Requests
 from .responses import Responses
 from .tasks import Tasks
@@ -49,6 +50,9 @@ class Application:
             self.artifacts,
             self.query_gateway,
             overrides=specialist_overrides,
+        )
+        self.preparation = Preparation(
+            self.stores, self.requests, self.tasks, self.supervisor
         )
         self.scheduler = Scheduler(self.stores, self.context, self.specialists)
         self.responses = Responses(
@@ -110,69 +114,57 @@ class Application:
                 "Supervisor",
                 {"intent": intent.model_dump(exclude_none=True)},
             )
-            definitions, drafts, preparation_errors = {}, {}, {}
-            for operation in ordered:
-                try:
-                    required_outputs = [
-                        ref.output
-                        for other in ordered
-                        for ref in other.refs
-                        if ref.kind == "request"
-                        and ref.id == operation.request_id
-                        and ref.output
-                    ]
-                    spec, previous = self.define_operation(
-                        session_id,
-                        turn_id,
-                        operation,
-                        constraints or {},
-                        drafts,
-                        required_outputs,
-                    )
-                    definitions[operation.request_id] = (spec, previous)
-                    drafts[operation.request_id] = {
-                        "request_id": operation.request_id,
-                        "session_id": session_id,
-                        "spec": spec.model_dump(exclude_none=True),
-                    }
-                except Exception as exc:
-                    preparation_errors[operation.request_id] = exc
-            prepared = {}
-            specs = {key: value[0] for key, value in definitions.items()}
-            for key in specs:
-                try:
-                    self.requests.validate_specs(session_id, specs, [key])
-                except Exception as exc:
-                    preparation_errors[key] = exc
-            ordered = self.requests.order_operations(
+            ordered, bundles, proposals, preparation_errors = self.preparation.prepare(
+                session_id,
+                turn_id,
                 ordered,
-                {
-                    key: spec
-                    for key, spec in specs.items()
-                    if key not in preparation_errors
-                },
+                constraints or {},
+                event["event_id"],
+                lambda request_id: self.emitter(session_id, turn_id, request_id),
             )
+            prepared = {}
             for operation in ordered:
-                if operation.request_id in preparation_errors:
+                key = operation.request_id
+                if key not in bundles:
                     continue
                 try:
-                    spec, previous = definitions[operation.request_id]
-                    request, revision = self.requests.revise(
-                        session_id,
-                        turn_id,
-                        operation,
-                        spec,
-                        event["event_id"],
-                    )
-                    prepared[operation.request_id] = (request, previous)
+                    if any(
+                        binding["source"]["kind"] == "request"
+                        and binding["source"]["id"] in preparation_errors
+                        for binding in bundles[key]["request"]["spec"]["inputs"]
+                    ):
+                        raise ValueError("上游需求保存失败，请先完成上游需求")
+                    previous = None
+                    if operation.action == "update_task":
+                        old = self.stores.get("requests", key)
+                        previous = self.stores.get(
+                            "request_revisions", old["current_revision_id"]
+                        )
+                    request = self.preparation.commit(bundles[key])
+                    prepared[key] = (request, previous)
                 except Exception as exc:
-                    preparation_errors[operation.request_id] = exc
+                    preparation_errors[key] = exc
             answers, states = {}, {}
             touched = []
             for operation in ordered:
                 try:
                     if operation.request_id in preparation_errors:
                         raise preparation_errors[operation.request_id]
+                    proposal = proposals[operation.request_id]
+                    if proposal.clarifications:
+                        owner = (
+                            self.stores.get("requests", operation.request_id)
+                            if self.stores.exists("requests", operation.request_id)
+                            else None
+                        )
+                        answers[operation.request_id] = [
+                            self.clarification_block(session_id, turn_id, item, owner)
+                            for item in proposal.clarifications
+                        ]
+                        states[operation.request_id] = "needs_clarification"
+                        if owner:
+                            touched.append(operation.request_id)
+                        continue
                     request, previous = prepared[operation.request_id]
                     request, answer, state = self.process_operation(
                         session_id,
@@ -191,8 +183,9 @@ class Application:
                 except Exception as exc:
                     if self.stores.exists("requests", operation.request_id):
                         request = self.stores.get("requests", operation.request_id)
-                        request.update(status="failed", updated_at=now())
-                        self.stores.put("requests", request)
+                        if operation.request_id in prepared:
+                            request.update(status="failed", updated_at=now())
+                            self.stores.put("requests", request)
                         touched.append(operation.request_id)
                     self.stores.event(
                         session_id,
@@ -225,15 +218,8 @@ class Application:
                     and self.stores.exists("requests", item.request_id)
                     else None
                 )
-                sources = sorted(
-                    self.requests.artifact_scope(
-                        [ref.model_dump(exclude_none=True) for ref in item.refs]
-                    )
-                )
                 blocks.append(
-                    self.responses.message(
-                        session_id, turn_id, item.question, owner, sources
-                    )
+                    self.clarification_block(session_id, turn_id, item, owner)
                 )
             status = self.turn_status(
                 list(states.values()), bool(intent.clarifications)
@@ -241,6 +227,17 @@ class Application:
             return self.respond(
                 session_id, turn_id, Response(blocks=blocks), touched, status
             )
+
+    def clarification_block(self, session_id, turn_id, item, owner=None):
+        refs = [
+            ref.model_dump(exclude_none=True)
+            for ref in item.refs
+            if ref.kind == "artifact" or self.stores.exists("requests", ref.id)
+        ]
+        sources = sorted(self.requests.artifact_scope(refs))
+        return self.responses.message(
+            session_id, turn_id, item.question, owner, sources
+        )
 
     @staticmethod
     def turn_status(states, clarifications=False):
@@ -257,51 +254,6 @@ class Application:
         ):
             return "needs_clarification"
         return "partial"
-
-    def define_operation(
-        self, session_id, turn_id, operation, parameters, drafts, required_outputs
-    ):
-        previous = None
-        if operation.action == "update_task":
-            old = self.stores.get("requests", operation.request_id)
-            previous = self.stores.get("request_revisions", old["current_revision_id"])
-        emit = self.emitter(session_id, turn_id, operation.request_id)
-        if operation.action == "none":
-            spec = RequestSpec.model_validate(
-                {
-                    "description": operation.instruction,
-                    "inputs": [
-                        {
-                            "slot": f"source_{index}",
-                            "source": ref.model_dump(exclude_none=True),
-                        }
-                        for index, ref in enumerate(operation.refs, 1)
-                    ],
-                    "outputs": [
-                        {
-                            "name": "answer",
-                            "content_type": "text",
-                            "description": operation.instruction,
-                        }
-                    ],
-                }
-            )
-        else:
-            spec = self.supervisor.define(
-                session_id,
-                operation,
-                previous,
-                parameters,
-                emit,
-                drafts,
-                required_outputs,
-            )
-            for key, value in parameters.items():
-                if value is None:
-                    spec.parameters.pop(key, None)
-                else:
-                    spec.parameters[key] = value
-        return spec, previous
 
     def process_operation(
         self, session_id, turn_id, operation, request, previous, pause, preview
@@ -357,8 +309,6 @@ class Application:
                 request, turn_id, answer, operation.refs, direct=True
             )
             return request, answer, "completed"
-        plan = self.supervisor.plan(request, emit)
-        self.apply_plan(request, turn_id, plan)
         if preview:
             answer = AnswerDraft(
                 blocks=[
@@ -428,6 +378,16 @@ class Application:
                     ]
                 )
                 return answer, "waiting_input"
+            if execution.get("waiting_for_requests"):
+                request["status"] = "needs_clarification"
+                return AnswerDraft(
+                    blocks=[
+                        AnswerDraftBlock(
+                            content_type="text",
+                            content="本项依赖的上游结果尚未交付，请先补全上游需求。",
+                        )
+                    ]
+                ), "needs_clarification"
             if execution["decision_required"]:
                 self.apply_plan(
                     request,
@@ -453,7 +413,7 @@ class Application:
                     self.context.answer(request, query, output_names=output_names),
                     emit,
                 )
-                answer = self.responses.materialize(
+                answer = self.materialize_answer(
                     request, turn_id, draft, output_names=output_names, bind=True
                 )
             completion = self.supervisor.check(request, query, emit)
@@ -548,7 +508,7 @@ class Application:
     def finish_operation(
         self, request, turn_id, answer, extra_refs=(), direct=False, output_names=None
     ):
-        response = self.responses.materialize(
+        response = self.materialize_answer(
             request, turn_id, answer, extra_refs, output_names, bind=direct
         )
         if direct and (
@@ -578,6 +538,30 @@ class Application:
             expected_revisions={request["request_id"]: request["current_revision_id"]},
         )
         return response
+
+    def materialize_answer(
+        self, request, turn_id, answer, extra_refs=(), output_names=None, bind=False
+    ):
+        for attempt in range(2):
+            try:
+                return self.responses.materialize(
+                    request, turn_id, answer, extra_refs, output_names, bind
+                )
+            except ValueError as exc:
+                if attempt:
+                    raise
+                context = self.context.answer(
+                    request, request["spec"]["description"], output_names=output_names
+                )
+                context["validation_feedback"] = {
+                    "error": str(exc),
+                    "rejected_answer": answer.model_dump(exclude_none=True),
+                }
+                answer = self.supervisor.answer(
+                    request["session_id"],
+                    context,
+                    self.emitter(request["session_id"], turn_id, request["request_id"]),
+                )
 
     def respond(self, session_id, turn_id, answer, request_ids, status="completed"):
         for index, block in enumerate(answer.blocks, 1):

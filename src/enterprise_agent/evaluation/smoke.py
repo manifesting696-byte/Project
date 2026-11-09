@@ -19,7 +19,7 @@ from ..core.config import ROOT
 from ..core.model import STRING, ModelClient, tool
 from ..core.models import AnswerDraft, ResourceRef
 from ..core.transport import ChatResponse, OpenAICompatibleTransport, ToolCall
-from ..intent.models import Intent
+from ..intent.models import Intent, RequestPreparation
 from ..persistence.stores import RECORD_MODELS, Stores
 from ..persistence.summaries import compress
 from ..query.validation import validate_readonly
@@ -61,7 +61,7 @@ class Smoke(unittest.TestCase):
             {item["content_type"] for item in result["artifacts"]},
             {"table", "text", "chart", "report"},
         )
-        self.assertIn("UnifiedSupervisor.Definition", self.model.calls)
+        self.assertIn("UnifiedSupervisor.Preparation", self.model.calls)
 
     def test_update_chart_reuses_data_and_only_answers_changed_output(self):
         first = self.completed("统计产品并生成图表和报告")
@@ -411,7 +411,7 @@ class Smoke(unittest.TestCase):
         last_definition = max(
             index
             for index, role in enumerate(self.model.calls)
-            if role == "UnifiedSupervisor.Definition"
+            if role == "UnifiedSupervisor.Preparation"
         )
         first_execution = min(
             index
@@ -722,7 +722,9 @@ class Smoke(unittest.TestCase):
         events = engine.stores.list(
             "session_events", "session_id", result["session_id"]
         )
-        rejected = [event for event in events if "rejected_plan" in event["payload"]]
+        rejected = [
+            event for event in events if "rejected_preparation" in event["payload"]
+        ]
         self.assertEqual(len(rejected), 1)
         self.assertIn("不能把本 Request", rejected[0]["payload"]["summary"])
 
@@ -1615,6 +1617,306 @@ vm.runInContext("state.sessionId='s'; loadConversation()",context).then(()=>{
             check=True,
             capture_output=True,
         )
+
+    def test_initial_spec_and_plan_use_one_preparation_call(self):
+        first = self.completed()
+        self.assertEqual(self.model.calls.count("UnifiedSupervisor.Preparation"), 1)
+        self.assertNotIn("UnifiedSupervisor.Definition", self.model.calls)
+        self.assertNotIn("UnifiedSupervisor.Planning", self.model.calls)
+        second = self.completed("只统计前两个产品", first["session_id"])
+        self.assertEqual(self.model.calls.count("UnifiedSupervisor.Preparation"), 2)
+        self.assertNotIn("UnifiedSupervisor.Planning", self.model.calls)
+        self.assertEqual(
+            first["requests"][0]["request_id"], second["requests"][0]["request_id"]
+        )
+
+    def test_preparation_model_requires_complete_result_or_clarifications(self):
+        for value in (
+            {},
+            {
+                "spec": {
+                    "description": "Test",
+                    "outputs": [
+                        {"name": "data", "content_type": "table", "description": "Data"}
+                    ],
+                }
+            },
+            {"plan": {"reason": "Only plan"}},
+        ):
+            with self.assertRaises(ValidationError):
+                RequestPreparation.model_validate(value)
+        RequestPreparation.model_validate(
+            {"clarifications": [{"subject": "范围", "question": "需要哪一年？"}]}
+        )
+
+    def test_invalid_initial_update_keeps_old_revision_and_tasks(self):
+        class InvalidUpdate(FixtureModel):
+            def plan(self, context, tools):
+                if context["spec"]["parameters"].get("limit") == 2:
+                    return {
+                        "tasks": [],
+                        "output_bindings": {
+                            "data": {
+                                "kind": "task",
+                                "id": "missing_task",
+                                "output": "dataset",
+                            }
+                        },
+                        "reason": "无效计划",
+                    }
+                return super().plan(context, tools)
+
+        self.model = InvalidUpdate()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        first = self.completed()
+        before = deepcopy(first["requests"][0])
+        tasks = deepcopy(first["tasks"])
+        result = self.engine.ask(1, "只统计前两个产品", first["session_id"])
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(
+            self.engine.stores.get("requests", before["request_id"]), before
+        )
+        self.assertEqual(
+            self.engine.stores.list("tasks", "request_id", before["request_id"]), tasks
+        )
+        self.assertEqual(
+            len(
+                self.engine.stores.list(
+                    "request_revisions", "request_id", before["request_id"]
+                )
+            ),
+            1,
+        )
+
+    def test_revision_and_initial_plan_roll_back_together(self):
+        original = self.engine.stores._append_event
+
+        def reject_plan(db, *args, **kwargs):
+            event_type = kwargs.get("event_type", args[2] if len(args) > 2 else None)
+            if event_type == "plan_updated":
+                raise ValueError("模拟计划事件写入失败")
+            return original(db, *args, **kwargs)
+
+        with patch.object(self.engine.stores, "_append_event", side_effect=reject_plan):
+            result = self.engine.ask(1, "列出前五个产品")
+        self.assertEqual(result["status"], "failed")
+        with self.engine.stores.db() as db:
+            for table in ("requests", "request_revisions", "tasks"):
+                self.assertEqual(
+                    db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0], 0
+                )
+        events = self.engine.stores.list(
+            "session_events", "session_id", result["session_id"]
+        )
+        self.assertFalse(
+            any(event["event_type"] == "request_revised" for event in events)
+        )
+
+    def test_preparation_clarification_preserves_existing_work(self):
+        class Clarifying(FixtureModel):
+            def prepare(self, context, tools):
+                if context["previous_revision"]:
+                    return {
+                        "clarifications": [
+                            {"subject": "统计范围", "question": "需要统计哪个年份？"}
+                        ]
+                    }
+                return super().prepare(context, tools)
+
+        self.model = Clarifying()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        first = self.completed()
+        before = first["requests"][0]
+        result = self.engine.ask(1, "只统计前两个产品", first["session_id"])
+        self.assertEqual(result["status"], "needs_clarification")
+        self.assertEqual(
+            self.engine.stores.get("requests", before["request_id"]), before
+        )
+        self.assertEqual(
+            self.engine.artifacts.content(result["blocks"][0]["artifact_id"]),
+            "需要统计哪个年份？",
+        )
+
+    def test_pending_request_inputs_are_saved_and_wait_before_execution(self):
+        result = self.engine.ask(1, "先给统计结果画图，再列出前五个产品", preview=True)
+        self.assertEqual(result["status"], "waiting_input")
+        source = next(
+            item for item in result["requests"] if item["title"] == "列出前五个产品"
+        )
+        consumer = next(
+            item for item in result["requests"] if item["title"] == "绘制产品图"
+        )
+        task = next(
+            node
+            for node in result["tasks"]
+            if node["request_id"] == consumer["request_id"]
+        )
+        self.assertEqual(
+            task["input_bindings"][0]["source"],
+            {"kind": "request", "id": source["request_id"], "output": "data"},
+        )
+        waiting = self.engine.resume(1, consumer["request_id"])
+        self.assertEqual(waiting["status"], "needs_clarification")
+        self.assertNotIn("PresentationAgent", self.model.calls)
+        self.assertTrue(
+            all(
+                node["status"] == "pending"
+                for node in self.engine.stores.list(
+                    "tasks", "request_id", consumer["request_id"]
+                )
+            )
+        )
+        self.assertEqual(
+            self.engine.resume(1, source["request_id"])["status"], "completed"
+        )
+        complete = self.engine.resume(1, consumer["request_id"])
+        self.assertEqual(complete["status"], "completed")
+        task = self.engine.stores.get("tasks", task["task_id"])
+        self.assertEqual(task["input_bindings"][0]["source"]["kind"], "artifact")
+
+    def test_missing_intent_reference_is_rejected_before_persistence(self):
+        class Omitting(FixtureModel):
+            @staticmethod
+            def definition(context):
+                spec = FixtureModel.definition(context)
+                if context["operation"]["instruction"] == "根据上游绘图":
+                    spec["inputs"] = []
+                return spec
+
+        engine = Application(Stores(Path(self.directory.name) / "omit"), Omitting())
+        result = engine.ask(1, "先给统计结果画图，再列出前五个产品")
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(len(result["requests"]), 1)
+        self.assertEqual(result["requests"][0]["title"], "列出前五个产品")
+
+    def test_plan_version_conflict_prevents_initial_commit(self):
+        first = self.completed()
+        key = first["requests"][0]["request_id"]
+        original = self.engine.preparation.commit
+
+        def concurrent_change(bundle):
+            request = self.engine.stores.get("requests", key)
+            request["plan_version"] += 1
+            self.engine.stores.put("requests", request)
+            return original(bundle)
+
+        with patch.object(
+            self.engine.preparation, "commit", side_effect=concurrent_change
+        ):
+            result = self.engine.ask(1, "只统计前两个产品", first["session_id"])
+        self.assertEqual(result["status"], "failed")
+        current = self.engine.stores.get("requests", key)
+        self.assertEqual(
+            current["current_revision_id"], first["requests"][0]["current_revision_id"]
+        )
+        self.assertEqual(
+            current["plan_version"], first["requests"][0]["plan_version"] + 1
+        )
+        self.assertEqual(current["status"], "completed")
+
+    def test_answer_binding_type_error_is_repaired_with_feedback(self):
+        class MismatchedAnswer(FixtureModel):
+            @staticmethod
+            def answer(context):
+                value = FixtureModel.answer(context)
+                if not context.get("validation_feedback"):
+                    value["blocks"][0]["output_name"] = "data"
+                return value
+
+        self.model = MismatchedAnswer()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        result = self.completed()
+        self.assertEqual(self.model.calls.count("UnifiedSupervisor.Answer"), 2)
+        feedback = next(
+            context["validation_feedback"]
+            for role, context in self.model.contexts
+            if role == "UnifiedSupervisor.Answer" and context.get("validation_feedback")
+        )
+        self.assertIn("text", feedback["error"])
+        self.assertEqual(
+            [
+                self.engine.artifacts.inspect(block["artifact_id"])["content_type"]
+                for block in result["blocks"]
+            ],
+            ["text", "table"],
+        )
+
+    def test_failed_upstream_preparation_blocks_consumers_and_keeps_independent_work(
+        self,
+    ):
+        class InvalidUpstream(FixtureModel):
+            def intent(self, context, tools):
+                value = super().intent(context, tools)
+                value["operations"].append(
+                    self.operation("mean", "none", "general_qa", "解释平均值")
+                )
+                return value
+
+            def plan(self, context, tools):
+                if context["spec"]["description"] == "列出前五个产品":
+                    return {
+                        "tasks": [],
+                        "output_bindings": {
+                            "data": {
+                                "kind": "task",
+                                "id": "missing",
+                                "output": "dataset",
+                            }
+                        },
+                        "reason": "无效上游计划",
+                    }
+                return super().plan(context, tools)
+
+        engine = Application(
+            Stores(Path(self.directory.name) / "blocked"), InvalidUpstream()
+        )
+        result = engine.ask(1, "先给统计结果画图，再列出前五个产品")
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(len(result["requests"]), 1)
+        self.assertEqual(result["requests"][0]["spec"]["description"], "解释平均值")
+        self.assertFalse(result["tasks"])
+
+    def test_state_changed_during_preparation_reloads_before_retry(self):
+        first = self.completed()
+        key = first["requests"][0]["request_id"]
+        original = self.engine.supervisor.prepare
+        changed = False
+
+        def concurrent_change(*args, **kwargs):
+            nonlocal changed
+            result = original(*args, **kwargs)
+            if not changed:
+                request = self.engine.stores.get("requests", key)
+                request["plan_version"] += 1
+                self.engine.stores.put("requests", request)
+                changed = True
+            return result
+
+        with patch.object(
+            self.engine.supervisor, "prepare", side_effect=concurrent_change
+        ):
+            result = self.completed("只统计前两个产品", first["session_id"])
+        self.assertEqual(self.model.calls.count("UnifiedSupervisor.Preparation"), 3)
+        self.assertEqual(
+            result["requests"][0]["plan_version"],
+            first["requests"][0]["plan_version"] + 2,
+        )
+
+    def test_failed_upstream_commit_does_not_save_dependent_plan(self):
+        original = self.engine.stores._append_event
+
+        def reject_plan(db, *args, **kwargs):
+            event_type = kwargs.get("event_type", args[2] if len(args) > 2 else None)
+            if event_type == "plan_updated":
+                raise ValueError("模拟上游计划事件写入失败")
+            return original(db, *args, **kwargs)
+
+        with patch.object(self.engine.stores, "_append_event", side_effect=reject_plan):
+            result = self.engine.ask(1, "先给统计结果画图，再列出前五个产品")
+        self.assertEqual(result["status"], "failed")
+        self.assertFalse(result["requests"])
+        self.assertFalse(result["tasks"])
+        self.assertEqual(len(result["blocks"]), 2)
 
     def test_source_syntax(self):
         for path in (ROOT / "src").rglob("*.py"):

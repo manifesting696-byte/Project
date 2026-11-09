@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from ..core.models import Category, IntentRef, Model
+from ..core.models import Category, IntentRef, Model, Plan, RequestSpec
 
 
 class RequestOperation(Model):
@@ -42,4 +42,22 @@ class Intent(Model):
             raise ValueError("本轮同一 Request 的修改必须合并为一项操作")
         if not self.operations and not self.clarifications:
             raise ValueError("必须给出请求操作或具体澄清问题")
+        return self
+
+
+class RequestPreparation(Model):
+    """One model proposal for a complete specification and initial execution plan."""
+
+    spec: RequestSpec | None = None
+    plan: Plan | None = None
+    clarifications: list[Clarification] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def complete_proposal(self):
+        ready = (
+            self.spec is not None and self.plan is not None and not self.clarifications
+        )
+        blocked = self.spec is None and self.plan is None and bool(self.clarifications)
+        if not (ready or blocked):
+            raise ValueError("返回完整 spec 与 plan，或仅返回具体 clarifications")
         return self

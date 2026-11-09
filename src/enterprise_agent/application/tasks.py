@@ -11,20 +11,50 @@ class Tasks:
     def __init__(self, stores, requests):
         self.stores, self.requests = stores, requests
 
-    def allowed_artifacts(self, request):
-        return self.requests.artifact_scope(
-            [binding["source"] for binding in request["spec"]["inputs"]]
-        )
+    def allowed_artifacts(self, request, request_views=None):
+        refs = []
+        for binding in request["spec"]["inputs"]:
+            ref = binding["source"]
+            if ref["kind"] == "request" and ref["id"] in (request_views or {}):
+                candidate = request_views[ref["id"]]
+                if not self.stores.exists("requests", ref["id"]):
+                    continue
+                stored = self.stores.get("requests", ref["id"])
+                if candidate["current_revision_id"] != stored["current_revision_id"]:
+                    continue
+            refs.append(ref)
+        return self.requests.artifact_scope(refs)
 
-    def validate_artifact_input(self, request, artifact_id, explicit):
+    def validate_ref(self, request, ref, request_views):
+        session_id = request["session_id"]
+        if ref["kind"] == "request" and not any(
+            binding["source"] == ref for binding in request["spec"]["inputs"]
+        ):
+            raise ValueError("执行计划的 Request 来源需在完整需求输入中声明")
+        if ref["kind"] == "request" and ref["id"] in request_views:
+            source = request_views[ref["id"]]
+            if source["session_id"] != session_id:
+                raise PermissionError("引用不属于当前会话")
+            if ref.get("output") not in {
+                item["name"] for item in source["spec"]["outputs"]
+            }:
+                raise ValueError("Request 未声明该命名交付")
+            return
+        self.requests.validate_ref(session_id, ref)
+
+    def validate_artifact_input(self, request, artifact_id, explicit, nodes):
         artifact = self.stores.get("artifacts", artifact_id)
         self.requests.validate_ref(
             request["session_id"], {"kind": "artifact", "id": artifact_id}
         )
-        if self.stores.exists("tasks", artifact.get("task_id")):
-            producer = self.stores.get("tasks", artifact.get("task_id"))
-            if producer["status"] == "completed":
-                return
+        if (
+            artifact.get("request_id") != request["request_id"]
+            and artifact_id not in explicit
+        ):
+            raise ValueError("其他 Request 的产物需在当前需求输入中声明")
+        producer = nodes.get(artifact.get("task_id"))
+        if producer and producer["status"] == "completed":
+            return
         if (
             not artifact.get("task_id")
             and artifact.get("request_id") == request["request_id"]
@@ -34,8 +64,19 @@ class Tasks:
         if artifact_id not in explicit:
             raise ValueError("失效执行的产物需要在当前需求输入中明确指定后才能复用")
 
-    def apply_plan(self, request, turn_id, plan: Plan):
-        nodes = self.stores.session_tasks(request["session_id"])
+    def prepare_plan(
+        self,
+        request,
+        turn_id,
+        plan: Plan,
+        nodes=None,
+        request_views=None,
+        inherited_bindings=None,
+    ):
+        nodes = (
+            self.stores.session_tasks(request["session_id"]) if nodes is None else nodes
+        )
+        request_views = request_views or {}
         existing = {node["task_id"]: node for node in nodes}
         output_names = {item["name"] for item in request["spec"]["outputs"]}
         cancelled = set(plan.cancel_task_ids)
@@ -77,20 +118,7 @@ class Tasks:
                             "执行节点已获得当前 spec，不能把本 Request 尚未生成的交付作为输入。"
                             "请用 kind=task、上游 task_id 和 output 绑定 DAG 内的结果，旧数据用真实 Artifact 引用"
                         )
-                    source = self.stores.get("requests", ref["id"])
-                    self.requests.validate_ref(request["session_id"], ref)
-                    available = self.requests.outputs(source)
-                    name = ref.get("output")
-                    if name is None and len(available) == 1:
-                        name = next(iter(available))
-                    if name not in available:
-                        raise ValueError("上游 Request 的交付尚未完成")
-                    binding["source"] = deepcopy(available[name])
-                    if (
-                        binding["source"]["kind"] == "task"
-                        and binding["source"]["id"] not in node["depends_on"]
-                    ):
-                        node["depends_on"].append(binding["source"]["id"])
+                    self.validate_ref(request, ref, request_views)
             node.update(
                 request_id=request["request_id"],
                 revision_id=request["current_revision_id"],
@@ -102,7 +130,7 @@ class Tasks:
             )
             additions.append(node)
         combined = {**existing, **{node["task_id"]: node for node in additions}}
-        explicit = self.allowed_artifacts(request)
+        explicit = self.allowed_artifacts(request, request_views)
         pending = [
             node
             for node in nodes
@@ -124,6 +152,13 @@ class Tasks:
                     source = combined.get(ref["id"])
                     if not source or ref["id"] not in node["depends_on"]:
                         raise ValueError("上游 Task 输出必须具有显式 depends_on")
+                    if (
+                        node in additions
+                        and source["request_id"] != request["request_id"]
+                    ):
+                        raise ValueError(
+                            "跨需求输入使用 Request 命名交付或显式 Artifact"
+                        )
                     semantic = (
                         source["assigned_agent"] == "SemanticAgent"
                         and ref.get("output") == "semantic_binding"
@@ -135,16 +170,11 @@ class Tasks:
                     ):
                         raise ValueError("上游未声明该命名输出")
                 else:
-                    self.requests.validate_ref(request["session_id"], ref)
+                    self.validate_ref(request, ref, request_views)
                     if ref["kind"] == "artifact":
-                        self.validate_artifact_input(request, ref["id"], explicit)
-                    elif ref["kind"] == "request":
-                        # Request dependencies are materialized before a consumer plan executes.
-                        value = self.requests.resolve(request["session_id"], ref)
-                        if value.get("artifact_id"):
-                            self.validate_artifact_input(
-                                request, value["artifact_id"], explicit
-                            )
+                        self.validate_artifact_input(
+                            request, ref["id"], explicit, combined
+                        )
         visiting, done = set(), set()
 
         def visit(key):
@@ -160,10 +190,23 @@ class Tasks:
 
         for node in additions:
             visit(node["task_id"])
+        inherited_bindings = (
+            self.requests.plan_bindings(request)
+            if inherited_bindings is None
+            else inherited_bindings
+        )
         bindings = {
             name: ref
-            for name, ref in self.requests.plan_bindings(request).items()
-            if name in output_names and ref["id"] not in cancelled
+            for name, ref in inherited_bindings.items()
+            if name in output_names
+            and ref["id"] not in cancelled
+            and (
+                ref["kind"] != "task"
+                or (
+                    ref["id"] in combined
+                    and combined[ref["id"]]["status"] not in ("superseded", "cancelled")
+                )
+            )
         }
         for name, value in plan.output_bindings.items():
             if name not in output_names:
@@ -174,6 +217,8 @@ class Tasks:
                 source = combined.get(ref["id"])
                 if not source or source["status"] in ("cancelled", "superseded"):
                     raise ValueError("交付绑定指向失效执行")
+                if source["request_id"] != request["request_id"]:
+                    raise ValueError("跨需求交付使用 Request 命名交付或显式 Artifact")
                 semantic = (
                     source["assigned_agent"] == "SemanticAgent"
                     and ref.get("output") == "semantic_binding"
@@ -181,9 +226,19 @@ class Tasks:
                 if ref.get("output") not in source["expected_outputs"] and not semantic:
                     raise ValueError("交付绑定必须明确实际输出名称")
             else:
-                self.requests.validate_ref(request["session_id"], ref)
+                self.validate_ref(request, ref, request_views)
                 if ref["kind"] == "artifact":
-                    self.validate_artifact_input(request, ref["id"], explicit)
+                    self.validate_artifact_input(request, ref["id"], explicit, combined)
+                    expected = next(
+                        item["content_type"]
+                        for item in request["spec"]["outputs"]
+                        if item["name"] == name
+                    )
+                    if (
+                        self.stores.get("artifacts", ref["id"])["content_type"]
+                        != expected
+                    ):
+                        raise ValueError("实际产物类型与交付要求不一致")
                 if ref["kind"] == "request" and ref["id"] == request["request_id"]:
                     raise ValueError("交付绑定不能循环引用自身")
             bindings[name] = ref
@@ -206,10 +261,10 @@ class Tasks:
             "output_bindings": bindings,
             "reason": plan.reason,
         }
-        self.stores.save_many(
-            records,
-            expected_revisions={request["request_id"]: request["current_revision_id"]},
-            event={
+        return {
+            "request": updated_request,
+            "records": records,
+            "event": {
                 "session_id": request["session_id"],
                 "turn_id": turn_id,
                 "event_type": "plan_updated",
@@ -221,5 +276,14 @@ class Tasks:
                     "plan_version": updated_request["plan_version"],
                 },
             },
+        }
+
+    def apply_plan(self, request, turn_id, plan: Plan):
+        prepared = self.prepare_plan(request, turn_id, plan)
+        self.stores.save_many(
+            prepared["records"],
+            expected_revisions={request["request_id"]: request["current_revision_id"]},
+            expected_plan_versions={request["request_id"]: request["plan_version"]},
+            event=prepared["event"],
         )
-        request.update(updated_request)
+        request.update(prepared["request"])
