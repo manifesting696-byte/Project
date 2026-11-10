@@ -52,7 +52,7 @@ services:
       POSTGRES_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD:?set POSTGRES_READONLY_PASSWORD}
       POSTGRES_RUNTIME_PASSWORD: ${POSTGRES_RUNTIME_PASSWORD:?set POSTGRES_RUNTIME_PASSWORD}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?set INITIAL_ADMIN_PASSWORD}
-    command: ["python", "-m", "enterprise_agent.application.initialize_postgres"]
+    command: ["python", "-m", "enterprise_agent.ops.initialize"]
     volumes:
       - app_data:/app/runtime
 volumes:

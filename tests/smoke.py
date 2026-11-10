@@ -14,25 +14,25 @@ from unittest.mock import patch
 import httpx
 from pydantic import ValidationError
 
-from enterprise_agent.application.service import Application
-from enterprise_agent.core.config import ROOT
-from enterprise_agent.core.model import STRING, ModelClient, tool
-from enterprise_agent.core.models import AnswerDraft, ResourceRef
-from enterprise_agent.core.transport import (
+from enterprise_agent.flow.application import Application
+from enterprise_agent.settings import ROOT
+from enterprise_agent.model.client import STRING, ModelClient, tool
+from enterprise_agent.domain.models import AnswerDraft, ResourceRef
+from enterprise_agent.model.transport import (
     ChatResponse,
     OpenAICompatibleTransport,
     ToolCall,
 )
-from enterprise_agent.intent.models import Intent, RequestPreparation
-from enterprise_agent.persistence.stores import RECORD_MODELS
+from enterprise_agent.stages.intent.schema import Intent, RequestPreparation
+from enterprise_agent.ledger.ledger import RECORD_MODELS
 from .postgres_fixture import (
     TestStores as Stores,
     LegacyTestStores,
     identity_scope,
     cleanup,
 )
-from enterprise_agent.persistence.summaries import compress
-from enterprise_agent.query.validation import validate_readonly
+from enterprise_agent.ledger.summaries import compress
+from enterprise_agent.query.validate import validate_readonly
 from .fixtures import FixtureModel
 from .legacy_fixture import legacy_ledger
 
@@ -1048,12 +1048,12 @@ class Smoke(unittest.TestCase):
 
     def test_http_requests_revisions_artifacts_and_resume(self):
         from fastapi.testclient import TestClient
-        from enterprise_agent.api import app as adapter
-        from enterprise_agent.api import identity
+        from enterprise_agent.server import app as adapter
+        from enterprise_agent.server import deps, identity
 
         with (
             identity_scope(self.directory.name),
-            patch.object(adapter, "application", lambda: self.engine),
+            patch.object(deps, "application", lambda: self.engine),
         ):
             identity.create_user("smoke", "smoke-password-2026", "analyst")
             with TestClient(adapter.app) as client:
@@ -1368,7 +1368,7 @@ class Smoke(unittest.TestCase):
                 )
 
     def test_composed_table_preserves_sources_and_content(self):
-        from enterprise_agent.agents.tools import SpecialistToolbox
+        from enterprise_agent.stages.execute.agents.toolbox import SpecialistToolbox
 
         result = self.completed()
         request = result["requests"][0]
@@ -1641,7 +1641,7 @@ vm.runInContext("state.sessionId='s'; loadConversation()",context).then(()=>{
 }).catch(error=>{console.error(error);process.exitCode=1});
 """
         subprocess.run(
-            ["node", "-e", script, str(ROOT / "src/enterprise_agent/ui/app.js")],
+            ["node", "-e", script, str(ROOT / "src/enterprise_agent/server/static/app.js")],
             check=True,
             capture_output=True,
         )
@@ -2427,7 +2427,7 @@ vm.runInContext("state.sessionId='s'; loadConversation()",context).then(()=>{
         for path in (ROOT / "src").rglob("*.py"):
             ast.parse(path.read_text(encoding="utf-8-sig"), filename=str(path))
         subprocess.run(
-            ["node", "--check", str(ROOT / "src/enterprise_agent/ui/app.js")],
+            ["node", "--check", str(ROOT / "src/enterprise_agent/server/static/app.js")],
             check=True,
             capture_output=True,
         )

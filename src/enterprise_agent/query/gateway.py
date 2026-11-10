@@ -2,8 +2,8 @@
 
 from copy import deepcopy
 
-from .database import ReadonlyDatabase
-from .validation import validate_readonly
+from enterprise_agent.query.database import ReadonlyDatabase
+from enterprise_agent.query.validate import validate_readonly
 
 
 class QueryGateway:

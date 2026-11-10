@@ -12,4 +12,4 @@ COPY data ./data
 RUN groupadd --system --gid 10001 app && useradd --system --uid 10001 --gid app --home-dir /app app && mkdir -p /app/runtime && chown app:app /app/runtime
 USER app
 EXPOSE 8000
-CMD ["uvicorn", "enterprise_agent.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD ["uvicorn", "enterprise_agent.server.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

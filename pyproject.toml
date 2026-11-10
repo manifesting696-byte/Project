@@ -15,4 +15,4 @@ dependencies = {file = "requirements.txt"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-enterprise_agent = ["ui/*"]
+enterprise_agent = ["server/static/*"]

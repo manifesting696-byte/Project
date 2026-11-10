@@ -78,7 +78,7 @@ Project/
 .\.venv\Scripts\python.exe evaluate.py --live-only
 ```
 
-本机测试需要安装项目依赖，并配置 APP_DATABASE_URL、DATABASE_URL、独立 TEST_DATABASE_URL。首次可运行 python -m enterprise_agent.application.provision_postgres --with-test-database 创建测试库。测试使用隔离 Schema。第二条命令通过真实模型查询 Products 产品数，并与业务快照核对。测试覆盖并行调度、重启恢复、产物写入后中断、计划与回复保存后的重放。
+本机测试需要安装项目依赖，并配置 APP_DATABASE_URL、DATABASE_URL、独立 TEST_DATABASE_URL。首次可运行 python -m enterprise_agent.ops.provision --with-test-database 创建测试库。测试使用隔离 Schema。第二条命令通过真实模型查询 Products 产品数，并与业务快照核对。测试覆盖并行调度、重启恢复、产物写入后中断、计划与回复保存后的重放。
 
 ## 插件与数据表管理
 

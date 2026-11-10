@@ -11,17 +11,17 @@ from unittest.mock import patch
 
 from pydantic import BaseModel
 
-from enterprise_agent.application.service import Application
-from enterprise_agent.core.model import STRING, ModelClient, tool
-from enterprise_agent.core.transport import ChatResponse, ToolCall
-from enterprise_agent.harness import (
+from enterprise_agent.flow.application import Application
+from enterprise_agent.model.client import STRING, ModelClient, tool
+from enterprise_agent.model.transport import ChatResponse, ToolCall
+from enterprise_agent.plugins import (
     Plugin,
     PluginConfig,
     PluginError,
     PluginSpec,
     Runtime,
 )
-from enterprise_agent.harness.profiles import load_profile
+from enterprise_agent.plugins.profiles import load_profile
 from .postgres_fixture import TestStores as Stores, identity_scope, cleanup
 from .fixtures import FixtureModel
 
@@ -249,7 +249,7 @@ class Plugins(unittest.TestCase):
         with (
             patch.dict(sys.modules, {module.__name__: module}),
             patch(
-                "enterprise_agent.harness.runtime.metadata.entry_points",
+                "enterprise_agent.plugins.runtime.metadata.entry_points",
                 return_value=[entry],
             ),
         ):
@@ -475,13 +475,13 @@ profiles:
 
     def test_admin_http_management_and_analyst_denial(self):
         from fastapi.testclient import TestClient
-        from enterprise_agent.api import app as adapter
-        from enterprise_agent.api import identity
+        from enterprise_agent.server import app as adapter
+        from enterprise_agent.server import deps, identity
 
         engine = self.application()
         with (
             identity_scope(self.directory.name),
-            patch.object(adapter, "application", lambda: engine),
+            patch.object(deps, "application", lambda: engine),
         ):
             identity.create_user("plugin-admin", "plugin-admin-password", "admin")
             identity.create_user("plugin-analyst", "plugin-analyst-password", "analyst")
