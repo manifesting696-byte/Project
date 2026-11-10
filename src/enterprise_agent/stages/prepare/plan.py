@@ -3,7 +3,7 @@
 from copy import deepcopy
 
 from enterprise_agent.settings import MAX_TASKS
-from enterprise_agent.domain.models import Plan, PlannedTask
+from enterprise_agent.domain.task import Plan, PlannedTask
 from enterprise_agent.ledger.ledger import now
 
 

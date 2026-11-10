@@ -4,7 +4,10 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from enterprise_agent.domain.models import Category, IntentRef, Model, Plan, RequestSpec
+from enterprise_agent.domain.base import Category, Model
+from enterprise_agent.domain.refs import IntentRef
+from enterprise_agent.domain.request import RequestSpec
+from enterprise_agent.domain.task import Plan
 
 
 class RequestOperation(Model):

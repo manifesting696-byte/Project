@@ -2,7 +2,10 @@
 
 import json
 
-from enterprise_agent.domain.models import Artifact, RequestRevision, SessionEvent, Task
+from enterprise_agent.domain.artifact import Artifact
+from enterprise_agent.domain.request import RequestRevision
+from enterprise_agent.domain.session import SessionEvent
+from enterprise_agent.domain.task import Task
 
 
 def migrate_unified_artifacts(db, directory):

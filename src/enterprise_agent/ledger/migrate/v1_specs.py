@@ -6,7 +6,8 @@ from pathlib import Path
 
 from datetime import datetime, timezone
 
-from enterprise_agent.domain.models import RequestRecord, SessionEvent
+from enterprise_agent.domain.request import RequestRecord
+from enterprise_agent.domain.session import SessionEvent
 
 
 def migrate_request_specs(db):

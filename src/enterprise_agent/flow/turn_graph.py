@@ -1,36 +1,11 @@
 """LangGraph routing for intent, preparation, Request processing, and publication."""
 
-from typing import TypedDict
-
 from langgraph.graph import END, START, StateGraph
 
-from enterprise_agent.domain.models import Response, ResponseBlock
+from enterprise_agent.domain.answer import Response, ResponseBlock
+from enterprise_agent.flow.state import TurnState
 from enterprise_agent.stages.intent.schema import Clarification, Intent, RequestOperation
 from enterprise_agent.ledger.ledger import now
-
-
-class TurnState(TypedDict, total=False):
-    session_id: str
-    turn_id: str
-    query: str
-    constraints: dict
-    pause: bool
-    preview: bool
-    forced_operation: dict | None
-    intent: dict
-    ordered: list[dict]
-    intent_event_id: str
-    bundles: dict
-    proposals: dict
-    errors: dict[str, str]
-    previous: dict
-    prepared: dict
-    cursor: int
-    answers: dict[str, list[dict]]
-    states: dict[str, str]
-    touched: list[str]
-    error: str | None
-    result: dict
 
 
 class Turns:

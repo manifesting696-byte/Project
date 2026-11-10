@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from enterprise_agent.domain.models import Request, RequestRevision
+from enterprise_agent.domain.request import Request, RequestRevision
 from enterprise_agent.ledger.ledger import now
 
 

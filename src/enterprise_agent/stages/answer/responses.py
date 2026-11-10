@@ -1,6 +1,7 @@
 """Materialize answer drafts and publish ordered references to immutable content."""
 
-from enterprise_agent.domain.models import Plan, Response, ResponseBlock
+from enterprise_agent.domain.answer import Response, ResponseBlock
+from enterprise_agent.domain.task import Plan
 
 
 class Responses:

@@ -1,7 +1,8 @@
 """Append-only cumulative conversation compression; never an authority for exact data."""
 from pydantic import Field
 from enterprise_agent.settings import SUMMARY_THRESHOLD, RECENT_EVENTS
-from enterprise_agent.domain.models import Model, ResourceRef
+from enterprise_agent.domain.base import Model
+from enterprise_agent.domain.refs import ResourceRef
 from enterprise_agent.ledger.ledger import now
 
 

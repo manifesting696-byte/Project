@@ -1,9 +1,9 @@
 """The four specialist roles and their dispatch table."""
 
-from enterprise_agent.domain.models import SemanticBinding
+from enterprise_agent.domain.task import SemanticBinding
 from enterprise_agent.stages.execute.agents.capabilities import CAPABILITIES
 from enterprise_agent.stages.execute.agents.base import ArtifactAgent, SpecialistAgent
-from enterprise_agent.prompt.stages import ANALYSIS, PRESENTATION, QUERY, SEMANTIC
+from enterprise_agent.prompt.specialists import ANALYSIS, PRESENTATION, QUERY, SEMANTIC
 from enterprise_agent.stages.execute.agents.toolbox import semantic_tools
 
 

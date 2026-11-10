@@ -6,7 +6,7 @@ from typing import ClassVar
 from pydantic import BaseModel
 
 from enterprise_agent.model.client import ModelRunner
-from enterprise_agent.domain.models import AgentResult
+from enterprise_agent.domain.task import AgentResult
 from enterprise_agent.stages.execute.agents.toolbox import SpecialistToolbox
 
 

@@ -17,19 +17,25 @@
 ```text
 Project/
 ├── src/enterprise_agent/       应用源码
-│   ├── agents/                Agent、提示词和授权工具
-│   ├── api/                   HTTP 接口与身份认证
-│   ├── application/           需求、版本、计划与回复处理
-│   ├── context/               分阶段上下文组装
-│   ├── core/                  领域模型、模型调用和公共配置
-│   ├── harness/               插件发现、依赖与生命周期
-│   ├── intent/                意图输出契约
-│   ├── persistence/           PostgreSQL、产物存储与离线迁移
-│   ├── pipeline/              LangGraph 图与调度
-│   ├── profile/               数据画像与数据库初始化
-│   ├── query/                 只读查询与 SQL 校验
-│   ├── semantic/              语义目录与数据表接入
-│   └── ui/                    聊天页面、样式和交互
+│   ├── main.py                 进程入口：uvicorn enterprise_agent.main:app
+│   ├── settings.py             路径与限额的唯一读取点
+│   ├── domain/                 数据形状与不变量（base/refs/request/task/answer/artifact/session/errors）
+│   ├── flow/                   主流程：三张图、状态、checkpoint、Application 编排、FLOW.md
+│   ├── stages/                 按阶段竖切
+│   │   ├── intent/             意图契约与输出
+│   │   ├── prepare/            Request 聚合根、规格合并、计划校验、提交
+│   │   ├── execute/agents/     Supervisor 与四个专业 Agent、工具与授权
+│   │   ├── verify/             交付验收的硬校验
+│   │   └── answer/             文稿→Artifact→Response 块
+│   ├── prompt/                 提示词：supervisor.py、specialists.py
+│   ├── ledger/                 PostgreSQL 账本、产物、会话摘要
+│   │   └── migrate/            三代离线迁移
+│   ├── catalog/                语义目录、指标发布门禁、表接入状态
+│   ├── query/                  只读数据源、SQL 静态校验、查询网关
+│   ├── model/                  模型客户端与 OpenAI 兼容传输
+│   ├── plugins/                插件发现、依赖、生命周期、内置目录
+│   ├── server/                 FastAPI 装配、路由（routes/）、身份认证、静态资源
+│   └── ops/                    建库、只读授权、数据画像等运维脚本
 ├── tests/                     回归测试、实库验收及测试夹具
 ├── config/                    插件组合、关系与语义配置
 │   └── semantic/              catalog.yaml 与 versions/
@@ -50,23 +56,25 @@ Project/
 
 根目录的 start-local.ps1、evaluate.py 分别是启动和验收入口。Dockerfile、compose.yaml 与依赖声明保留在根目录。runtime 中的 manifest.json、data_quality.json、db_profile.json 为本地数据画像文件。
 
+**先读 [src/enterprise_agent/flow/FLOW.md](src/enterprise_agent/flow/FLOW.md)**：一页纸说明一次提问经过哪些节点、失败停在哪里、四种挂起如何恢复，以及不得改动的冻结契约（thread_id、workflow_key、事件名、图节点名、产物路径）。
+
 ## 当前设计
 
 完整字段定义、数据流、HTTP 接口和迁移说明见 [第三版字段与数据流](docs/architecture/字段与数据流.md)。
 
-- intent/models.py 定义 none/create_task/update_task 和四类 category。
-- core/models.py 定义 Request、快照、执行节点、交付与引用。
-- application/requests.py 管理请求身份、版本、输入依赖、交付解析和失效传播。
-- application/preparation.py 合并要求整理与首次规划，校验候选结果并原子保存 Revision 和初始计划。
-- application/tasks.py 校验执行 DAG，绑定真实输入及交付。
-- application/service.py 提供会话锁、业务校验和图执行入口。
-- pipeline/turns.py 用 LangGraph 串联意图、准备、提交、逐项处理和发布回复。
-- pipeline/execution.py 用 LangGraph 管理执行、验收、重规划和 interrupt/resume。
-- pipeline/scheduler.py 用 Send 并行分发就绪 Task，并按 task_id 汇总结果。
-- pipeline/checkpoints.py 使用 PostgresSaver 将运行现场保存到 agent_checkpoints Schema。
-- harness/ 管理插件发现、服务依赖、作用域事件、动态装卸和失败回滚。config/harness.yaml 定义 Profile 与 Bundle。
-- query/database.py 提供只读数据源与实际表结构，semantic/catalog.py 保存表接入状态。
-- application/responses.py 将文字草稿保存为 Artifact，组装只含产物引用的 Response 块。前端据此展示正文和结果卡片。
+- stages/intent/schema.py 定义 none/create_task/update_task 和四类 category。
+- domain/ 定义 Request、快照、执行节点、交付与引用；不导入任何 I/O。
+- stages/prepare/requests.py 管理请求身份、版本、输入依赖、交付解析和失效传播。
+- stages/prepare/preparation.py 合并要求整理与首次规划，校验候选结果并原子保存 Revision 和初始计划。
+- stages/prepare/plan.py 校验执行 DAG，绑定真实输入及交付。
+- flow/application.py 提供会话锁、业务校验和图执行入口。
+- flow/turn_graph.py 用 LangGraph 串联意图、准备、提交、逐项处理和发布回复。
+- flow/request_graph.py 用 LangGraph 管理执行、验收、重规划和 interrupt/resume。
+- flow/task_graph.py 用 Send 并行分发就绪 Task，并按 task_id 汇总结果。
+- flow/checkpoints.py 使用 PostgresSaver 将运行现场保存到 agent_checkpoints Schema。
+- plugins/ 管理插件发现、服务依赖、作用域事件、动态装卸和失败回滚。config/harness.yaml 定义 Profile 与 Bundle。
+- query/database.py 提供只读数据源与实际表结构，catalog/tables.py 保存表接入状态。
+- stages/answer/responses.py 将文字草稿保存为 Artifact，组装只含产物引用的 Response 块。前端据此展示正文和结果卡片。
 - persistence/postgres.py 提供有界连接池、事务、版本化建表和跨连接会话锁。persistence/stores.py 保存 PostgreSQL 账本。
 - persistence/migrate_postgres.py 离线转换历史 SQLite 副本，导入 PostgreSQL，保留原数据、SQL 和密码哈希。
 - agents/prompt.py 集中说明角色和字段取值。

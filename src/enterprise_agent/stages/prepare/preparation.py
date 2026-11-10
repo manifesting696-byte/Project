@@ -2,7 +2,8 @@
 
 from copy import deepcopy
 
-from enterprise_agent.domain.models import Plan, RequestSpec
+from enterprise_agent.domain.request import RequestSpec
+from enterprise_agent.domain.task import Plan
 from enterprise_agent.stages.intent.schema import Clarification, RequestPreparation
 
 

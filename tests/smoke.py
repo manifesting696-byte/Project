@@ -17,7 +17,8 @@ from pydantic import ValidationError
 from enterprise_agent.flow.application import Application
 from enterprise_agent.settings import ROOT
 from enterprise_agent.model.client import STRING, ModelClient, tool
-from enterprise_agent.domain.models import AnswerDraft, ResourceRef
+from enterprise_agent.domain.answer import AnswerDraft
+from enterprise_agent.domain.refs import ResourceRef
 from enterprise_agent.model.transport import (
     ChatResponse,
     OpenAICompatibleTransport,

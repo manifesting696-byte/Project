@@ -1,15 +1,10 @@
 """One Supervisor owns intent, full specification, planning, checking and answers."""
 
-from enterprise_agent.domain.models import AnswerDraft, Completion, Plan
+from enterprise_agent.domain.answer import AnswerDraft, Completion
+from enterprise_agent.domain.task import Plan
 from enterprise_agent.stages.intent.schema import Intent, RequestPreparation
 from enterprise_agent.stages.execute.agents.base import ModelAgent
-from enterprise_agent.prompt.stages import (
-    SUPERVISOR_ANSWER,
-    SUPERVISOR_COMPLETION,
-    SUPERVISOR_PREPARATION,
-    SUPERVISOR_INTENT,
-    SUPERVISOR_PLANNING,
-)
+from enterprise_agent.prompt.supervisor import SUPERVISOR_ANSWER, SUPERVISOR_COMPLETION, SUPERVISOR_INTENT, SUPERVISOR_PLANNING, SUPERVISOR_PREPARATION
 from enterprise_agent.stages.execute.agents.toolbox import supervisor_tools
 
 

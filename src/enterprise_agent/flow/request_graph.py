@@ -1,36 +1,14 @@
 """Checkpointed Request execution, replanning, and interrupt/resume control flow."""
 
-from typing import TypedDict
-
 from langgraph.graph import END, START, StateGraph
 from langgraph.runtime import Runtime
 from langgraph.types import Command, interrupt
 
 from enterprise_agent.settings import MAX_REPLANS
-from enterprise_agent.domain.models import AnswerDraft, AnswerDraftBlock, Response
+from enterprise_agent.flow.state import ExecutionContext, ExecutionState
+from enterprise_agent.stages.verify.validate import validate_completion
+from enterprise_agent.domain.answer import AnswerDraft, AnswerDraftBlock, Response
 from enterprise_agent.ledger.ledger import now
-
-
-class ExecutionContext(TypedDict):
-    turn_id: str
-
-
-class ExecutionState(TypedDict, total=False):
-    request_id: str
-    revision_id: str
-    session_id: str
-    run_id: str
-    query: str
-    output_names: list[str] | None
-    pause: bool
-    preview: bool
-    executions: int
-    completion: dict | None
-    reply: dict | None
-    new_results: list[dict]
-    outcome: str
-    wait_kind: str
-    route: str
 
 
 class Execution:
@@ -216,7 +194,7 @@ class Execution:
                 request, turn_id, draft, output_names=state["output_names"], bind=True
             ).model_dump(exclude_none=True)
         completion = self.app.supervisor.check(request, state["query"], emit)
-        self.app.validate_completion(request, completion)
+        validate_completion(self.app, request, completion)
         route = (
             "replan"
             if completion.next_action == "replan" and state["executions"] <= MAX_REPLANS

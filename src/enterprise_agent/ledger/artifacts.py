@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 
 from enterprise_agent.settings import READ_ROWS
-from enterprise_agent.domain.models import Artifact
+from enterprise_agent.domain.artifact import Artifact
 from enterprise_agent.ledger.ledger import now
 
 

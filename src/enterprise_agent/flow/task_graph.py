@@ -1,30 +1,11 @@
 """LangGraph fan-out scheduling over the persisted execution Task DAG."""
 
-import operator
-from typing import Annotated, TypedDict
-
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from enterprise_agent.settings import MAX_PARALLEL, MAX_TASKS
+from enterprise_agent.flow.state import ScheduleState
 from enterprise_agent.ledger.ledger import now
-
-
-class ScheduleState(TypedDict, total=False):
-    request_id: str
-    session_id: str
-    revision_id: str
-    turn_id: str
-    execution_key: str | None
-    pause: bool
-    ready: list[str]
-    results: Annotated[dict[str, dict], operator.or_]
-    decision_required: bool
-    paused: bool
-    waiting_for_requests: bool
-    blocked: str | None
-    route: str
-    retry_dispatch: bool
 
 
 class Scheduler:

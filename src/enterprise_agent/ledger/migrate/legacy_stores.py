@@ -8,16 +8,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from enterprise_agent.settings import WORK
-from enterprise_agent.domain.models import (
-    Artifact,
-    Request,
-    RequestRecord,
-    RequestRevision,
-    Session,
-    SessionEvent,
-    SessionSummary,
-    Task,
-)
+from enterprise_agent.domain.artifact import Artifact
+from enterprise_agent.domain.request import Request, RequestRecord, RequestRevision
+from enterprise_agent.domain.session import Session, SessionEvent, SessionSummary
+from enterprise_agent.domain.task import Task
 from enterprise_agent.ledger.migrate.v1_specs import migrate_legacy, migrate_request_specs
 from enterprise_agent.ledger.migrate.v2_unified import migrate_unified_artifacts
 
