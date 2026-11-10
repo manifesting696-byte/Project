@@ -1,0 +1,9 @@
+# Python sources are stored with LF so diffs stay stable across Windows checkouts.
+*.py text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.sql text eol=lf
+*.ps1 text eol=crlf
