@@ -16,7 +16,7 @@ from ..core.model import STRING, ModelClient, tool
 from ..core.transport import ChatResponse, ToolCall
 from ..harness import Plugin, PluginConfig, PluginError, PluginSpec, Runtime
 from ..harness.profiles import load_profile
-from ..persistence.stores import Stores
+from .postgres_fixture import TestStores as Stores, identity_scope, cleanup
 from .fixtures import FixtureModel
 
 
@@ -29,6 +29,7 @@ class Plugins(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
+        self.addCleanup(cleanup)
 
     def runtime(self, plugins=(), host=None):
         runtime = Runtime(plugins, host)
@@ -473,9 +474,7 @@ profiles:
 
         engine = self.application()
         with (
-            patch.object(
-                identity, "AUTH_DB", Path(self.directory.name) / "auth.sqlite"
-            ),
+            identity_scope(self.directory.name),
             patch.object(adapter, "application", lambda: engine),
         ):
             identity.create_user("plugin-admin", "plugin-admin-password", "admin")
@@ -515,7 +514,7 @@ profiles:
                 )
                 self.assertEqual(loaded.status_code, 200, loaded.text)
                 invalid = client.post(
-                    "/runtime/plugins/ledger.sqlite/reload",
+                    "/runtime/plugins/ledger.postgres/reload",
                     json={"config": {"bad": True}},
                     headers=tokens["admin"],
                 )

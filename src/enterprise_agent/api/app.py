@@ -1,6 +1,8 @@
 """HTTP/authentication adapter. Business execution lives in application.Application."""
 
-import sqlite3
+from psycopg import IntegrityError, OperationalError
+from psycopg_pool import PoolTimeout
+from fastapi import HTTPException
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from fastapi import Depends, FastAPI, Header
@@ -37,6 +39,9 @@ async def lifespan(app):
                 application().close()
             finally:
                 application.cache_clear()
+        from .identity import close
+
+        close()
 
 
 app = FastAPI(title="企业数据智能问析", version="3.0.0", lifespan=lifespan)
@@ -160,8 +165,16 @@ def chat_css():
 @app.get("/health")
 def health():
     engine = application()
+    try:
+        with engine.stores.db() as db:
+            db.execute("SELECT 1")
+        with engine.database.connection() as db:
+            db.execute("SELECT 1")
+    except (OperationalError, PoolTimeout) as exc:
+        raise HTTPException(503, "PostgreSQL 暂不可用") from exc
     return {
         "status": "ok",
+        "persistence": "postgresql",
         "snapshot_id": engine.registry.snapshot_id,
         "agents": len(engine.specialists.capabilities),
         "profile": engine.profile,
@@ -462,15 +475,15 @@ def feedback(body: Feedback, user=Depends(current_user)):
     with app_db() as db:
         if body.audit_id:
             row = db.execute(
-                "SELECT user_id FROM audit WHERE id=?", (body.audit_id,)
+                "SELECT user_id FROM audit WHERE id=%s", (body.audit_id,)
             ).fetchone()
-            if not row or row[0] != user["id"]:
+            if not row or row["user_id"] != user["id"]:
                 raise PermissionError("无权评价此记录")
         cursor = db.execute(
-            "INSERT INTO feedback(at,user_id,audit_id,rating,comment) VALUES(datetime('now'),?,?,?,?)",
+            "INSERT INTO feedback(at,user_id,audit_id,rating,comment) VALUES(now(),%s,%s,%s,%s) RETURNING id",
             (user["id"], body.audit_id, body.rating, body.comment),
         )
-        return {"id": cursor.lastrowid, "ok": True}
+        return {"id": cursor.fetchone()["id"], "ok": True}
 
 
 @app.get("/admin/users")
@@ -491,7 +504,7 @@ def add_user(body: NewUser, user=Depends(require("admin"))):
             "id": create_user(body.username, body.password, body.role),
             "username": body.username,
         }
-    except sqlite3.IntegrityError as exc:
+    except IntegrityError as exc:
         raise ValueError("账号已存在") from exc
 
 
@@ -500,6 +513,6 @@ def deactivate(user_id: int, user=Depends(require("admin"))):
     if user_id == user["id"]:
         raise ValueError("不能停用自己")
     with app_db() as db:
-        db.execute("UPDATE users SET active=0 WHERE id=?", (user_id,))
-        db.execute("DELETE FROM auth_sessions WHERE user_id=?", (user_id,))
+        db.execute("UPDATE users SET active=FALSE WHERE id=%s", (user_id,))
+        db.execute("DELETE FROM auth_sessions WHERE user_id=%s", (user_id,))
     return {"ok": True}

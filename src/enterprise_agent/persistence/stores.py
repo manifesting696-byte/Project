@@ -1,9 +1,6 @@
-"""SQLite ledger with atomic request revisions and append-only history."""
+"""PostgreSQL JSONB ledger with transactional revisions and ordered event records."""
 
-import json
 import re
-import sqlite3
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,8 +15,9 @@ from ..core.models import (
     SessionSummary,
     Task,
 )
-from .migration import migrate_legacy, migrate_request_specs
-from .unified_migration import migrate_unified_artifacts
+from psycopg.types.json import Jsonb
+
+from .postgres import Postgres
 
 
 def now():
@@ -48,97 +46,85 @@ IMMUTABLE = {"request_revisions", "artifacts", "session_events", "session_summar
 
 
 class Stores:
-    def __init__(self, directory: Path = WORK):
+    def __init__(self, directory: Path = WORK, dsn=None, schema="agent"):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
-        self.path = self.directory / "agent.sqlite"
-        with self.db() as db:
-            if (
-                db.execute("PRAGMA user_version").fetchone()[0] < 4
-                and db.execute(
-                    "SELECT 1 FROM sqlite_master WHERE name='artifacts'"
-                ).fetchone()
-            ):
-                backup = self.directory / "agent.before-unified-artifacts.sqlite"
-                if not backup.exists():
-                    destination = sqlite3.connect(backup)
-                    try:
-                        db.backup(destination)
-                    finally:
-                        destination.close()
-            legacy = "session_id" in {
-                row[1] for row in db.execute("PRAGMA table_info(tasks)")
-            }
-            migrate_legacy(db, self.path)
-            for statement in (
-                "CREATE TABLE IF NOT EXISTS sequences(kind TEXT PRIMARY KEY,value INTEGER NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,body TEXT NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS session_events(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,seq INTEGER NOT NULL,body TEXT NOT NULL,UNIQUE(session_id,seq))",
-                "CREATE TABLE IF NOT EXISTS requests(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,body TEXT NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS request_revisions(id TEXT PRIMARY KEY,request_id TEXT NOT NULL,body TEXT NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS tasks(id TEXT PRIMARY KEY,request_id TEXT NOT NULL,body TEXT NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS artifacts(id TEXT PRIMARY KEY,request_id TEXT NOT NULL,body TEXT NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS session_summaries(id TEXT PRIMARY KEY,session_id TEXT NOT NULL,body TEXT NOT NULL)",
-                "CREATE INDEX IF NOT EXISTS request_session ON requests(session_id)",
-                "CREATE INDEX IF NOT EXISTS execution_request ON tasks(request_id)",
-                "CREATE INDEX IF NOT EXISTS result_request ON artifacts(request_id)",
-            ):
-                db.execute(statement)
-            migrate_request_specs(db)
-            migrate_unified_artifacts(db, self.directory)
-            if legacy:
-                for table, model in RECORD_MODELS.items():
-                    for row in db.execute(f"SELECT body FROM {table}"):
-                        model.model_validate(json.loads(row[0]))
-
-    @contextmanager
-    def db(self):
-        db = sqlite3.connect(self.path, timeout=30)
-        db.row_factory = sqlite3.Row
-        db.execute("PRAGMA journal_mode=WAL")
+        self.persistence = Postgres(dsn, schema)
+        statements = [
+            "CREATE TABLE IF NOT EXISTS sequences(kind TEXT PRIMARY KEY,value BIGINT NOT NULL)"
+        ]
+        for table, (_, parent) in TABLES.items():
+            extra = (
+                ",seq BIGINT NOT NULL,UNIQUE(session_id,seq)"
+                if table == "session_events"
+                else ""
+            )
+            if table == "artifacts":
+                extra += ",request_id TEXT"
+            statements.append(
+                f"CREATE TABLE IF NOT EXISTS {table}(row_id BIGINT GENERATED ALWAYS AS IDENTITY UNIQUE,id TEXT PRIMARY KEY,{parent} TEXT NOT NULL,body JSONB NOT NULL{extra})"
+            )
+            statements.append(
+                f"CREATE INDEX IF NOT EXISTS {table}_{parent}_idx ON {table}({parent},row_id)"
+            )
+        statements.extend(
+            [
+                "CREATE TABLE IF NOT EXISTS legacy_tasks(id TEXT PRIMARY KEY,body JSONB NOT NULL)",
+                "CREATE TABLE IF NOT EXISTS legacy_task_revisions(id TEXT PRIMARY KEY,body JSONB NOT NULL)",
+                "CREATE INDEX IF NOT EXISTS artifact_request_idx ON artifacts(request_id)",
+                "CREATE INDEX IF NOT EXISTS event_workflow_idx ON session_events(session_id,(body->'payload'->>'workflow_key'),seq DESC)",
+            ]
+        )
         try:
-            yield db
-            db.commit()
-        except Exception:
-            db.rollback()
+            self.persistence.setup(1, statements)
+        except BaseException:
+            self.persistence.close()
             raise
-        finally:
-            db.close()
+
+    def db(self):
+        return self.persistence.connection()
+
+    def session_lock(self, session_id):
+        return self.persistence.advisory_lock(
+            f"enterprise-session:{self.persistence.schema}:{session_id}"
+        )
+
+    def close(self):
+        self.persistence.close()
 
     @staticmethod
     def _next_id(db, kind):
         if not re.fullmatch("[a-z_]+", kind):
             raise ValueError("无效 ID 类型")
         row = db.execute(
-            "INSERT INTO sequences VALUES(?,1) ON CONFLICT(kind) DO UPDATE SET value=value+1 RETURNING value",
+            "INSERT INTO sequences VALUES(%s,1) ON CONFLICT(kind) DO UPDATE SET value=sequences.value+1 RETURNING value",
             (kind,),
         ).fetchone()
         return f"{kind}_{row[0]:03d}"
 
     def new_id(self, kind):
         with self.db() as db:
-            db.execute("BEGIN IMMEDIATE")
             return self._next_id(db, kind)
 
     def get(self, table, key):
         if table not in TABLES:
             raise ValueError("未知存储")
         with self.db() as db:
-            row = db.execute(f"SELECT body FROM {table} WHERE id=?", (key,)).fetchone()
+            row = db.execute(f"SELECT body FROM {table} WHERE id=%s", (key,)).fetchone()
             if row is None:
                 raise ValueError(f"对象不存在：{key}")
-            item = json.loads(row[0])
+            item = row[0]
             return self.request_view(db, item) if table == "requests" else item
 
     @staticmethod
     def request_view(db, item):
         revision = db.execute(
-            "SELECT body FROM request_revisions WHERE id=?",
+            "SELECT body FROM request_revisions WHERE id=%s",
             (item["current_revision_id"],),
         ).fetchone()
         if revision is None:
             raise ValueError("Request 缺少当前规格版本")
-        revision = json.loads(revision[0])
+        revision = revision[0]
         if revision["request_id"] != item["request_id"]:
             raise ValueError("规格版本不属于该 Request")
         if "spec" in item and item["spec"] != revision["spec"]:
@@ -152,7 +138,7 @@ class Stores:
             return False
         with self.db() as db:
             return (
-                db.execute(f"SELECT 1 FROM {table} WHERE id=?", (key,)).fetchone()
+                db.execute(f"SELECT 1 FROM {table} WHERE id=%s", (key,)).fetchone()
                 is not None
             )
 
@@ -161,15 +147,19 @@ class Stores:
         if table == "requests":
             self.request_view(db, item)
             item = {name: value for name, value in item.items() if name != "spec"}
-        encoded = json.dumps(item, ensure_ascii=False)
+        encoded = Jsonb(item)
         if table in IMMUTABLE:
+            db.execute(
+                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                (f"enterprise-record:{self.persistence.schema}:{table}:{item[key]}",),
+            )
             old = db.execute(
-                f"SELECT body FROM {table} WHERE id=?", (item[key],)
+                f"SELECT body FROM {table} WHERE id=%s", (item[key],)
             ).fetchone()
             if old:
                 previous = (
                     RECORD_MODELS[table]
-                    .model_validate(json.loads(old[0]))
+                    .model_validate(old[0])
                     .model_dump(exclude_none=True)
                 )
                 if previous != item:
@@ -184,9 +174,9 @@ class Stores:
             values.insert(2, item["seq"])
         if table == "artifacts":
             columns.insert(2, "request_id")
-            values.insert(2, item.get("request_id") or "")
+            values.insert(2, item.get("request_id"))
         db.execute(
-            f"INSERT INTO {table} ({','.join(columns)}) VALUES ({','.join('?' for _ in values)}) "
+            f"INSERT INTO {table} ({','.join(columns)}) VALUES ({','.join('%s' for _ in values)}) "
             "ON CONFLICT(id) DO UPDATE SET body=excluded.body",
             values,
         )
@@ -213,19 +203,18 @@ class Stores:
             for table, item in records
         ]
         with self.db() as db:
-            db.execute("BEGIN IMMEDIATE")
             for request_id, revision_id in (expected_revisions or {}).items():
                 row = db.execute(
-                    "SELECT body FROM requests WHERE id=?", (request_id,)
+                    "SELECT body FROM requests WHERE id=%s FOR UPDATE", (request_id,)
                 ).fetchone()
-                actual = json.loads(row[0])["current_revision_id"] if row else None
+                actual = row[0]["current_revision_id"] if row else None
                 if actual != revision_id:
                     raise ValueError("需求已被其他执行更新，请重新读取当前版本")
             for request_id, plan_version in (expected_plan_versions or {}).items():
                 row = db.execute(
-                    "SELECT body FROM requests WHERE id=?", (request_id,)
+                    "SELECT body FROM requests WHERE id=%s FOR UPDATE", (request_id,)
                 ).fetchone()
-                actual = json.loads(row[0])["plan_version"] if row else None
+                actual = row[0]["plan_version"] if row else None
                 if actual != plan_version:
                     raise ValueError("执行计划已被其他操作更新，请重新读取当前计划")
             for table, item in validated:
@@ -248,13 +237,11 @@ class Stores:
             raise ValueError("无效存储检索")
         with self.db() as db:
             rows = db.execute(
-                f"SELECT body FROM {table} WHERE {parent}=? ORDER BY rowid",
+                f"SELECT body FROM {table} WHERE {parent}=%s ORDER BY row_id",
                 (str(value),),
             ).fetchall()
             return [
-                self.request_view(db, json.loads(row[0]))
-                if table == "requests"
-                else json.loads(row[0])
+                self.request_view(db, row[0]) if table == "requests" else row[0]
                 for row in rows
             ]
 
@@ -287,11 +274,9 @@ class Stores:
         request_id=None,
         task_id=None,
     ):
-        session = json.loads(
-            db.execute(
-                "SELECT body FROM sessions WHERE id=?", (session_id,)
-            ).fetchone()[0]
-        )
+        session = db.execute(
+            "SELECT body FROM sessions WHERE id=%s FOR UPDATE", (session_id,)
+        ).fetchone()[0]
         event_id = self._next_id(db, "event")
         session["last_seq"] += 1
         session["updated_at"] = now()
@@ -321,14 +306,11 @@ class Stores:
 
     @staticmethod
     def _workflow_event(db, session_id, workflow_key):
-        for row in db.execute(
-            "SELECT body FROM session_events WHERE session_id=? ORDER BY seq DESC",
-            (session_id,),
-        ):
-            item = json.loads(row[0])
-            if item["payload"].get("workflow_key") == workflow_key:
-                return item
-        return None
+        row = db.execute(
+            "SELECT body FROM session_events WHERE session_id=%s AND body->'payload'->>'workflow_key'=%s ORDER BY seq DESC LIMIT 1",
+            (session_id, workflow_key),
+        ).fetchone()
+        return row[0] if row else None
 
     def event(
         self,
@@ -342,7 +324,7 @@ class Stores:
         workflow_key=None,
     ):
         with self.db() as db:
-            db.execute("BEGIN IMMEDIATE")
+            db.execute("SELECT id FROM sessions WHERE id=%s FOR UPDATE", (session_id,))
             if workflow_key:
                 cached = self._workflow_event(db, session_id, workflow_key)
                 if cached:
@@ -367,10 +349,9 @@ class Stores:
     def recover_interrupted(self, resumable_request_ids=()):
         """Preserve checkpoint-backed work and recover legacy interrupted execution."""
         with self.db() as db:
-            db.execute("BEGIN IMMEDIATE")
             affected = set()
             for row in db.execute("SELECT body FROM tasks").fetchall():
-                task = json.loads(row[0])
+                task = row[0]
                 if (
                     task["status"] == "running"
                     and task["request_id"] not in resumable_request_ids
@@ -383,29 +364,21 @@ class Stores:
                     self._put(db, "tasks", task)
                     affected.add(task["request_id"])
             for row in db.execute("SELECT body FROM requests").fetchall():
-                request = json.loads(row[0])
+                request = row[0]
                 if request["status"] == "running" or request["request_id"] in affected:
                     request.update(status="pending", updated_at=now())
                     self._put(db, "requests", request)
 
     def legacy_request_ids(self, task_id):
         with self.db() as db:
-            if not db.execute(
-                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='legacy_tasks'"
-            ).fetchone():
-                return []
             row = db.execute(
-                "SELECT body FROM legacy_tasks WHERE id=?", (task_id,)
+                "SELECT body FROM legacy_tasks WHERE id=%s", (task_id,)
             ).fetchone()
             if row is None:
                 return []
-            task = json.loads(row[0])
+            task = row[0]
             row = db.execute(
-                "SELECT body FROM legacy_task_revisions WHERE id=?",
+                "SELECT body FROM legacy_task_revisions WHERE id=%s",
                 (task["current_revision_id"],),
             ).fetchone()
-        return (
-            [item["request_id"] for item in json.loads(row[0])["requirements"]]
-            if row
-            else []
-        )
+        return [item["request_id"] for item in row[0]["requirements"]] if row else []

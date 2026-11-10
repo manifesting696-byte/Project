@@ -20,7 +20,13 @@ from ..core.model import STRING, ModelClient, tool
 from ..core.models import AnswerDraft, ResourceRef
 from ..core.transport import ChatResponse, OpenAICompatibleTransport, ToolCall
 from ..intent.models import Intent, RequestPreparation
-from ..persistence.stores import RECORD_MODELS, Stores
+from ..persistence.stores import RECORD_MODELS
+from .postgres_fixture import (
+    TestStores as Stores,
+    LegacyTestStores,
+    identity_scope,
+    cleanup,
+)
 from ..persistence.summaries import compress
 from ..query.validation import validate_readonly
 from .fixtures import FixtureModel
@@ -30,10 +36,24 @@ from .legacy_fixture import legacy_ledger
 class Smoke(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
+        self._legacy_mode = self._testMethodName in {
+            "test_conflicting_legacy_deliveries_roll_back_migration",
+            "test_failed_migration_rolls_back_and_keeps_backup",
+            "test_request_specs_and_legacy_deliveries_preserve_existing_ledger",
+            "test_migration_preserves_history_artifacts_and_update",
+            "test_unified_migration_recovers_historical_text_and_bindings",
+            "test_unified_migration_failure_removes_new_content_and_can_retry",
+        }
+        if self._legacy_mode:
+            replacement = patch(__name__ + ".Stores", LegacyTestStores)
+            replacement.start()
+            self.addCleanup(replacement.stop)
         self.model = FixtureModel()
         self.engine = Application(Stores(Path(self.directory.name)), self.model)
 
     def tearDown(self):
+        self.engine.close()
+        cleanup()
         self.directory.cleanup()
 
     def completed(self, question="列出前五个产品", session_id=None):
@@ -142,11 +162,9 @@ class Smoke(unittest.TestCase):
             [request],
         )
         with self.engine.stores.db() as db:
-            stored = json.loads(
-                db.execute(
-                    "SELECT body FROM requests WHERE id=?", (request["request_id"],)
-                ).fetchone()[0]
-            )
+            stored = db.execute(
+                "SELECT body FROM requests WHERE id=%s", (request["request_id"],)
+            ).fetchone()[0]
         self.assertNotIn("spec", stored)
         self.assertNotIn("results", stored)
         edited = deepcopy(request)
@@ -769,7 +787,7 @@ class Smoke(unittest.TestCase):
             for role, context in self.model.contexts
             if role == "UnifiedSupervisor.Intent"
         )
-        self.assertIn("Products", initial["database_metadata"]["tables"])
+        self.assertIn("products", initial["database_metadata"]["tables"])
         self.assertIn(
             "Products",
             self.engine.artifacts.content(result["blocks"][0]["artifact_id"]),
@@ -1030,9 +1048,7 @@ class Smoke(unittest.TestCase):
         from ..api import identity
 
         with (
-            patch.object(
-                identity, "AUTH_DB", Path(self.directory.name) / "auth.sqlite"
-            ),
+            identity_scope(self.directory.name),
             patch.object(adapter, "application", lambda: self.engine),
         ):
             identity.create_user("smoke", "smoke-password-2026", "analyst")
@@ -1377,7 +1393,7 @@ class Smoke(unittest.TestCase):
         self.assertIsNone(self.engine.artifacts.sql(item["artifact_id"]))
         empty = toolbox.analysis_tools()["compute_artifact"].call(
             artifact_ids=[key],
-            sql=f'SELECT product_id AS id FROM "{key}" WHERE 0',
+            sql=f'SELECT product_id AS id FROM "{key}" WHERE FALSE',
             title="空表",
             summary="筛选无记录",
         )
@@ -1932,7 +1948,7 @@ vm.runInContext("state.sessionId='s'; loadConversation()",context).then(()=>{
         snapshot = self.engine.execution.snapshot(request)
         self.assertIn("wait", snapshot.next)
         self.assertTrue(any(task.interrupts for task in snapshot.tasks))
-        self.assertTrue(self.engine.checkpoints.path.exists())
+        self.assertTrue(self.engine.checkpoints.backend == "postgres")
         model = FixtureModel()
         restarted = Application(Stores(Path(self.directory.name)), model)
         result = restarted.resume(1, request["request_id"])
@@ -2489,65 +2505,75 @@ def main():
     if "--live-only" not in sys.argv:
         from .plugins import Plugins
         from .catalog import Catalog
+        from .postgres import PostgreSQL
 
         suite = unittest.TestSuite(
             [
                 unittest.defaultTestLoader.loadTestsFromTestCase(Smoke),
                 unittest.defaultTestLoader.loadTestsFromTestCase(Plugins),
                 unittest.defaultTestLoader.loadTestsFromTestCase(Catalog),
+                unittest.defaultTestLoader.loadTestsFromTestCase(PostgreSQL),
             ]
         )
         outcome = unittest.TextTestRunner(verbosity=2).run(suite)
         if not outcome.wasSuccessful():
             raise SystemExit(1)
     if "--live" in sys.argv or "--live-only" in sys.argv:
-        with tempfile.TemporaryDirectory() as directory:
-            engine = Application(Stores(Path(directory)))
-            result = engine.ask(
-                "live-smoke",
-                "查询 Products 表中的产品总数，只返回实际行数，不使用业务指标。",
-            )
-            data = [
-                item for item in result["artifacts"] if item["content_type"] == "table"
-            ]
-            evidence = {
-                "status": result["status"],
-                "requests": len(result["requests"]),
-                "tasks": len(result["tasks"]),
-                "data": [
-                    {
-                        "artifact_id": item["artifact_id"],
-                        "rows": engine.artifacts.content(item["artifact_id"]),
-                    }
-                    for item in data
-                ],
-                "blocks": result["blocks"],
-            }
-            events = engine.stores.list(
-                "session_events", "session_id", result["session_id"]
-            )
-            diagnostics = {
-                "evidence": evidence,
-                "requests": result["requests"],
-                "revisions": result["revisions"],
-                "events": events,
-            }
-            (ROOT / "runtime" / "request-model-live-verification.json").write_text(
-                json.dumps(diagnostics, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
-            print(json.dumps(evidence, ensure_ascii=False))
-            if result["status"] != "completed" or not data:
-                raise SystemExit("真实模型尚未完成查询")
-            expected = next(
-                item["rows"]
-                for name, item in engine.registry.tables.items()
-                if name.lower() == "products"
-            )
-            if not any(
-                len(item["rows"]) == 1 and expected in item["rows"][0].values()
-                for item in evidence["data"]
+        try:
+            with (
+                tempfile.TemporaryDirectory() as directory,
+                Application(Stores(Path(directory))) as engine,
             ):
-                raise SystemExit("真实模型返回值与业务快照的产品数不一致")
+                result = engine.ask(
+                    "live-smoke",
+                    "查询 Products 表中的产品总数，只返回实际行数，不使用业务指标。",
+                )
+                data = [
+                    item
+                    for item in result["artifacts"]
+                    if item["content_type"] == "table"
+                ]
+                evidence = {
+                    "status": result["status"],
+                    "requests": len(result["requests"]),
+                    "tasks": len(result["tasks"]),
+                    "data": [
+                        {
+                            "artifact_id": item["artifact_id"],
+                            "rows": engine.artifacts.content(item["artifact_id"]),
+                        }
+                        for item in data
+                    ],
+                    "blocks": result["blocks"],
+                }
+                events = engine.stores.list(
+                    "session_events", "session_id", result["session_id"]
+                )
+                diagnostics = {
+                    "evidence": evidence,
+                    "requests": result["requests"],
+                    "revisions": result["revisions"],
+                    "events": events,
+                }
+                (ROOT / "runtime" / "request-model-live-verification.json").write_text(
+                    json.dumps(diagnostics, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+                print(json.dumps(evidence, ensure_ascii=False))
+                if result["status"] != "completed" or not data:
+                    raise SystemExit("真实模型尚未完成查询")
+                expected = next(
+                    item["rows"]
+                    for name, item in engine.registry.tables.items()
+                    if name.lower() == "products"
+                )
+                if not any(
+                    len(item["rows"]) == 1 and expected in item["rows"][0].values()
+                    for item in evidence["data"]
+                ):
+                    raise SystemExit("真实模型返回值与业务快照的产品数不一致")
+        finally:
+            cleanup()
 
 
 if __name__ == "__main__":

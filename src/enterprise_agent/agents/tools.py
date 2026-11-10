@@ -281,7 +281,7 @@ class SpecialistToolbox:
 
         return {
             "compute_artifact": tool(
-                "对完整输入数据执行精确 SQLite SELECT；表名为 result_xxx，不连接业务库；派生数据另存产物",
+                "对完整输入数据执行精确 PostgreSQL SELECT；表名为 result_xxx，不连接业务库；派生数据另存产物",
                 compute,
                 artifact_ids=ARRAY,
                 sql=STRING,

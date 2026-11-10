@@ -3,7 +3,6 @@
 import hashlib
 import json
 import re
-import sqlite3
 from copy import deepcopy
 
 from ..core.config import READ_ROWS
@@ -246,47 +245,74 @@ class Artifacts:
         }
 
     def compute(self, artifact_ids, sql, with_columns=False):
-        """SQL runs only over in-memory copies of authorized Artifacts, never the business DB."""
+        """Compute in transaction-local PostgreSQL tables containing authorized artifacts."""
+        from psycopg import sql as statements
+        from psycopg.rows import dict_row
+        from decimal import Decimal
         from ..query.validation import validate_readonly
 
         schema = {}
-        db = sqlite3.connect(":memory:")
-        db.row_factory = sqlite3.Row
-        try:
+        with self.stores.persistence.connection() as db:
+            db.row_factory = dict_row
+            db.execute("SET LOCAL statement_timeout='10s'")
+            db.execute("SET LOCAL search_path=pg_temp,pg_catalog")
             for artifact_id in artifact_ids:
                 item = self.inspect(artifact_id)
                 if item["content_type"] != "table" or not re.fullmatch(
                     r"result_[A-Za-z0-9_-]+", artifact_id
                 ):
-                    raise ValueError("计算仅支持查询产物")
+                    raise ValueError("计算仅支持表格产物")
                 rows = self.content(artifact_id)
                 cols = [col["name"] for col in item["payload"]["columns"]]
-                schema[artifact_id] = cols
-                quote = lambda value: '"' + value.replace('"', '""') + '"'
                 if not cols:
                     raise ValueError("空结果没有可计算字段")
+                schema[artifact_id] = cols
+                definitions = []
+                for column in item["payload"]["columns"]:
+                    dtype = column["dtype"]
+                    kind = {
+                        "int": "BIGINT",
+                        "float": "DOUBLE PRECISION",
+                        "bool": "BOOLEAN",
+                        "null": "NUMERIC",
+                    }.get(dtype, "TEXT")
+                    definitions.append(
+                        statements.SQL("{} {}").format(
+                            statements.Identifier(column["name"]), statements.SQL(kind)
+                        )
+                    )
                 db.execute(
-                    f"CREATE TABLE {quote(artifact_id)} ({','.join(quote(col) for col in cols)})"
+                    statements.SQL("CREATE TEMP TABLE {} ({}) ON COMMIT DROP").format(
+                        statements.Identifier(artifact_id),
+                        statements.SQL(",").join(definitions),
+                    )
                 )
-                db.executemany(
-                    f"INSERT INTO {quote(artifact_id)} VALUES ({','.join('?' for _ in cols)})",
-                    [tuple(row.get(col) for col in cols) for row in rows],
-                )
-            statement = validate_readonly(sql, schema, "sqlite")
-            db.execute("PRAGMA query_only=ON")
-            import time
-
-            deadline = time.monotonic() + 10
-            db.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
+                if rows:
+                    with db.cursor().copy(
+                        statements.SQL("COPY {} ({}) FROM STDIN").format(
+                            statements.Identifier(artifact_id),
+                            statements.SQL(",").join(map(statements.Identifier, cols)),
+                        )
+                    ) as copy:
+                        for row in rows:
+                            copy.write_row(tuple(row.get(column) for column in cols))
+            statement = validate_readonly(sql, schema, "postgres")
             cursor = db.execute(statement)
-            rows = [dict(row) for row in cursor.fetchmany(100001)]
-            if len(rows) > 100000:
+            values = cursor.fetchmany(100001)
+            if len(values) > 100000:
                 raise ValueError("计算结果过大，请聚合")
-            if with_columns:
-                return rows, [column[0] for column in cursor.description]
-            return rows
-        finally:
-            db.close()
+            values = [
+                {
+                    key: float(value) if isinstance(value, Decimal) else value
+                    for key, value in row.items()
+                }
+                for row in values
+            ]
+            return (
+                (values, [column[0] for column in cursor.description])
+                if with_columns
+                else values
+            )
 
     def sql(self, artifact_id):
         item = self.inspect(artifact_id)

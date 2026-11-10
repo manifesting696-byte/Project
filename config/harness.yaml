@@ -3,8 +3,10 @@ default_profile: default
 bundles:
   core:
     plugins:
-      - id: ledger.sqlite
+      - id: ledger.postgres
       - id: database.readonly
+        config:
+          source_id: supply-chain-analysis
       - id: semantic.yaml
       - id: llm.openai
       - id: agent.loop

@@ -11,7 +11,7 @@ from .catalog import TableCatalog
 
 
 class Registry:
-    def __init__(self, database=None, directory=None):
+    def __init__(self, database=None, directory=None, persistence=None):
         profile = json.loads((WORK / "data_quality.json").read_text(encoding="utf-8"))
         self.snapshot_id = profile["snapshot_id"]
         version = os.getenv("SEMANTIC_CATALOG_VERSION")
@@ -45,11 +45,7 @@ class Registry:
                 meanings[f"{table}.{match[1]}"] = (
                     f"{match[2].strip()}：{match[3].strip()}"
                 )
-        self.backend = (
-            database.backend
-            if database is not None
-            else ("postgres" if os.getenv("DATABASE_URL") else "sqlite")
-        )
+        self.backend = database.backend if database is not None else "postgres"
         self.tables = {}
         for name, entry in profile["tables"].items():
             self.tables[name.lower() if self.backend == "postgres" else name] = {
@@ -76,8 +72,8 @@ class Registry:
         self._baseline = deepcopy(self.tables)
         self._base_relations = deepcopy(self.relations)
         self._catalog_store = (
-            TableCatalog(directory, database.source_id)
-            if database is not None and directory is not None
+            TableCatalog(persistence, database.source_id)
+            if database is not None and persistence is not None
             else None
         )
         self.catalog_revision, self._entries = (

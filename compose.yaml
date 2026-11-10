@@ -8,6 +8,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD}
     volumes:
       - pg_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U supply_admin -d supply_chain"]
       interval: 5s
@@ -21,6 +23,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://supply_chain_reader:${POSTGRES_READONLY_PASSWORD}@postgres:5432/supply_chain
+      APP_DATABASE_URL: postgresql://enterprise_runtime:${POSTGRES_RUNTIME_PASSWORD:?set POSTGRES_RUNTIME_PASSWORD}@postgres:5432/supply_chain
       SESSION_HOURS: 12
       LLM_URL: ${LLM_URL:-}
       LLM_API_KEY: ${LLM_API_KEY:-}
@@ -43,9 +46,13 @@ services:
     environment:
       PG_DSN: postgresql://supply_admin:${POSTGRES_ADMIN_PASSWORD}@postgres:5432/supply_chain
       PG_ADMIN_DSN: postgresql://supply_admin:${POSTGRES_ADMIN_PASSWORD}@postgres:5432/supply_chain
+      APP_DATABASE_URL: postgresql://enterprise_runtime:${POSTGRES_RUNTIME_PASSWORD}@postgres:5432/supply_chain
+      DATABASE_URL: postgresql://supply_chain_reader:${POSTGRES_READONLY_PASSWORD}@postgres:5432/supply_chain
       PG_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD:?set POSTGRES_READONLY_PASSWORD}
+      POSTGRES_READONLY_PASSWORD: ${POSTGRES_READONLY_PASSWORD:?set POSTGRES_READONLY_PASSWORD}
+      POSTGRES_RUNTIME_PASSWORD: ${POSTGRES_RUNTIME_PASSWORD:?set POSTGRES_RUNTIME_PASSWORD}
       INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:?set INITIAL_ADMIN_PASSWORD}
-    command: ["sh", "-c", "python -m enterprise_agent.application.bootstrap && python -m enterprise_agent.profile.postgres_import && python -m enterprise_agent.profile.provision_readonly"]
+    command: ["python", "-m", "enterprise_agent.application.initialize_postgres"]
     volumes:
       - app_data:/app/runtime
 volumes:

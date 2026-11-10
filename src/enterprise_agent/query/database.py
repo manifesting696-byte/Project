@@ -1,16 +1,14 @@
-"""Read-only source execution and metadata inspection share one database provider."""
+"""PostgreSQL read-only source execution and live metadata inspection."""
 
 import hashlib
 import json
-import os
-import sqlite3
-import time
-from contextlib import closing, contextmanager
+from contextlib import contextmanager
 from datetime import date
 from decimal import Decimal
-from pathlib import Path
-
-from ..profile.data import DB
+from psycopg.rows import dict_row
+from psycopg.conninfo import conninfo_to_dict
+from ..core.config import database_url
+from ..persistence.postgres import Postgres, schema_name
 
 
 def quote_identifier(value):
@@ -18,96 +16,73 @@ def quote_identifier(value):
 
 
 class ReadonlyDatabase:
-    def __init__(self, sqlite_path=None):
-        self.dsn = os.getenv("DATABASE_URL")
-        self.path = Path(sqlite_path or DB).resolve()
-        self.backend = "postgres" if self.dsn else "sqlite"
-        if self.dsn:
-            from psycopg.conninfo import conninfo_to_dict
+    backend = "postgres"
 
-            connection = conninfo_to_dict(self.dsn)
-            identity = {
-                key: connection.get(key) for key in ("host", "port", "dbname", "user")
-            }
-        else:
-            identity = {"path": str(self.path)}
-        self.source_id = hashlib.sha256(
-            json.dumps({"backend": self.backend, **identity}, sort_keys=True).encode()
-        ).hexdigest()[:20]
+    def __init__(self, dsn=None, schema="analysis", source_id=None):
+        self.dsn = dsn or database_url("DATABASE_URL")
+        self.schema = schema_name(schema)
+        connection = conninfo_to_dict(self.dsn)
+        identity = {
+            key: connection.get(key) for key in ("host", "port", "dbname", "user")
+        }
+        self.source_id = (
+            source_id
+            or hashlib.sha256(
+                json.dumps({"schema": schema, **identity}, sort_keys=True).encode()
+            ).hexdigest()[:20]
+        )
+        self.persistence = Postgres(self.dsn, self.schema, max_size=8, read_only=True)
 
     @contextmanager
     def connection(self):
-        if self.dsn:
-            import psycopg
-            from psycopg.rows import dict_row
-
-            with psycopg.connect(
-                self.dsn,
-                row_factory=dict_row,
-                options="-c default_transaction_read_only=on -c search_path=analysis",
-            ) as db:
-                db.execute(
-                    "SELECT set_config('statement_timeout', %s, true)", ("15000",)
-                )
-                yield db
-        else:
-            with closing(
-                sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True)
-            ) as db:
-                db.row_factory = sqlite3.Row
-                db.execute("PRAGMA query_only=ON")
-                deadline = time.monotonic() + 15
-                db.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
-                yield db
+        with self.persistence.connection() as db:
+            db.row_factory = dict_row
+            db.execute("SET LOCAL statement_timeout='15s'")
+            yield db
 
     def available(self):
         with self.connection() as db:
-            if self.dsn:
-                rows = db.execute("""
-                    SELECT table_name AS name, table_type AS kind
-                    FROM information_schema.tables
-                    WHERE table_schema='analysis'
-                      AND has_table_privilege(format('%I.%I', table_schema, table_name), 'SELECT')
-                    ORDER BY table_name
-                """).fetchall()
-            else:
-                rows = db.execute("""
-                    SELECT name, type AS kind FROM sqlite_master
-                    WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY name
-                """).fetchall()
+            rows = db.execute(
+                "SELECT table_name AS name, CASE WHEN table_type='VIEW' THEN 'view' ELSE 'table' END AS kind FROM information_schema.tables WHERE table_schema=%s AND has_table_privilege(format('%%I.%%I', table_schema, table_name),'SELECT') ORDER BY table_name",
+                (self.schema,),
+            ).fetchall()
         return [dict(row) for row in rows]
 
     def inspect(self, name):
-        available = {item["name"] for item in self.available()}
-        if name not in available:
-            raise ValueError(f"数据库中没有可接入的表或视图：{name}")
         target = quote_identifier(name)
         with self.connection() as db:
-            if self.dsn:
-                definitions = db.execute(
-                    """
-                    SELECT column_name AS name, data_type AS type, is_nullable='YES' AS nullable
-                    FROM information_schema.columns WHERE table_schema='analysis' AND table_name=%s
-                    ORDER BY ordinal_position
-                """,
-                    (name,),
-                ).fetchall()
+            definitions = db.execute(
+                """
+                SELECT a.attname AS name,format_type(a.atttypid,a.atttypmod) AS type,
+                       NOT a.attnotnull AS nullable,c.relkind AS relation_kind
+                FROM pg_catalog.pg_class c
+                JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+                JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid
+                WHERE n.nspname=%s AND c.relname=%s AND a.attnum>0 AND NOT a.attisdropped
+                  AND has_table_privilege(c.oid,'SELECT') AND has_schema_privilege(n.oid,'USAGE')
+                ORDER BY a.attnum
+            """,
+                (self.schema, name),
+            ).fetchall()
+            if not definitions:
+                raise ValueError(f"数据库中没有可接入的表或视图：{name}")
+            columns = {
+                item["name"]: {"type": item["type"], "nullable": item["nullable"]}
+                for item in definitions
+            }
+            primary, relations = [], []
+            if definitions[0]["relation_kind"] in ("r", "p"):
                 primary = db.execute(
                     """
                     SELECT key.column_name FROM information_schema.table_constraints AS constraint_info
                     JOIN information_schema.key_column_usage AS key
                       USING (constraint_catalog, constraint_schema, constraint_name)
-                    WHERE constraint_info.table_schema='analysis'
+                    WHERE constraint_info.table_schema=%s
                       AND constraint_info.table_name=%s AND constraint_type='PRIMARY KEY'
                     ORDER BY key.ordinal_position
                 """,
-                    (name,),
+                    (self.schema, name),
                 ).fetchall()
-                columns = {
-                    item["name"]: {"type": item["type"], "nullable": item["nullable"]}
-                    for item in definitions
-                }
-                primary_keys = [item["column_name"] for item in primary]
                 relations = db.execute(
                     """
                     SELECT child.column_name AS child_column, parent.table_name AS parent_table,
@@ -122,41 +97,20 @@ class ReadonlyDatabase:
                      AND parent.constraint_schema=relation.unique_constraint_schema
                      AND parent.constraint_name=relation.unique_constraint_name
                      AND parent.ordinal_position=child.position_in_unique_constraint
-                    WHERE child.table_schema='analysis' AND child.table_name=%s
-                      AND parent.table_schema='analysis'
+                    WHERE child.table_schema=%s AND child.table_name=%s
+                      AND parent.table_schema=%s
                 """,
-                    (name,),
+                    (self.schema, name, self.schema),
                 ).fetchall()
-                foreign_keys = [
-                    {
-                        "from": f"{name}.{item['child_column']}",
-                        "to": f"{item['parent_table']}.{item['parent_column']}",
-                    }
-                    for item in relations
-                ]
-                target = '"analysis".' + target
-            else:
-                definitions = db.execute(f"PRAGMA table_info({target})").fetchall()
-                columns = {
-                    item["name"]: {
-                        "type": item["type"],
-                        "nullable": not bool(item["notnull"]),
-                    }
-                    for item in definitions
+            primary_keys = [item["column_name"] for item in primary]
+            foreign_keys = [
+                {
+                    "from": f"{name}.{item['child_column']}",
+                    "to": f"{item['parent_table']}.{item['parent_column']}",
                 }
-                primary_keys = [
-                    item["name"]
-                    for item in sorted(definitions, key=lambda item: item["pk"])
-                    if item["pk"]
-                ]
-                foreign_keys = [
-                    {
-                        "from": f"{name}.{item['from']}",
-                        "to": f"{item['table']}.{item['to']}",
-                    }
-                    for item in db.execute(f"PRAGMA foreign_key_list({target})")
-                    if item["to"]
-                ]
+                for item in relations
+            ]
+            target = quote_identifier(self.schema) + "." + target
             row_count = db.execute(f"SELECT COUNT(*) AS n FROM {target}").fetchone()[
                 "n"
             ]
@@ -170,19 +124,18 @@ class ReadonlyDatabase:
 
     def execute(self, statement, limit=100000):
         with self.connection() as db:
-            if self.dsn:
-                plan = db.execute("EXPLAIN (FORMAT JSON) " + statement).fetchone()[
-                    "QUERY PLAN"
-                ][0]["Plan"]
-                pending = [plan]
-                while pending:
-                    node = pending.pop()
-                    if (
-                        node.get("Total Cost", 0) > 100000
-                        or node.get("Plan Rows", 0) > 1000000
-                    ):
-                        raise ValueError("查询超过资源预算，请缩小范围或聚合")
-                    pending.extend(node.get("Plans", []))
+            plan = db.execute("EXPLAIN (FORMAT JSON) " + statement).fetchone()[
+                "QUERY PLAN"
+            ][0]["Plan"]
+            pending = [plan]
+            while pending:
+                node = pending.pop()
+                if (
+                    node.get("Total Cost", 0) > 100000
+                    or node.get("Plan Rows", 0) > 1000000
+                ):
+                    raise ValueError("查询超过资源预算，请缩小范围或聚合")
+                pending.extend(node.get("Plans", []))
             cursor = db.execute(statement)
             columns = [column[0] for column in cursor.description]
             rows = cursor.fetchmany(limit + 1)
@@ -199,3 +152,6 @@ class ReadonlyDatabase:
             }
             for row in rows
         ], columns
+
+    def close(self):
+        self.persistence.close()

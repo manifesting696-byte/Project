@@ -41,7 +41,9 @@ class LedgerConfig(PluginConfig):
 
 
 class DatabaseConfig(PluginConfig):
-    sqlite_path: str | None = None
+    dsn: str | None = None
+    schema_name: str = Field(default="analysis", alias="schema")
+    source_id: str | None = Field(default=None, min_length=1)
 
 
 class LoggingConfig(PluginConfig):
@@ -51,12 +53,15 @@ class LoggingConfig(PluginConfig):
 
 
 def ledger(ctx, config, stores=None):
+    owned = stores is None
     stores = (
         stores
         if stores is not None
         else Stores(Path(config.directory) if config.directory else WORK)
     )
     ctx.provide("stores", stores)
+    if owned:
+        ctx.defer(stores.close)
     ctx.provide("artifacts", Artifacts(stores))
     ctx.provide("requests", Requests(stores))
 
@@ -67,12 +72,20 @@ def roles(ctx, config):
 
 def semantic_registry(ctx, config):
     ctx.provide(
-        "registry", Registry(ctx.require("database"), ctx.require("stores").directory)
+        "registry",
+        Registry(
+            ctx.require("database"),
+            ctx.require("stores").directory,
+            persistence=ctx.require("stores").persistence,
+        ),
     )
 
 
 def database(ctx, config):
-    ctx.provide("database", ReadonlyDatabase(config.sqlite_path))
+    provider = ctx.provide(
+        "database", ReadonlyDatabase(config.dsn, config.schema_name, config.source_id)
+    )
+    ctx.defer(provider.close)
 
 
 def transport(ctx, config):
@@ -188,7 +201,8 @@ def responses(ctx, config):
 
 def workflow(ctx, config):
     app, stores = ctx.require("application"), ctx.require("stores")
-    ctx.provide("checkpoints", Checkpoints(stores.directory))
+    checkpoints = ctx.provide("checkpoints", Checkpoints(stores))
+    ctx.defer(checkpoints.close)
     ctx.provide(
         "scheduler",
         Scheduler(stores, ctx.require("context"), ctx.require("specialists")),
@@ -250,7 +264,7 @@ def agent_plugin(plugin_id, role, implementation, requires):
 
 BUILTINS = (
     Plugin(
-        "ledger.sqlite",
+        "ledger.postgres",
         ledger,
         provides=("stores", "artifacts", "requests"),
         config_schema=LedgerConfig,
@@ -393,7 +407,10 @@ def catalog(overrides):
     """Constructor-injected objects retain caller ownership across plugin reloads."""
     plugins = list(BUILTINS)
     for index, plugin in enumerate(plugins):
-        if plugin.plugin_id == "ledger.sqlite" and overrides.get("stores") is not None:
+        if (
+            plugin.plugin_id == "ledger.postgres"
+            and overrides.get("stores") is not None
+        ):
             plugins[index] = Plugin(
                 plugin.plugin_id,
                 lambda ctx, config: ledger(ctx, config, overrides["stores"]),

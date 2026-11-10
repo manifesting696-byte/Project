@@ -1,23 +1,35 @@
-"""Short-lived SQLite checkpoint connections for restartable graph invocations."""
+"""LangGraph PostgreSQL checkpoints, isolated from ledger transactions."""
 
-import sqlite3
-from contextlib import closing, contextmanager
+from contextlib import contextmanager
 from contextvars import Context
-
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.postgres import PostgresSaver
+from ..persistence.postgres import Postgres
 
 
 class Checkpoints:
-    def __init__(self, directory):
-        self.path = directory / "langgraph.sqlite"
+    backend = "postgres"
+
+    def __init__(self, stores):
+        self.persistence = Postgres(
+            stores.persistence.dsn,
+            stores.persistence.schema + "_checkpoints",
+            max_size=4,
+            autocommit=True,
+        )
+        try:
+            self.persistence.setup(1, [])
+            self.saver = PostgresSaver(self.persistence.pool)
+            with self.persistence.advisory_lock(
+                "enterprise-checkpoint-setup:" + self.persistence.schema
+            ):
+                self.saver.setup()
+        except BaseException:
+            self.persistence.close()
+            raise
 
     @contextmanager
     def graph(self, builder):
-        with closing(
-            sqlite3.connect(self.path, timeout=30, check_same_thread=False)
-        ) as connection:
-            connection.execute("PRAGMA journal_mode=WAL")
-            yield builder.compile(checkpointer=SqliteSaver(connection))
+        yield builder.compile(checkpointer=self.saver)
 
     def invoke(self, builder, thread_id, value, context=None):
         with self.graph(builder) as graph:
@@ -25,13 +37,13 @@ class Checkpoints:
                 "configurable": {"thread_id": thread_id, "checkpoint_ns": ""},
                 "recursion_limit": 1000,
             }
-            # Nested Request graphs have their own checkpoint and interrupt scope.
             return Context().run(graph.invoke, value, config, context=context)
 
     def snapshot(self, builder, thread_id):
-        if not self.path.exists():
-            return None
         with self.graph(builder) as graph:
             return graph.get_state(
                 {"configurable": {"thread_id": thread_id, "checkpoint_ns": ""}}
             )
+
+    def close(self):
+        self.persistence.close()

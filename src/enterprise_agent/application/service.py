@@ -1,7 +1,7 @@
 """Turn orchestration over persistent Requests and their execution Task DAGs."""
 
-import json
 import os
+from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
 
@@ -114,9 +114,12 @@ class Application:
     def __exit__(self, *exc):
         self.close()
 
+    @contextmanager
     def _lock(self, session_id):
         with self._guard:
-            return self._locks.setdefault(session_id, Lock())
+            local_lock = self._locks.setdefault(session_id, Lock())
+        with local_lock, self.stores.session_lock(session_id):
+            yield
 
     def emitter(self, session_id, turn_id, request_id=None):
         def emit(kind, payload):
@@ -151,9 +154,7 @@ class Application:
 
     def recover_interrupted(self):
         with self.stores.db() as db:
-            requests = [
-                json.loads(row[0]) for row in db.execute("SELECT body FROM requests")
-            ]
+            requests = [row[0] for row in db.execute("SELECT body FROM requests")]
         resumable = {
             item["request_id"] for item in requests if self.execution.active(item)
         }

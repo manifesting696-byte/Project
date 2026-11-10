@@ -14,6 +14,28 @@ RECENT_EVENTS = int(os.getenv("CONTEXT_RECENT_EVENTS", "24"))
 SUMMARY_THRESHOLD = int(os.getenv("SUMMARY_EVENT_THRESHOLD", "80"))
 
 
+def setting(name, default=None):
+    value = os.getenv(name)
+    if value:
+        return value
+    path = ROOT / ".env"
+    if path.exists():
+        for line in path.read_text(encoding="utf-8-sig").splitlines():
+            if line.lstrip().startswith("#") or "=" not in line:
+                continue
+            key, candidate = line.split("=", 1)
+            if key.strip() == name:
+                return candidate.strip().strip('"').strip("'") or default
+    return default
+
+
+def database_url(name="APP_DATABASE_URL"):
+    value = setting(name)
+    if not value:
+        raise ValueError(f"请配置 {name}，并先启动 PostgreSQL")
+    return value
+
+
 def model_settings():
     values = {}
     path = ROOT / ".env"
