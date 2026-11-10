@@ -87,6 +87,16 @@ class Responses:
             sources = []
             for ref in item.refs:
                 value = ref.model_dump(exclude_none=True)
+                if (
+                    ref.kind == "request"
+                    and ref.id == request["request_id"]
+                    and ref.output not in deliveries
+                ):
+                    raise ValueError(
+                        "回答引用了当前 Request 尚未生成的交付。"
+                        "新文字应写入 content，可用 output_name 指定交付名称；"
+                        "refs 只引用已有证据，普通常识或系统介绍使用空 refs。"
+                    )
                 self.requests.validate_ref(request["session_id"], value)
                 resolved = self.requests.resolve(request["session_id"], value)
                 key = resolved.get("artifact_id")

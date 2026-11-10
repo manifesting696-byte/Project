@@ -1838,6 +1838,71 @@ vm.runInContext("state.sessionId='s'; loadConversation()",context).then(()=>{
         )
         self.assertEqual(current["status"], "completed")
 
+    def test_direct_answer_self_reference_is_repaired_with_original_context(self):
+        class SelfReferencingAnswer(FixtureModel):
+            @staticmethod
+            def intent(context, tools):
+                return {
+                    "operations": [
+                        {
+                            "request_id": "introduction",
+                            "action": "none",
+                            "category": "general_qa",
+                            "instruction": "你是什么AI",
+                            "refs": [],
+                        }
+                    ],
+                    "clarifications": [],
+                }
+
+            @staticmethod
+            def answer(context):
+                request_id = context["request"]["request_id"]
+                if not context.get("validation_feedback") or "operation" not in context:
+                    return {
+                        "blocks": [
+                            {
+                                "request_id": request_id,
+                                "content_type": "text",
+                                "content": "我是企业数据问析助手。",
+                                "refs": [
+                                    {
+                                        "kind": "request",
+                                        "id": request_id,
+                                        "output": "answer",
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                assert context["operation"]["action"] == "none"
+                assert context["operation"]["category"] == "general_qa"
+                assert "database_metadata" in context
+                assert "available_capabilities" in context
+                assert "当前 Request" in context["validation_feedback"]["error"]
+                return {
+                    "blocks": [
+                        {
+                            "request_id": request_id,
+                            "content_type": "text",
+                            "content": "我是企业数据问析助手。",
+                            "refs": [],
+                        }
+                    ]
+                }
+
+        self.model = SelfReferencingAnswer()
+        self.engine.close()
+        self.engine = Application(Stores(Path(self.directory.name)), self.model)
+        result = self.engine.ask(1, "你是什么AI")
+        self.assertEqual(result["status"], "completed", result)
+        self.assertEqual(result["tasks"], [])
+        self.assertEqual(self.model.calls.count("UnifiedSupervisor.Answer"), 2)
+        self.assertEqual(
+            self.engine.artifacts.content(result["blocks"][0]["artifact_id"]),
+            "我是企业数据问析助手。",
+        )
+
     def test_answer_binding_type_error_is_repaired_with_feedback(self):
         class MismatchedAnswer(FixtureModel):
             @staticmethod

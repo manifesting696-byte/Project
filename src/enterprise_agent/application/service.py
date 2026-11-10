@@ -243,6 +243,7 @@ class Application:
                 operation.refs,
                 direct=True,
                 workflow_key=workflow_key,
+                answer_context=context,
             )
             return request, answer, "completed"
         snapshot = self.execution.snapshot(request)
@@ -328,6 +329,7 @@ class Application:
         direct=False,
         output_names=None,
         workflow_key=None,
+        answer_context=None,
     ):
         response = self.materialize_answer(
             request,
@@ -337,6 +339,7 @@ class Application:
             output_names,
             bind=direct,
             workflow_key=workflow_key,
+            answer_context=answer_context,
         )
         if direct and (
             not response.blocks
@@ -378,6 +381,7 @@ class Application:
         output_names=None,
         bind=False,
         workflow_key=None,
+        answer_context=None,
     ):
         for attempt in range(2):
             try:
@@ -393,8 +397,14 @@ class Application:
             except ValueError as exc:
                 if attempt:
                     raise
-                context = self.context.answer(
-                    request, request["spec"]["description"], output_names=output_names
+                context = (
+                    dict(answer_context)
+                    if answer_context is not None
+                    else self.context.answer(
+                        request,
+                        request["spec"]["description"],
+                        output_names=output_names,
+                    )
                 )
                 context["validation_feedback"] = {
                     "error": str(exc),
