@@ -29,13 +29,12 @@ Project/
 │   │   └── answer/             文稿→Artifact→Response 块
 │   ├── prompt/                 提示词：supervisor.py、specialists.py
 │   ├── ledger/                 PostgreSQL 账本、产物、会话摘要
-│   │   └── migrate/            三代离线迁移
 │   ├── catalog/                语义目录、指标发布门禁、表接入状态
 │   ├── query/                  只读数据源、SQL 静态校验、查询网关
 │   ├── model/                  模型客户端与 OpenAI 兼容传输
 │   ├── plugins/                插件发现、依赖、生命周期、内置目录
 │   ├── server/                 FastAPI 装配、路由（routes/）、身份认证、静态资源
-│   └── ops/                    建库、只读授权、数据画像等运维脚本
+├── ops/                        运维脚本：建库、初始化、只读授权、数据画像、离线迁移（python -m ops.initialize）
 ├── tests/                     回归测试、实库验收及测试夹具
 ├── config/                    插件组合、关系与语义配置
 │   └── semantic/              catalog.yaml 与 versions/

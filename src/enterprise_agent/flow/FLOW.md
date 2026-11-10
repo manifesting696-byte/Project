@@ -52,10 +52,10 @@ POST /ask                                    server/routes/ask.py
 
 | 阶段 | 目录 | 关键文件 | 产出 |
 |---|---|---|---|
-| 意图 | `stages/intent/` | `schema.py` 契约、`normalize.py`？→ 目前在 `stages/prepare/requests.py` 的 `normalize` | `Intent` + 有序 operations |
+| 意图 | `stages/intent/` | `schema.py` 契约；ID 归一在 `stages/prepare/requests.py:normalize` | `Intent` + 有序 operations |
 | 准备 | `stages/prepare/` | `requests.py`（聚合根：ID 归一/规格校验/版本/绑定）、`preparation.py`（提议+校验+提交）、`plan.py`（DAG 校验） | `RequestRevision` + `Task[]` |
 | 执行 | `stages/execute/` | `agents/{supervisor,specialists,base,capabilities}.py`、`toolbox.py`（工具与授权） | `Artifact` |
-| 验收 | `stages/verify/`（提示词在 `prompt/supervisor.py`） | 判定逻辑在 `flow/request_graph.py:check`，硬校验在 `flow/application.py:validate_completion` | `Completion` |
+| 验收 | `stages/verify/`（提示词在 `prompt/supervisor.py`） | 判定逻辑在 `flow/request_graph.py` 的 `check`，硬校验在 `stages/verify/validate.py` | `Completion` |
 | 回答 | `stages/answer/` | `responses.py`（文稿→Artifact→Response 块） | `Response` |
 
 提示词全部集中在 `prompt/`：`supervisor.py`（6 段）、`specialists.py`（4 段），
