@@ -102,7 +102,7 @@ POST /ask                                    server/routes/ask.py
 
 1. `Requests` 聚合根放在 `stages/prepare/requests.py`：除交付解析外的操作都服务于准备，
    而交付解析依赖同一份状态，拆开会重复校验。
-2. 节点方法仍在 `flow/*_graph.py` 里（尚未拆成 `stages/<阶段>/graph_node.py`）：图文件已是\n   “节点名 → 一行方法”的可读形态；验收硬校验已独立到 `stages/verify/validate.py`。
+2. 节点方法仍在 `flow/*_graph.py` 里（尚未拆成 `stages/<阶段>/graph_node.py`）：图文件已是“节点名 → 一行方法”的可读形态；验收硬校验已独立到 `stages/verify/validate.py`。
 3. 工具聚合在 `stages/execute/toolbox.py` 一个类里（`SpecialistToolbox`），没有按角色拆成
    5 个文件——它是一个共享授权边界的整体，拆开会把不变量打散。
 
