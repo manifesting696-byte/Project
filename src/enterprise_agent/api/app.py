@@ -29,7 +29,14 @@ def application():
 @asynccontextmanager
 async def lifespan(app):
     setup()
-    yield
+    try:
+        yield
+    finally:
+        if hasattr(application, "cache_info") and application.cache_info().currsize:
+            try:
+                application().close()
+            finally:
+                application.cache_clear()
 
 
 app = FastAPI(title="企业数据智能问析", version="3.0.0", lifespan=lifespan)
@@ -68,6 +75,41 @@ class Feedback(BaseModel):
     audit_id: int | None = None
     rating: int = Field(ge=1, le=5)
     comment: str = Field(default="", max_length=2000)
+
+
+class PluginLoad(BaseModel):
+    id: str = Field(min_length=1)
+    plugin: str | None = None
+    config: dict = Field(default_factory=dict)
+
+
+class PluginUnload(BaseModel):
+    cascade: bool = False
+
+
+class PluginReload(BaseModel):
+    config: dict | None = None
+
+
+class ProfileReload(BaseModel):
+    profile: str | None = None
+
+
+class TableRelation(BaseModel):
+    from_field: str = Field(alias="from", min_length=1)
+    to_field: str = Field(alias="to", min_length=1)
+
+
+class TableEnrollment(BaseModel):
+    name: str = Field(min_length=1, max_length=256)
+    description: str | None = Field(default=None, max_length=4000)
+    column_meanings: dict[str, str] | None = None
+    relations: list[TableRelation] | None = None
+    expected_version: str | None = None
+
+
+class CatalogRefresh(BaseModel):
+    expected_version: str | None = None
 
 
 @app.exception_handler(PermissionError)
@@ -118,7 +160,38 @@ def chat_css():
 @app.get("/health")
 def health():
     engine = application()
-    return {"status": "ok", "snapshot_id": engine.registry.snapshot_id, "agents": 5}
+    return {
+        "status": "ok",
+        "snapshot_id": engine.registry.snapshot_id,
+        "agents": len(engine.specialists.capabilities),
+        "profile": engine.profile,
+    }
+
+
+@app.get("/runtime/plugins")
+def plugins(user=Depends(require("admin"))):
+    engine = application()
+    return {**engine.runtime.inventory(), "profile": engine.profile}
+
+
+@app.post("/runtime/plugins/load")
+def load_plugin(body: PluginLoad, user=Depends(require("admin"))):
+    return application().runtime.load(body.model_dump())
+
+
+@app.post("/runtime/plugins/{plugin_id}/unload")
+def unload_plugin(plugin_id: str, body: PluginUnload, user=Depends(require("admin"))):
+    return application().runtime.unload(plugin_id, body.cascade)
+
+
+@app.post("/runtime/plugins/{plugin_id}/reload")
+def reload_plugin(plugin_id: str, body: PluginReload, user=Depends(require("admin"))):
+    return application().runtime.reload(plugin_id, body.config)
+
+
+@app.post("/runtime/profile/reload")
+def reload_profile(body: ProfileReload, user=Depends(require("admin"))):
+    return application().reload_profile(body.profile)
 
 
 @app.post("/auth/login")
@@ -156,6 +229,7 @@ def tables(user=Depends(current_user)):
     registry = application().registry
     return {
         "snapshot_id": registry.snapshot_id,
+        "catalog_version": registry.catalog_version,
         "total_rows": sum(entry["rows"] for entry in registry.tables.values()),
         "tables": [
             {
@@ -169,6 +243,38 @@ def tables(user=Depends(current_user)):
             for name, entry in registry.tables.items()
         ],
     }
+
+
+@app.get("/catalog/tables/available")
+def available_tables(user=Depends(require("admin"))):
+    return application().available_tables()
+
+
+@app.post("/catalog/tables")
+def enroll_table(body: TableEnrollment, user=Depends(require("admin"))):
+    options = body.model_dump(exclude={"relations"})
+    options["relations"] = (
+        [relation.model_dump(by_alias=True) for relation in body.relations]
+        if body.relations is not None
+        else None
+    )
+    return application().change_tables("enroll", **options)
+
+
+@app.delete("/catalog/tables/{table_name}")
+def remove_table(
+    table_name: str, expected_version: str | None = None, user=Depends(require("admin"))
+):
+    return application().change_tables(
+        "remove", name=table_name, expected_version=expected_version
+    )
+
+
+@app.post("/catalog/tables/refresh")
+def refresh_tables(body: CatalogRefresh, user=Depends(require("admin"))):
+    return application().change_tables(
+        "refresh", expected_version=body.expected_version
+    )
 
 
 def execute_question(body, user, preview=False):

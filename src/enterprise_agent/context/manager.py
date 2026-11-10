@@ -5,9 +5,10 @@ from ..core.config import RECENT_EVENTS
 
 
 class ContextManager:
-    def __init__(self, stores, artifacts, requests, tasks, registry):
+    def __init__(self, stores, artifacts, requests, tasks, registry, capabilities=None):
         self.stores, self.artifacts = stores, artifacts
         self.requests, self.tasks, self.registry = requests, tasks, registry
+        self.capabilities = capabilities if capabilities is not None else CAPABILITIES
 
     @staticmethod
     def overview(item):
@@ -76,7 +77,7 @@ class ContextManager:
             ],
             "history_summary": summaries[-1] if summaries else None,
             "database_metadata": self.registry.overview(),
-            "available_capabilities": CAPABILITIES,
+            "available_capabilities": dict(self.capabilities),
         }
 
     def preparation(
@@ -104,7 +105,7 @@ class ContextManager:
             "output_bindings": self.requests.plan_bindings(request) if request else {},
             "validation_feedback": feedback,
             "upstream_requests": list((drafts or {}).values()),
-            "available_capabilities": CAPABILITIES,
+            "available_capabilities": dict(self.capabilities),
             "operation": operation.model_dump(exclude_none=True),
             "previous_revision": previous,
             "supplied_parameters": parameters,
@@ -159,7 +160,7 @@ class ContextManager:
                 self.overview(item)
                 for item in self.session_artifacts(request["session_id"])[-30:]
             ],
-            "available_capabilities": CAPABILITIES,
+            "available_capabilities": dict(self.capabilities),
             "semantic_registry": self.registry.overview(),
         }
 

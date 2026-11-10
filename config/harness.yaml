@@ -1,0 +1,39 @@
+default_profile: default
+
+bundles:
+  core:
+    plugins:
+      - id: ledger.sqlite
+      - id: database.readonly
+      - id: semantic.yaml
+      - id: llm.openai
+      - id: agent.loop
+      - id: agents
+      - id: tasks
+      - id: context
+      - id: query.gateway
+      - id: tools.enterprise
+      - id: supervisor
+      - id: preparation
+      - id: responses
+      - id: workflow.langgraph
+      - id: memory.summary
+  analysis:
+    plugins:
+      - id: agent.semantic
+      - id: agent.query
+      - id: agent.analysis
+  presentation:
+    plugins:
+      - id: agent.presentation
+  observability:
+    plugins:
+      - id: telemetry.logging
+
+profiles:
+  default:
+    bundles: [core, analysis, presentation, observability]
+  data:
+    bundles: [core, analysis, observability]
+  minimal:
+    bundles: [core]

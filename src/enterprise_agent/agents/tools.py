@@ -1,7 +1,6 @@
 """Authorized tools for each Agent role; orchestration only receives tool maps."""
 
 from ..core.model import ARRAY, OBJECT, STRING, tool
-from .capabilities import CAPABILITIES
 
 
 def supervisor_tools(
@@ -76,7 +75,7 @@ def supervisor_tools(
             block_id=STRING,
         ),
         "get_available_capabilities": tool(
-            "读取五个 Agent 的职责", lambda: CAPABILITIES
+            "读取当前已启用 Agent 的职责", lambda: dict(context.capabilities)
         ),
         **semantic_tools(context.registry),
     }
@@ -194,11 +193,15 @@ class SpecialistToolbox:
                 "columns": columns,
                 "semantic_binding": bindings,
                 "snapshot_id": self.registry.snapshot_id,
+                "source_id": self.registry.source_id,
                 "semantic_version": self.registry.catalog["version"],
+                "catalog_version": self.registry.catalog_version,
                 "provenance": {
                     "method": "business_sql",
                     "snapshot_id": self.registry.snapshot_id,
+                    "source_id": self.registry.source_id,
                     "semantic_version": self.registry.catalog["version"],
+                    "catalog_version": self.registry.catalog_version,
                 },
             }
             if entity_id_column:

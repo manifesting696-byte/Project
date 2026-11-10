@@ -8,8 +8,9 @@ from ..persistence.stores import now
 
 
 class Tasks:
-    def __init__(self, stores, requests):
+    def __init__(self, stores, requests, specialists=None):
         self.stores, self.requests = stores, requests
+        self.specialists = specialists
 
     def allowed_artifacts(self, request, request_views=None):
         refs = []
@@ -101,6 +102,11 @@ class Tasks:
         aliases = {key: self.stores.new_id("task") for key in local_ids}
         additions = []
         for proposed in plan.tasks:
+            if (
+                self.specialists is not None
+                and proposed.assigned_agent not in self.specialists.agents
+            ):
+                raise ValueError(f"计划使用了未启用的 Agent：{proposed.assigned_agent}")
             node = proposed.model_dump(exclude_none=True)
             if len(node["expected_outputs"]) != len(set(node["expected_outputs"])):
                 raise ValueError("执行输出名称重复")

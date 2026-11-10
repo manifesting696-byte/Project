@@ -15,7 +15,7 @@ Category = Literal[
 ContentType = Literal["text", "table", "chart", "report"]
 
 
-AgentName = Literal["SemanticAgent", "QueryAgent", "AnalysisAgent", "PresentationAgent"]
+AgentName = str
 
 
 class ResourceRef(Model):
@@ -108,7 +108,7 @@ class RequestRevision(Model):
 class PlannedTask(Model):
     task_id: str = Field(min_length=1)
     objective: str = Field(min_length=1)
-    assigned_agent: AgentName
+    assigned_agent: AgentName = Field(min_length=1)
     depends_on: list[str] = Field(default_factory=list)
     input_bindings: list[InputBinding] = Field(default_factory=list)
     expected_outputs: list[str] = Field(default_factory=list)
@@ -212,14 +212,7 @@ class Artifact(Model):
     request_id: str | None = None
     revision_id: str | None = None
     task_id: str | None = None
-    producer: Literal[
-        "Supervisor",
-        "System",
-        "SemanticAgent",
-        "QueryAgent",
-        "AnalysisAgent",
-        "PresentationAgent",
-    ]
+    producer: str = Field(min_length=1)
     title: str
     summary: str
     source_artifact_ids: list[str] = Field(default_factory=list)

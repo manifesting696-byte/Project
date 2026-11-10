@@ -1,29 +1,37 @@
 """Turn orchestration over persistent Requests and their execution Task DAGs."""
 
 import json
+import os
+from pathlib import Path
 from threading import Lock
 
-from ..agents.specialists import Specialists
-from ..agents.supervisor import Supervisor
-from ..context.manager import ContextManager
-from ..core.model import ModelClient
+from ..core.config import ROOT
 from ..core.models import Response
-from ..persistence.artifacts import Artifacts
-from ..persistence.stores import Stores, now
-from ..persistence.summaries import compress
-from ..pipeline.checkpoints import Checkpoints
-from ..pipeline.execution import Execution
-from ..pipeline.scheduler import Scheduler
-from ..pipeline.turns import Turns
-from ..query.gateway import QueryGateway
-from ..semantic.registry import Registry
-from .preparation import Preparation
-from .requests import Requests
-from .responses import Responses
-from .tasks import Tasks
+from ..harness.builtin import catalog
+from ..harness.profiles import environment_patches, load_profile
+from ..harness.runtime import Runtime, Service
+from ..persistence.stores import now
 
 
 class Application:
+    stores = Service()
+    model = Service()
+    registry = Service()
+    database = Service()
+    artifacts = Service()
+    requests = Service()
+    tasks = Service()
+    context = Service()
+    supervisor = Service()
+    query_gateway = Service()
+    specialists = Service()
+    preparation = Service()
+    scheduler = Service()
+    responses = Service()
+    checkpoints = Service()
+    execution = Service()
+    turns = Service()
+
     def __init__(
         self,
         stores=None,
@@ -31,49 +39,94 @@ class Application:
         registry=None,
         query_gateway=None,
         specialist_overrides=None,
+        profile=None,
+        plugin_config=None,
+        plugin_patches=None,
+        plugins=(),
     ):
-        self.stores = stores or Stores()
-        self.model = model or ModelClient()
-        self.registry = registry or Registry()
-        self.artifacts = Artifacts(self.stores)
-        self.requests = Requests(self.stores)
-        self.tasks = Tasks(self.stores, self.requests)
-        self.context = ContextManager(
-            self.stores, self.artifacts, self.requests, self.tasks, self.registry
-        )
-        self.supervisor = Supervisor(
-            self.model, self.context, self.stores, self.artifacts
-        )
-        self.query_gateway = query_gateway or QueryGateway(self.registry)
-        self.specialists = Specialists(
-            self.model,
-            self.registry,
-            self.artifacts,
-            self.query_gateway,
-            overrides=specialist_overrides,
-        )
-        self.preparation = Preparation(
-            self.stores, self.requests, self.tasks, self.supervisor
-        )
-        self.scheduler = Scheduler(self.stores, self.context, self.specialists)
-        self.responses = Responses(
-            self.stores, self.artifacts, self.requests, self.tasks
-        )
-        self.checkpoints = Checkpoints(self.stores.directory)
-        self.execution = Execution(self, self.checkpoints)
-        self.turns = Turns(self, self.checkpoints)
         self._locks, self._guard = {}, Lock()
-        if stores is None:
-            self.recover_interrupted()
+        self._plugin_path = Path(
+            plugin_config
+            or os.getenv("AGENT_PLUGIN_CONFIG", str(ROOT / "config" / "harness.yaml"))
+        )
+        self._patches = (
+            environment_patches() if plugin_patches is None else tuple(plugin_patches)
+        )
+        self.profile = profile or os.getenv("AGENT_PROFILE")
+        self.runtime = Runtime(
+            catalog=catalog(
+                {
+                    "stores": stores,
+                    "model": model,
+                    "registry": registry,
+                    "query_gateway": query_gateway,
+                    "specialist_overrides": specialist_overrides,
+                }
+            )
+            + list(plugins),
+            host={"application": self},
+        )
+        try:
+            self.reload_profile()
+            if stores is None:
+                self.recover_interrupted()
+        except BaseException:
+            self.runtime.close()
+            raise
+
+    def reload_profile(self, profile=None):
+        selected, specs = load_profile(
+            self._plugin_path, profile or self.profile, self._patches
+        )
+        result = self.runtime.configure(specs)
+        self.profile = selected
+        return {**result, "profile": selected}
+
+    def close(self):
+        self.runtime.close()
+
+    def available_tables(self):
+        with self.runtime.operation():
+            return self.registry.available_tables()
+
+    def change_tables(self, action, **options):
+        if action not in ("enroll", "remove", "refresh"):
+            raise ValueError("未知目录操作")
+        with self.runtime.maintenance():
+            self.runtime.events.emit(
+                "catalog/before_change",
+                {"action": action, "table": options.get("name")},
+            )
+            result = getattr(self.registry, action)(**options)
+            self.runtime.events.notify(
+                "catalog/changed",
+                {
+                    "action": action,
+                    "table": options.get("name"),
+                    "catalog_version": self.registry.catalog_version,
+                },
+            )
+            return result
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
 
     def _lock(self, session_id):
         with self._guard:
             return self._locks.setdefault(session_id, Lock())
 
     def emitter(self, session_id, turn_id, request_id=None):
-        return lambda kind, payload: self.stores.event(
-            session_id, turn_id, kind, "Supervisor", payload, request_id=request_id
-        )
+        def emit(kind, payload):
+            record = self.stores.event(
+                session_id, turn_id, kind, "Supervisor", payload, request_id=request_id
+            )
+            self.runtime.events.notify("session/event", record)
+            return record
+
+        return emit
 
     def ask(
         self,
@@ -84,16 +137,17 @@ class Application:
         pause=False,
         preview=False,
     ):
-        session = self.stores.session(user_id, session_id, query)
-        session_id = session["session_id"]
-        with self._lock(session_id):
-            turn_id = self.stores.new_id("turn")
-            self.stores.event(
-                session_id, turn_id, "user_message", "User", {"content": query}
-            )
-            return self.turns.run(
-                session_id, turn_id, query, constraints or {}, pause, preview
-            )
+        with self.runtime.operation():
+            session = self.stores.session(user_id, session_id, query)
+            session_id = session["session_id"]
+            with self._lock(session_id):
+                turn_id = self.stores.new_id("turn")
+                self.stores.event(
+                    session_id, turn_id, "user_message", "User", {"content": query}
+                )
+                return self.turns.run(
+                    session_id, turn_id, query, constraints or {}, pause, preview
+                )
 
     def recover_interrupted(self):
         with self.stores.db() as db:
@@ -106,9 +160,10 @@ class Application:
         self.stores.recover_interrupted(resumable)
 
     def resume_turn(self, user_id, session_id, turn_id):
-        self.stores.session(user_id, session_id)
-        with self._lock(session_id):
-            return self.turns.resume(session_id, turn_id)
+        with self.runtime.operation():
+            self.stores.session(user_id, session_id)
+            with self._lock(session_id):
+                return self.turns.resume(session_id, turn_id)
 
     def clarification_block(self, session_id, turn_id, item, owner=None):
         refs = [
@@ -232,7 +287,8 @@ class Application:
                 )
 
     def run(self, request, turn_id, query, pause=False, output_names=None):
-        return self.execution.start(request, turn_id, query, pause, output_names)
+        with self.runtime.operation():
+            return self.execution.start(request, turn_id, query, pause, output_names)
 
     def validate_completion(self, request, completion):
         outputs = {item["name"]: item for item in request["spec"]["outputs"]}
@@ -380,14 +436,14 @@ class Application:
             blocks=event["payload"]["blocks"],
             response_event_id=event["event_id"],
         )
-        try:
-            compress(self.stores, self.model, session_id, self.requests.validate_ref)
-        except Exception:
-            import logging
-
-            logging.getLogger(__name__).exception(
-                "Session summary compression deferred"
-            )
+        self.runtime.events.notify(
+            "response/published",
+            {
+                "session_id": session_id,
+                "turn_id": turn_id,
+                "response_event_id": event["event_id"],
+            },
+        )
         return result
 
     def snapshot(self, session_id, turn_id=None, request_ids=None, status=None):
@@ -440,9 +496,14 @@ class Application:
             "blocks": [],
             "snapshot_id": self.registry.snapshot_id,
             "semantic_version": self.registry.catalog["version"],
+            "catalog_version": self.registry.catalog_version,
         }
 
     def resume(self, user_id, request_id, continue_analysis=True, answer=None):
+        with self.runtime.operation():
+            return self._resume(user_id, request_id, continue_analysis, answer)
+
+    def _resume(self, user_id, request_id, continue_analysis, answer):
         request = self.stores.owned_request(user_id, request_id)
         if answer is not None:
             if not answer.strip():

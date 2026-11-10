@@ -1,6 +1,6 @@
 # 企业数据智能问析系统
 
-当前实现采用包含完整 spec 的 Request 读取对象、不可覆盖的 RequestRevision、执行 Task 和可追溯 Artifact。当前规格由版本表统一加载，实际交付通过执行记录按需解析。Supervisor 负责意图、一次生成完整要求与初始计划、动态重规划、验收与回答，四个专业 Agent 负责语义、查询、分析和展示。
+当前实现采用包含完整 spec 的 Request 读取对象、不可覆盖的 RequestRevision、执行 Task 和可追溯 Artifact。当前规格由版本表统一加载，实际交付通过执行记录按需解析。Supervisor 负责意图、一次生成完整要求与初始计划、动态重规划、验收与回答。默认 Profile 启用语义、查询、分析和展示四个专业 Agent，扩展角色通过插件注册。
 
 ## 启动
 
@@ -26,6 +26,8 @@
 - pipeline/execution.py 用 LangGraph 管理执行、验收、重规划和 interrupt/resume。
 - pipeline/scheduler.py 用 Send 并行分发就绪 Task，并按 task_id 汇总结果。
 - pipeline/checkpoints.py 将运行现场保存到 runtime/langgraph.sqlite。
+- harness/ 管理插件发现、服务依赖、作用域事件、动态装卸和失败回滚。config/harness.yaml 定义 Profile 与 Bundle。
+- query/database.py 提供只读数据源与实际表结构，semantic/catalog.py 保存表接入状态。
 - application/responses.py 将文字草稿保存为 Artifact，组装只含产物引用的 Response 块。前端据此展示正文和结果卡片。
 - persistence/migration.py 自动备份并事务迁移旧账本。
 - persistence/unified_migration.py 统一历史 Artifact 类型和回答结构，保留原数据与 SQL。
@@ -39,6 +41,12 @@
 ```
 
 第二条命令通过真实模型查询 Products 产品数，并与业务快照核对。测试覆盖并行调度、重启恢复、产物写入后中断、计划与回复保存后的重放。
+
+## 插件与数据表管理
+
+AGENT_PROFILE 可选择 default、data 或 minimal。管理员通过 /runtime/plugins 管理运行时插件，通过 /catalog/tables 接入或移出已有数据表。运行中的工作结束后可以切换插件及目录配置。
+
+字段、接口、插件示例和数据流见 [插件运行时与数据表接入](docs/第三版设计/插件运行时与数据表接入.md)。
 
 ## 原项目记录
 

@@ -93,7 +93,7 @@ SUPERVISOR_PREPARATION_REQUIREMENTS = (
 SUPERVISOR_PLANNING = (
     "spec 是本次规划依据的完整要求，deliveries 是按执行记录解析出的实际交付。"
     "依据当前 Request.spec 动态生成 Agent 执行 Task DAG，返回 tasks/cancel_task_ids/output_bindings/reason。"
-    "tasks 只提交新增节点，用局部 task_id；不能重复提交已有节点。四个专业角色为 SemanticAgent/QueryAgent/AnalysisAgent/PresentationAgent。"
+    "tasks 只提交新增节点，用局部 task_id；不能重复提交已有节点。仅使用 available_capabilities 中已启用的专业角色。"
     "objective 说明本步工作；depends_on 管执行顺序；input_bindings 的 slot/source 管真实输入；expected_outputs 管命名 Artifact 输出。"
     "SemanticAgent 的 expected_outputs 必须为空，轻量结果通过 task 引用的 output=semantic_binding 传递。"
     '例如 Query 的 input_bindings=[{"slot":"semantics","source":{"kind":"task","id":"semantic_step","output":"semantic_binding"}}]，depends_on=["semantic_step"]。'

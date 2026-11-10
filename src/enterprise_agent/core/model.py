@@ -56,8 +56,9 @@ class ModelRunner(Protocol):
 
 
 class ModelClient:
-    def __init__(self, transport: ChatTransport | None = None):
+    def __init__(self, transport: ChatTransport | None = None, tool_executor=None):
         self.transport = transport or OpenAICompatibleTransport()
+        self.tool_executor = tool_executor
 
     def run(
         self,
@@ -137,7 +138,21 @@ class ModelClient:
                                 },
                             },
                         )
-                    result = tools[name].call(**arguments)
+                    if self.tool_executor is None:
+                        result = tools[name].call(**arguments)
+                    else:
+                        node = context.get("task", {})
+                        result = self.tool_executor.execute(
+                            role,
+                            name,
+                            arguments,
+                            tools,
+                            {
+                                key: node[key]
+                                for key in ("task_id", "request_id", "revision_id")
+                                if key in node
+                            },
+                        )
                 except (ValueError, TypeError, KeyError) as exc:
                     result = {"error": str(exc)[:600]}
                 if emit:

@@ -14,11 +14,21 @@ from .tools import supervisor_tools
 
 
 class Supervisor(ModelAgent):
-    def __init__(self, model, context, stores, artifacts):
+    def __init__(self, model, context, stores, artifacts, tool_registry=None):
         super().__init__(model)
         self.context, self.stores, self.artifacts = context, stores, artifacts
+        self.tool_registry = tool_registry
 
     def tools(self, session_id, drafts=None, confirmed_refs=None):
+        if self.tool_registry is not None:
+            return self.tool_registry.build(
+                "Supervisor",
+                {
+                    "session_id": session_id,
+                    "drafts": drafts,
+                    "confirmed_refs": confirmed_refs,
+                },
+            )
         return supervisor_tools(
             session_id,
             self.context,

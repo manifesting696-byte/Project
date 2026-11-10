@@ -37,9 +37,12 @@ class ArtifactAgent(SpecialistAgent, ABC):
     instruction: ClassVar[str]
     output_types: ClassVar[frozenset[str]]
 
-    def __init__(self, model: ModelRunner, registry, artifacts, gateway):
+    def __init__(
+        self, model: ModelRunner, registry, artifacts, gateway, tool_registry=None
+    ):
         super().__init__(model)
         self.registry, self.artifacts, self.gateway = registry, artifacts, gateway
+        self.tool_registry = tool_registry
 
     @abstractmethod
     def role_tools(self, toolbox: SpecialistToolbox, context: dict) -> dict:
@@ -50,7 +53,13 @@ class ArtifactAgent(SpecialistAgent, ABC):
         toolbox = SpecialistToolbox(
             node, allowed, self.registry, self.artifacts, self.gateway
         )
-        tools = {**toolbox.common_tools(), **self.role_tools(toolbox, context)}
+        tools = (
+            self.tool_registry.build(
+                self.role, context, toolbox, toolbox.common_tools()
+            )
+            if self.tool_registry is not None
+            else {**toolbox.common_tools(), **self.role_tools(toolbox, context)}
+        )
         result = self.invoke(
             self.role, self.instruction, context, AgentResult, tools, emit
         )

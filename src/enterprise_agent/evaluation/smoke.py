@@ -2487,9 +2487,17 @@ def main():
     import sys
 
     if "--live-only" not in sys.argv:
-        outcome = unittest.TextTestRunner(verbosity=2).run(
-            unittest.defaultTestLoader.loadTestsFromTestCase(Smoke)
+        from .plugins import Plugins
+        from .catalog import Catalog
+
+        suite = unittest.TestSuite(
+            [
+                unittest.defaultTestLoader.loadTestsFromTestCase(Smoke),
+                unittest.defaultTestLoader.loadTestsFromTestCase(Plugins),
+                unittest.defaultTestLoader.loadTestsFromTestCase(Catalog),
+            ]
         )
+        outcome = unittest.TextTestRunner(verbosity=2).run(suite)
         if not outcome.wasSuccessful():
             raise SystemExit(1)
     if "--live" in sys.argv or "--live-only" in sys.argv:

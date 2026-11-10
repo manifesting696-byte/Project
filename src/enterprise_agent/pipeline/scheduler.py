@@ -143,7 +143,7 @@ class Scheduler:
             self.stores.save_many([("tasks", node)], expected_revisions=expected)
 
             def emit(kind, payload):
-                return self.stores.event(
+                record = self.stores.event(
                     state["session_id"],
                     state["turn_id"],
                     kind,
@@ -152,6 +152,9 @@ class Scheduler:
                     request_id=node["request_id"],
                     task_id=node["task_id"],
                 )
+                if self.specialists.events is not None:
+                    self.specialists.events.notify("session/event", record)
+                return record
 
             try:
                 for binding in node["input_bindings"]:
