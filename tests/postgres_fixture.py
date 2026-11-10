@@ -70,7 +70,7 @@ class LegacyTestStores:
     """Exercise the offline archive upgrader with PostgreSQL execution infrastructure."""
 
     def __new__(cls, directory):
-        from enterprise_agent.ledger.migrate.legacy_stores import LegacyStores
+        from ops.migrate.legacy_stores import LegacyStores
 
         instance = LegacyStores(Path(directory))
         instance.persistence = Postgres(test_dsn(), namespace(directory))

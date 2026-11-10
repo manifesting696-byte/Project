@@ -5,6 +5,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY pyproject.toml ./
 COPY src ./src
+COPY ops ./ops
 RUN pip install --no-cache-dir --no-deps .
 COPY docs ./docs
 COPY config ./config

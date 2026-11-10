@@ -12,7 +12,10 @@ dynamic = ["dependencies"]
 dependencies = {file = "requirements.txt"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "."]
+include = ["enterprise_agent*", "ops*"]
+exclude = ["src", "src.*"]
+namespaces = false
 
 [tool.setuptools.package-data]
 enterprise_agent = ["server/static/*"]

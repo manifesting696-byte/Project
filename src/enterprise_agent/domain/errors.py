@@ -1,31 +1,25 @@
-"""Failure taxonomy: the retry policy follows the error type, not the try nesting.
-
-The graph currently inspects exception *classes* in a few places (``except
-ValueError``); the taxonomy below states which class of failure each case is so
-new code can raise the precise type instead of a bare ``ValueError``. Existing
-call sites are unchanged in this commit.
-"""
-
+"""Typed failures shared by stages, persistence and HTTP error mapping."""
 
 class AgentError(Exception):
-    """Base class for expected business failures. Unhandled ones fail the turn."""
-
+    """Expected business failure."""
 
 class RepairableError(AgentError, ValueError):
-    """The model can fix the output: feed the message back and retry once.
+    """Invalid model proposal; the owning stage may retry once with this hint."""
 
-    Inherits ``ValueError`` so existing ``except ValueError`` handlers keep
-    catching the validation failures they already handle.
-    """
-
+    def __init__(self, hint: str, *, code: str):
+        self.hint, self.code = hint, code
+        super().__init__(hint)
 
 class PermissionDenied(AgentError, PermissionError):
-    """Security boundary: never retried, never explained further to the model."""
-
+    """Authorization failure; never returned to the model for repair."""
 
 class VersionConflict(AgentError):
-    """The request revision moved on; the saved graph scene is stale."""
-
+    """The persisted revision or plan changed while work was in flight."""
 
 class UpstreamPending(AgentError):
-    """A dependency has not delivered yet; wait instead of failing."""
+    """Declared upstream work has no usable delivery yet; wait, do not retry."""
+
+def public_message(error):
+    if isinstance(error, PermissionError):
+        return "无权访问所请求的资源"
+    return str(error)[:600]

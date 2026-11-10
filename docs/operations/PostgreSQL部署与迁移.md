@@ -29,7 +29,7 @@
 本机开发需额外配置 APP_DATABASE_URL 与 DATABASE_URL，分别对应运行账号与只读账号。测试另配 TEST_DATABASE_URL，指向独立的 enterprise_agent_test 数据库。
 
 ```powershell
-.\.venv\Scripts\python.exe -m enterprise_agent.ops.provision --with-test-database
+.\.venv\Scripts\python.exe -m ops.provision --with-test-database
 .\.venv\Scripts\python.exe evaluate.py
 .\.venv\Scripts\python.exe evaluate.py --live-only
 ```
@@ -65,7 +65,7 @@
 显式离线迁移入口如下。来源目录应含 agent.sqlite 和配套 content，目标账本需为空。
 
 ```powershell
-.\.venv\Scripts\python.exe -m enterprise_agent.ledger.migrate.from_sqlite --source <备份目录> --auth-source <本地application.sqlite备份> --archive-auth <旧Docker账号备份>
+.\.venv\Scripts\python.exe -m ops.migrate.from_sqlite --source <备份目录> --auth-source <本地application.sqlite备份> --archive-auth <旧Docker账号备份>
 ```
 
 工具校验文件冲突，在临时副本上完成旧格式转换，原子导入元数据，记录来源哈希以支持重复运行。原来源文件保持完整。

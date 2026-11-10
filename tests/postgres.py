@@ -11,7 +11,7 @@ from threading import Event, Thread
 import psycopg
 
 from enterprise_agent.server import identity
-from enterprise_agent.ledger.migrate.from_sqlite import import_snapshot
+from ops.migrate.from_sqlite import import_snapshot
 from enterprise_agent.query.database import ReadonlyDatabase
 from .legacy_fixture import legacy_ledger
 from .postgres_fixture import TestStores, cleanup, identity_scope
