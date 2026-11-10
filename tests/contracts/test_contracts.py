@@ -38,11 +38,20 @@ class FrozenContractsTests(unittest.TestCase):
                 self.assertEqual(contract.model_json_schema(), schema)
 
     def test_route_paths_and_methods_are_unchanged(self):
-        routes = sorted(
-            (route.path, sorted(route.methods))
-            for route in create_app().routes
-            if hasattr(route, "methods")
-        )
+        routes = []
+        for route in create_app().routes:
+            # FastAPI's lazy included routers do not expose path/methods directly.
+            effective = (
+                route.effective_route_contexts()
+                if hasattr(route, "effective_route_contexts")
+                else [route]
+            )
+            routes.extend(
+                (item.path, sorted(item.methods))
+                for item in effective
+                if hasattr(item, "methods")
+            )
+        routes.sort()
         expected = json.loads(Path(__file__).with_name("routes.json").read_text())
         self.assertEqual(json.loads(json.dumps(routes)), expected)
 
