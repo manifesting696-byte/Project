@@ -1,14 +1,20 @@
-"""One Supervisor owns intent, full specification, planning, checking and answers."""
+"""Shared model/tool dependencies; stage implementations own the behavior."""
 
-from enterprise_agent.domain.answer import AnswerDraft, Completion
-from enterprise_agent.domain.task import Plan
-from enterprise_agent.stages.intent.schema import Intent, RequestPreparation
-from enterprise_agent.stages.execute.agents.base import ModelAgent
-from enterprise_agent.prompt.supervisor import SUPERVISOR_ANSWER, SUPERVISOR_COMPLETION, SUPERVISOR_INTENT, SUPERVISOR_PLANNING, SUPERVISOR_PREPARATION
-from enterprise_agent.stages.execute.agents.toolbox import supervisor_tools
+from enterprise_agent.stages.answer.inference import answer
+from enterprise_agent.stages.execute.agents.invocation import ModelAgent
+from enterprise_agent.stages.execute.tools.supervisor import supervisor_tools
+from enterprise_agent.stages.intent.inference import intent
+from enterprise_agent.stages.prepare.inference import plan, prepare
+from enterprise_agent.stages.verify.inference import check
 
 
 class Supervisor(ModelAgent):
+    intent = intent
+    prepare = prepare
+    plan = plan
+    check = check
+    answer = answer
+
     def __init__(self, model, context, stores, artifacts, tool_registry=None):
         super().__init__(model)
         self.context, self.stores, self.artifacts = context, stores, artifacts
@@ -31,81 +37,4 @@ class Supervisor(ModelAgent):
             self.artifacts,
             drafts,
             confirmed_refs,
-        )
-
-    def intent(self, session_id, query, emit, feedback=None):
-        context = self.context.initial(session_id, query)
-        if feedback:
-            context["validation_feedback"] = feedback
-        return self.invoke(
-            "UnifiedSupervisor.Intent",
-            SUPERVISOR_INTENT,
-            context,
-            Intent,
-            self.tools(session_id),
-            emit,
-        )
-
-    def prepare(
-        self,
-        session_id,
-        operation,
-        previous,
-        parameters,
-        emit,
-        drafts=None,
-        required_outputs=None,
-        feedback=None,
-        confirmed_refs=None,
-    ):
-        return self.invoke(
-            "UnifiedSupervisor.Preparation",
-            SUPERVISOR_PREPARATION,
-            self.context.preparation(
-                session_id,
-                operation,
-                previous,
-                parameters,
-                drafts,
-                required_outputs,
-                feedback,
-            ),
-            RequestPreparation,
-            self.tools(session_id, drafts, confirmed_refs),
-            emit,
-        )
-
-    def plan(self, request, emit, new_results=None):
-        context = (
-            self.context.planning(request)
-            if new_results is None
-            else self.context.replanning(request, new_results)
-        )
-        return self.invoke(
-            "UnifiedSupervisor.Planning",
-            SUPERVISOR_PLANNING,
-            context,
-            Plan,
-            self.tools(request["session_id"]),
-            emit,
-        )
-
-    def check(self, request, query, emit):
-        return self.invoke(
-            "UnifiedSupervisor.Completion",
-            SUPERVISOR_COMPLETION,
-            self.context.answer(request, query),
-            Completion,
-            self.tools(request["session_id"]),
-            emit,
-        )
-
-    def answer(self, session_id, context, emit):
-        return self.invoke(
-            "UnifiedSupervisor.Answer",
-            SUPERVISOR_ANSWER,
-            context,
-            AnswerDraft,
-            self.tools(session_id),
-            emit,
         )

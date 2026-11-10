@@ -2,12 +2,17 @@
 
 from copy import deepcopy
 
+from enterprise_agent.domain.errors import RepairableError, VersionConflict
 from enterprise_agent.domain.request import RequestSpec
 from enterprise_agent.domain.task import Plan
-from enterprise_agent.stages.intent.schema import Clarification, RequestPreparation
+from enterprise_agent.stages.intent.schema import Clarification
+from enterprise_agent.stages.prepare.commit import save_bundle
+from enterprise_agent.stages.prepare.schema import RequestPreparation
 
 
 class Preparation:
+    commit = save_bundle
+
     def __init__(self, stores, requests, tasks, supervisor):
         self.stores, self.requests = stores, requests
         self.tasks, self.supervisor = tasks, supervisor
@@ -78,13 +83,21 @@ class Preparation:
                 elif (value is None and key in result.spec.parameters) or (
                     value is not None and result.spec.parameters.get(key) != value
                 ):
-                    raise ValueError("完整规格需遵循界面参数，并据此生成计划")
+                    raise RepairableError(
+                        "完整规格需遵循界面参数，并据此生成计划",
+                        code="prepare.invalid_proposal",
+                    )
             self.validate_sources(operation, previous, result.spec, confirmed)
             if not set(required_outputs) <= {item.name for item in result.spec.outputs}:
-                raise ValueError("上游规格缺少本轮下游引用的交付名称")
+                raise RepairableError(
+                    "上游规格缺少本轮下游引用的交付名称",
+                    code="prepare.invalid_proposal",
+                )
         for item in result.clarifications:
             if item.request_id not in (None, operation.request_id):
-                raise ValueError("澄清目标必须属于当前操作")
+                raise RepairableError(
+                    "澄清目标必须属于当前操作", code="prepare.invalid_proposal"
+                )
             item.request_id = operation.request_id
             for ref in item.refs:
                 self.requests.validate_ref(
@@ -119,9 +132,13 @@ class Preparation:
             for binding in spec.inputs
         }
         if not current <= sources:
-            raise ValueError("完整需求遗漏了 Intent 已确认的引用")
+            raise RepairableError(
+                "完整需求遗漏了 Intent 已确认的引用", code="prepare.invalid_proposal"
+            )
         if not sources <= allowed:
-            raise ValueError("新增需求来源必须通过工具确认")
+            raise RepairableError(
+                "新增需求来源必须通过工具确认", code="prepare.invalid_proposal"
+            )
 
     def candidates(
         self, session_id, turn_id, operations, proposals, baselines, event_id
@@ -147,7 +164,7 @@ class Preparation:
                     else {"revision_id": None, "plan_version": None}
                 )
                 if actual != baselines[key]:
-                    raise ValueError(
+                    raise VersionConflict(
                         "需求或计划已在准备期间更新，请基于最新状态重新准备"
                     )
                 self.requests.validate_specs(session_id, specs, [key])
@@ -249,7 +266,7 @@ class Preparation:
                 break
             for operation in operations:
                 key = operation.request_id
-                if key not in errors:
+                if key not in errors or not isinstance(errors[key], RepairableError):
                     continue
                 proposal = proposals.get(key)
                 feedback = {
@@ -329,16 +346,3 @@ class Preparation:
             proposals,
             errors,
         )
-
-    def commit(self, bundle):
-        events = deepcopy(bundle["events"])
-        if bundle.get("workflow_key"):
-            for event in events:
-                event["payload"]["workflow_key"] = bundle["workflow_key"]
-        self.stores.save_many(
-            bundle["records"],
-            expected_revisions=bundle["expected_revisions"],
-            expected_plan_versions=bundle["expected_plan_versions"],
-            events=events,
-        )
-        return bundle["request"]

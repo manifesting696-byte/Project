@@ -37,7 +37,7 @@ class TestStores(Stores):
 
 
 def identity_scope(directory):
-    from enterprise_agent.server import identity
+    from enterprise_agent.server import auth as identity
     from unittest.mock import patch
 
     return patch.multiple(
@@ -46,7 +46,7 @@ def identity_scope(directory):
 
 
 def cleanup():
-    from enterprise_agent.server import identity
+    from enterprise_agent.server import auth as identity
 
     schemas = _schemas | {
         (instance.dsn, instance.schema)

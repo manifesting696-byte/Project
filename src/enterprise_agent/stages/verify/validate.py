@@ -1,12 +1,16 @@
 """Delivery verification: prove every declared output has a real artifact."""
 
+from enterprise_agent.domain.errors import RepairableError
+
 
 def validate_completion(app, request, completion):
     """Every spec output must be checked once, and completed ones need evidence."""
     outputs = {item["name"]: item for item in request["spec"]["outputs"]}
     names = [item.name for item in completion.outputs]
     if len(names) != len(set(names)) or set(names) != set(outputs):
-        raise ValueError("验收必须覆盖当前 Request 的每个交付名称")
+        raise RepairableError(
+            "验收必须覆盖当前 Request 的每个交付名称", code="verify.invalid_proposal"
+        )
     for check in completion.outputs:
         for ref in check.refs:
             app.requests.validate_ref(
@@ -16,16 +20,24 @@ def validate_completion(app, request, completion):
             continue
         actual = app.requests.outputs(request).get(check.name)
         if not actual or not check.refs:
-            raise ValueError("完成的交付必须绑定真实输出并提供证据")
+            raise RepairableError(
+                "完成的交付必须绑定真实输出并提供证据", code="verify.invalid_proposal"
+            )
         resolved = app.requests.resolve(request["session_id"], actual)
         actual_id = resolved.get("artifact_id", actual["id"])
         if actual_id not in {ref.id for ref in check.refs}:
-            raise ValueError("验收证据没有指向该项实际交付")
+            raise RepairableError(
+                "验收证据没有指向该项实际交付", code="verify.invalid_proposal"
+            )
         content_type = outputs[check.name]["content_type"]
         if not resolved.get("artifact_id"):
-            raise ValueError("交付需要实际 Artifact")
+            raise RepairableError(
+                "交付需要实际 Artifact", code="verify.invalid_proposal"
+            )
         if (
             app.artifacts.inspect(resolved["artifact_id"])["content_type"]
             != content_type
         ):
-            raise ValueError("实际产物类型与交付要求不一致")
+            raise RepairableError(
+                "实际产物类型与交付要求不一致", code="verify.invalid_proposal"
+            )

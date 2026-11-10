@@ -7,6 +7,7 @@ from psycopg.conninfo import make_conninfo
 
 from enterprise_agent.settings import setting
 from ops import profile_import, readonly_views
+
 from . import bootstrap, provision
 
 

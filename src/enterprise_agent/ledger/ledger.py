@@ -4,14 +4,16 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from enterprise_agent.settings import WORK
+from psycopg.types.json import Jsonb
+
 from enterprise_agent.domain.artifact import Artifact
+from enterprise_agent.domain.errors import VersionConflict
 from enterprise_agent.domain.request import Request, RequestRecord, RequestRevision
 from enterprise_agent.domain.session import Session, SessionEvent, SessionSummary
 from enterprise_agent.domain.task import Task
-from psycopg.types.json import Jsonb
-
+from enterprise_agent.ledger.aliases import ALIAS_TABLES, archived_request_ids
 from enterprise_agent.ledger.postgres import Postgres
+from enterprise_agent.settings import WORK
 
 
 def now():
@@ -40,6 +42,8 @@ IMMUTABLE = {"request_revisions", "artifacts", "session_events", "session_summar
 
 
 class Stores:
+    archived_request_ids = archived_request_ids
+
     def __init__(self, directory: Path = WORK, dsn=None, schema="agent"):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -63,8 +67,7 @@ class Stores:
             )
         statements.extend(
             [
-                "CREATE TABLE IF NOT EXISTS legacy_tasks(id TEXT PRIMARY KEY,body JSONB NOT NULL)",
-                "CREATE TABLE IF NOT EXISTS legacy_task_revisions(id TEXT PRIMARY KEY,body JSONB NOT NULL)",
+                *ALIAS_TABLES,
                 "CREATE INDEX IF NOT EXISTS artifact_request_idx ON artifacts(request_id)",
                 "CREATE INDEX IF NOT EXISTS event_workflow_idx ON session_events(session_id,(body->'payload'->>'workflow_key'),seq DESC)",
             ]
@@ -203,14 +206,16 @@ class Stores:
                 ).fetchone()
                 actual = row[0]["current_revision_id"] if row else None
                 if actual != revision_id:
-                    raise ValueError("需求已被其他执行更新，请重新读取当前版本")
+                    raise VersionConflict("需求已被其他执行更新，请重新读取当前版本")
             for request_id, plan_version in (expected_plan_versions or {}).items():
                 row = db.execute(
                     "SELECT body FROM requests WHERE id=%s FOR UPDATE", (request_id,)
                 ).fetchone()
                 actual = row[0]["plan_version"] if row else None
                 if actual != plan_version:
-                    raise ValueError("执行计划已被其他操作更新，请重新读取当前计划")
+                    raise VersionConflict(
+                        "执行计划已被其他操作更新，请重新读取当前计划"
+                    )
             for table, item in validated:
                 self._put(db, table, item)
             for item in [*events, *([event] if event else [])]:
@@ -341,7 +346,7 @@ class Stores:
         ]
 
     def recover_interrupted(self, resumable_request_ids=()):
-        """Preserve checkpoint-backed work and recover legacy interrupted execution."""
+        """Preserve checkpoint-backed work and recover interrupted execution without checkpoints."""
         with self.db() as db:
             affected = set()
             for row in db.execute("SELECT body FROM tasks").fetchall():
@@ -362,17 +367,3 @@ class Stores:
                 if request["status"] == "running" or request["request_id"] in affected:
                     request.update(status="pending", updated_at=now())
                     self._put(db, "requests", request)
-
-    def legacy_request_ids(self, task_id):
-        with self.db() as db:
-            row = db.execute(
-                "SELECT body FROM legacy_tasks WHERE id=%s", (task_id,)
-            ).fetchone()
-            if row is None:
-                return []
-            task = row[0]
-            row = db.execute(
-                "SELECT body FROM legacy_task_revisions WHERE id=%s",
-                (task["current_revision_id"],),
-            ).fetchone()
-        return [item["request_id"] for item in row[0]["requirements"]] if row else []

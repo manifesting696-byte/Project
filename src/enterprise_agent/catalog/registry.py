@@ -2,19 +2,20 @@
 
 import hashlib
 import json
-import os
 import re
 from copy import deepcopy
+
 import yaml
-from enterprise_agent.settings import ROOT, WORK
+
 from enterprise_agent.catalog.tables import TableCatalog
+from enterprise_agent.settings import ROOT, WORK, setting
 
 
 class Registry:
     def __init__(self, database=None, directory=None, persistence=None):
         profile = json.loads((WORK / "data_quality.json").read_text(encoding="utf-8"))
         self.snapshot_id = profile["snapshot_id"]
-        version = os.getenv("SEMANTIC_CATALOG_VERSION")
+        version = setting("SEMANTIC_CATALOG_VERSION")
         path = ROOT / "config" / "semantic" / "catalog.yaml"
         if version:
             if not re.fullmatch(r"[\w.-]+", version):

@@ -4,9 +4,8 @@ import json
 import re
 from datetime import datetime, timezone
 
-from ops.profile_data import RELATIONS, WORK
 from enterprise_agent.settings import database_url
-
+from ops.profile_data import RELATIONS, WORK
 
 IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z_0-9]*$")
 SENSITIVE = {"contact_person", "phone", "email", "address"}

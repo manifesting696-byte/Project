@@ -1,24 +1,9 @@
 """Verification verdicts, answer drafts and the published response."""
 
-from typing import Literal
-
 from pydantic import Field
 
-from enterprise_agent.domain.base import ContentType, Model
-from enterprise_agent.domain.refs import IntentRef, ResourceRef
-
-
-class OutputCheck(Model):
-    name: str
-    status: Literal["completed", "unfulfilled", "needs_clarification"]
-    refs: list[ResourceRef] = Field(default_factory=list)
-    reason: str
-
-
-class Completion(Model):
-    outputs: list[OutputCheck]
-    next_action: Literal["answer", "replan", "clarify"]
-    reason: str
+from enterprise_agent.domain.contract import ContentType, Model
+from enterprise_agent.domain.refs import IntentRef
 
 
 class AnswerDraftBlock(Model):

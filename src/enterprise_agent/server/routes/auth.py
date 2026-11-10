@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, Header
 
-from enterprise_agent.server.identity import (
+from enterprise_agent.server.auth import (
     change_password,
     current_user,
     login,

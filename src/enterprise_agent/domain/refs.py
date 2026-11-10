@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
-from enterprise_agent.domain.base import ContentType, Model
+from enterprise_agent.domain.contract import ContentType, Model
 
 
 class ResourceRef(Model):

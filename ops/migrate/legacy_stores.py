@@ -7,11 +7,11 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-from enterprise_agent.settings import WORK
 from enterprise_agent.domain.artifact import Artifact
 from enterprise_agent.domain.request import Request, RequestRecord, RequestRevision
 from enterprise_agent.domain.session import Session, SessionEvent, SessionSummary
 from enterprise_agent.domain.task import Task
+from enterprise_agent.settings import WORK
 from ops.migrate.v1_specs import migrate_legacy, migrate_request_specs
 from ops.migrate.v2_unified import migrate_unified_artifacts
 
@@ -382,7 +382,7 @@ class LegacyStores:
                     request.update(status="pending", updated_at=now())
                     self._put(db, "requests", request)
 
-    def legacy_request_ids(self, task_id):
+    def archived_request_ids(self, task_id):
         with self.db() as db:
             if not db.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='legacy_tasks'"

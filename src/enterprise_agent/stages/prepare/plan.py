@@ -2,9 +2,10 @@
 
 from copy import deepcopy
 
-from enterprise_agent.settings import MAX_TASKS
+from enterprise_agent.domain.errors import PermissionDenied, RepairableError
 from enterprise_agent.domain.task import Plan, PlannedTask
 from enterprise_agent.ledger.ledger import now
+from enterprise_agent.settings import MAX_TASKS
 
 
 class Tasks:
@@ -31,15 +32,20 @@ class Tasks:
         if ref["kind"] == "request" and not any(
             binding["source"] == ref for binding in request["spec"]["inputs"]
         ):
-            raise ValueError("执行计划的 Request 来源需在完整需求输入中声明")
+            raise RepairableError(
+                "执行计划的 Request 来源需在完整需求输入中声明",
+                code="prepare.invalid_proposal",
+            )
         if ref["kind"] == "request" and ref["id"] in request_views:
             source = request_views[ref["id"]]
             if source["session_id"] != session_id:
-                raise PermissionError("引用不属于当前会话")
+                raise PermissionDenied("引用不属于当前会话")
             if ref.get("output") not in {
                 item["name"] for item in source["spec"]["outputs"]
             }:
-                raise ValueError("Request 未声明该命名交付")
+                raise RepairableError(
+                    "Request 未声明该命名交付", code="prepare.invalid_proposal"
+                )
             return
         self.requests.validate_ref(session_id, ref)
 
@@ -52,7 +58,10 @@ class Tasks:
             artifact.get("request_id") != request["request_id"]
             and artifact_id not in explicit
         ):
-            raise ValueError("其他 Request 的产物需在当前需求输入中声明")
+            raise RepairableError(
+                "其他 Request 的产物需在当前需求输入中声明",
+                code="prepare.invalid_proposal",
+            )
         producer = nodes.get(artifact.get("task_id"))
         if producer and producer["status"] == "completed":
             return
@@ -63,7 +72,10 @@ class Tasks:
         ):
             return
         if artifact_id not in explicit:
-            raise ValueError("失效执行的产物需要在当前需求输入中明确指定后才能复用")
+            raise RepairableError(
+                "失效执行的产物需要在当前需求输入中明确指定后才能复用",
+                code="prepare.invalid_proposal",
+            )
 
     def prepare_plan(
         self,
@@ -87,10 +99,15 @@ class Tasks:
                 or existing[key]["request_id"] != request["request_id"]
                 or existing[key]["status"] != "pending"
             ):
-                raise ValueError("仅能撤销当前 Request 尚未执行的节点")
+                raise RepairableError(
+                    "仅能撤销当前 Request 尚未执行的节点",
+                    code="prepare.invalid_proposal",
+                )
         local_ids = [item.task_id for item in plan.tasks]
         if len(local_ids) != len(set(local_ids)) or set(local_ids) & existing.keys():
-            raise ValueError("新增执行 Task 的局部 ID 必须唯一")
+            raise RepairableError(
+                "新增执行 Task 的局部 ID 必须唯一", code="prepare.invalid_proposal"
+            )
         active = [
             node
             for node in nodes
@@ -98,7 +115,9 @@ class Tasks:
             and node["status"] not in ("cancelled", "superseded")
         ]
         if len(active) + len(local_ids) - len(cancelled) > MAX_TASKS:
-            raise ValueError("执行节点超过本次预算")
+            raise RepairableError(
+                "执行节点超过本次预算", code="prepare.invalid_proposal"
+            )
         aliases = {key: self.stores.new_id("task") for key in local_ids}
         additions = []
         for proposed in plan.tasks:
@@ -106,12 +125,20 @@ class Tasks:
                 self.specialists is not None
                 and proposed.assigned_agent not in self.specialists.agents
             ):
-                raise ValueError(f"计划使用了未启用的 Agent：{proposed.assigned_agent}")
+                raise RepairableError(
+                    f"计划使用了未启用的 Agent：{proposed.assigned_agent}",
+                    code="prepare.invalid_proposal",
+                )
             node = proposed.model_dump(exclude_none=True)
             if len(node["expected_outputs"]) != len(set(node["expected_outputs"])):
-                raise ValueError("执行输出名称重复")
+                raise RepairableError(
+                    "执行输出名称重复", code="prepare.invalid_proposal"
+                )
             if node["assigned_agent"] == "SemanticAgent" and node["expected_outputs"]:
-                raise ValueError("语义绑定通过 semantic_binding 传递，不声明 Artifact")
+                raise RepairableError(
+                    "语义绑定通过 semantic_binding 传递，不声明 Artifact",
+                    code="prepare.invalid_proposal",
+                )
             node["task_id"] = aliases[proposed.task_id]
             node["depends_on"] = [aliases.get(key, key) for key in node["depends_on"]]
             for binding in node["input_bindings"]:
@@ -120,9 +147,10 @@ class Tasks:
                     ref["id"] = aliases.get(ref["id"], ref["id"])
                 elif ref["kind"] == "request":
                     if ref["id"] == request["request_id"]:
-                        raise ValueError(
+                        raise RepairableError(
                             "执行节点已获得当前 spec，不能把本 Request 尚未生成的交付作为输入。"
-                            "请用 kind=task、上游 task_id 和 output 绑定 DAG 内的结果，旧数据用真实 Artifact 引用"
+                            "请用 kind=task、上游 task_id 和 output 绑定 DAG 内的结果，旧数据用真实 Artifact 引用",
+                            code="prepare.invalid_proposal",
                         )
                     self.validate_ref(request, ref, request_views)
             node.update(
@@ -151,19 +179,25 @@ class Tasks:
                     or dep in cancelled
                     or combined[dep]["status"] in ("superseded", "cancelled")
                 ):
-                    raise ValueError("执行依赖不存在或已经失效")
+                    raise RepairableError(
+                        "执行依赖不存在或已经失效", code="prepare.invalid_proposal"
+                    )
             for binding in node["input_bindings"]:
                 ref = binding["source"]
                 if ref["kind"] == "task":
                     source = combined.get(ref["id"])
                     if not source or ref["id"] not in node["depends_on"]:
-                        raise ValueError("上游 Task 输出必须具有显式 depends_on")
+                        raise RepairableError(
+                            "上游 Task 输出必须具有显式 depends_on",
+                            code="prepare.invalid_proposal",
+                        )
                     if (
                         node in additions
                         and source["request_id"] != request["request_id"]
                     ):
-                        raise ValueError(
-                            "跨需求输入使用 Request 命名交付或显式 Artifact"
+                        raise RepairableError(
+                            "跨需求输入使用 Request 命名交付或显式 Artifact",
+                            code="prepare.invalid_proposal",
                         )
                     semantic = (
                         source["assigned_agent"] == "SemanticAgent"
@@ -174,7 +208,9 @@ class Tasks:
                         and ref["output"] not in source["expected_outputs"]
                         and not semantic
                     ):
-                        raise ValueError("上游未声明该命名输出")
+                        raise RepairableError(
+                            "上游未声明该命名输出", code="prepare.invalid_proposal"
+                        )
                 else:
                     self.validate_ref(request, ref, request_views)
                     if ref["kind"] == "artifact":
@@ -185,7 +221,9 @@ class Tasks:
 
         def visit(key):
             if key in visiting:
-                raise ValueError("执行 Task DAG 存在循环")
+                raise RepairableError(
+                    "执行 Task DAG 存在循环", code="prepare.invalid_proposal"
+                )
             if key in done:
                 return
             visiting.add(key)
@@ -216,21 +254,31 @@ class Tasks:
         }
         for name, value in plan.output_bindings.items():
             if name not in output_names:
-                raise ValueError("交付绑定名称不属于当前 Request 的 outputs")
+                raise RepairableError(
+                    "交付绑定名称不属于当前 Request 的 outputs",
+                    code="prepare.invalid_proposal",
+                )
             ref = value.model_dump(exclude_none=True)
             if ref["kind"] == "task":
                 ref["id"] = aliases.get(ref["id"], ref["id"])
                 source = combined.get(ref["id"])
                 if not source or source["status"] in ("cancelled", "superseded"):
-                    raise ValueError("交付绑定指向失效执行")
+                    raise RepairableError(
+                        "交付绑定指向失效执行", code="prepare.invalid_proposal"
+                    )
                 if source["request_id"] != request["request_id"]:
-                    raise ValueError("跨需求交付使用 Request 命名交付或显式 Artifact")
+                    raise RepairableError(
+                        "跨需求交付使用 Request 命名交付或显式 Artifact",
+                        code="prepare.invalid_proposal",
+                    )
                 semantic = (
                     source["assigned_agent"] == "SemanticAgent"
                     and ref.get("output") == "semantic_binding"
                 )
                 if ref.get("output") not in source["expected_outputs"] and not semantic:
-                    raise ValueError("交付绑定必须明确实际输出名称")
+                    raise RepairableError(
+                        "交付绑定必须明确实际输出名称", code="prepare.invalid_proposal"
+                    )
             else:
                 self.validate_ref(request, ref, request_views)
                 if ref["kind"] == "artifact":
@@ -244,9 +292,14 @@ class Tasks:
                         self.stores.get("artifacts", ref["id"])["content_type"]
                         != expected
                     ):
-                        raise ValueError("实际产物类型与交付要求不一致")
+                        raise RepairableError(
+                            "实际产物类型与交付要求不一致",
+                            code="prepare.invalid_proposal",
+                        )
                 if ref["kind"] == "request" and ref["id"] == request["request_id"]:
-                    raise ValueError("交付绑定不能循环引用自身")
+                    raise RepairableError(
+                        "交付绑定不能循环引用自身", code="prepare.invalid_proposal"
+                    )
             bindings[name] = ref
         records = [("tasks", node) for node in additions]
         for key in cancelled:

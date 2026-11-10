@@ -7,6 +7,7 @@ import yaml
 from pydantic import Field
 
 from enterprise_agent.plugins.contract import PluginConfig, PluginSpec
+from enterprise_agent.settings import setting
 
 
 class Composition(PluginConfig):
@@ -57,4 +58,4 @@ def load_profile(path, profile=None, patches=()):
 
 
 def environment_patches():
-    return tuple(filter(None, os.getenv("AGENT_PLUGIN_PATCHES", "").split(os.pathsep)))
+    return tuple(filter(None, setting("AGENT_PLUGIN_PATCHES", "").split(os.pathsep)))

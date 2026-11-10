@@ -12,10 +12,10 @@ from pathlib import Path
 from psycopg import sql
 from psycopg.types.json import Jsonb
 
-from enterprise_agent.server import identity
 from enterprise_agent.domain.request import RequestRecord
-from ops.migrate.legacy_stores import LegacyStores
 from enterprise_agent.ledger.ledger import RECORD_MODELS, TABLES, Stores
+from enterprise_agent.server import auth as identity
+from ops.migrate.legacy_stores import LegacyStores
 
 
 def prepare_snapshot(source, target):

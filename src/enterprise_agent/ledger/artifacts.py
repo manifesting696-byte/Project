@@ -5,9 +5,9 @@ import json
 import re
 from copy import deepcopy
 
-from enterprise_agent.settings import READ_ROWS
 from enterprise_agent.domain.artifact import Artifact
 from enterprise_agent.ledger.ledger import now
+from enterprise_agent.settings import READ_ROWS
 
 
 class Artifacts:
@@ -246,9 +246,11 @@ class Artifacts:
 
     def compute(self, artifact_ids, sql, with_columns=False):
         """Compute in transaction-local PostgreSQL tables containing authorized artifacts."""
+        from decimal import Decimal
+
         from psycopg import sql as statements
         from psycopg.rows import dict_row
-        from decimal import Decimal
+
         from enterprise_agent.query.validate import validate_readonly
 
         schema = {}

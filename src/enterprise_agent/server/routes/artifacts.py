@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from enterprise_agent.server import deps
-from enterprise_agent.server.identity import current_user
+from enterprise_agent.server.auth import current_user
 
 router = APIRouter()
 

@@ -1,11 +1,5 @@
-"""Process entry point.
+"""Run with uvicorn enterprise_agent.main:app or --factory enterprise_agent.main:create_app."""
 
-    uvicorn enterprise_agent.main:app --host 0.0.0.0 --port 8000 --workers 1
+from enterprise_agent.server.app import app, create_app
 
-One worker on purpose: a turn holds the per-session advisory lock and the graph
-scenes are checkpointed per thread, so parallel workers would only add contention.
-"""
-
-from enterprise_agent.server.app import app
-
-__all__ = ["app"]
+__all__ = ["app", "create_app"]

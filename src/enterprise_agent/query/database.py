@@ -5,10 +5,12 @@ import json
 from contextlib import contextmanager
 from datetime import date
 from decimal import Decimal
-from psycopg.rows import dict_row
+
 from psycopg.conninfo import conninfo_to_dict
-from enterprise_agent.settings import database_url
+from psycopg.rows import dict_row
+
 from enterprise_agent.ledger.postgres import Postgres, schema_name
+from enterprise_agent.settings import database_url
 
 
 def quote_identifier(value):

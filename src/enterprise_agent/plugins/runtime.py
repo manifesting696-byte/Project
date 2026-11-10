@@ -9,7 +9,7 @@ from threading import RLock
 
 from enterprise_agent.plugins.contract import Plugin, PluginSpec
 from enterprise_agent.plugins.events import Events
-from enterprise_agent.plugins.tools import Tools
+from enterprise_agent.plugins.tool_registry import Tools
 
 
 class PluginError(ValueError):
@@ -94,14 +94,14 @@ class Service:
 
 
 class Runtime:
-    def __init__(self, catalog=(), host=None):
+    def __init__(self, definitions=(), host=None):
         self._lock = RLock()
         self.events = Events()
         self.tools = Tools(self.events)
         self._services = {**(host or {}), "events": self.events, "tools": self.tools}
         self._host = set(self._services)
         self._catalog = {}
-        for plugin in catalog:
+        for plugin in definitions:
             self.register(plugin)
         self._active = {}
         self._order = []

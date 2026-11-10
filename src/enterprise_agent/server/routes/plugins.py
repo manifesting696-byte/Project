@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 
 from enterprise_agent.server import deps
-from enterprise_agent.server.identity import require
+from enterprise_agent.server.auth import require
 from enterprise_agent.server.schemas import (
     PluginLoad,
     PluginReload,

@@ -3,7 +3,8 @@
 from fastapi import APIRouter, Depends
 
 from enterprise_agent.server import deps
-from enterprise_agent.server.identity import audit, require
+from enterprise_agent.server.audit import audit
+from enterprise_agent.server.auth import require
 from enterprise_agent.server.schemas import Question
 
 router = APIRouter()

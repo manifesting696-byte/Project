@@ -2,9 +2,8 @@
 
 import json
 import sqlite3
-from pathlib import Path
-
 from datetime import datetime, timezone
+from pathlib import Path
 
 from enterprise_agent.domain.request import RequestRecord
 from enterprise_agent.domain.session import SessionEvent

@@ -17,20 +17,35 @@ def main():
         with db.transaction():
             for table, entry in profiles.items():
                 view = table.lower()
-                existing = [row[0] for row in db.execute("""
+                existing = [
+                    row[0]
+                    for row in db.execute(
+                        """
                     SELECT column_name FROM information_schema.columns
                     WHERE table_schema='analysis' AND table_name=%s ORDER BY ordinal_position
-                """, (view,))]
-                columns = existing + [name for name in entry["columns"] if name not in existing]
+                """,
+                        (view,),
+                    )
+                ]
+                columns = existing + [
+                    name for name in entry["columns"] if name not in existing
+                ]
                 if any(name not in entry["columns"] for name in existing):
                     raise RuntimeError(f"Existing view has unexpected columns: {view}")
-                db.execute(sql.SQL("CREATE OR REPLACE VIEW {} AS SELECT {} FROM {}").format(
-                    sql.Identifier("analysis", view),
-                    sql.SQL(",").join(sql.Identifier(name) for name in columns),
-                    sql.Identifier("supply_chain", table)))
+                db.execute(
+                    sql.SQL("CREATE OR REPLACE VIEW {} AS SELECT {} FROM {}").format(
+                        sql.Identifier("analysis", view),
+                        sql.SQL(",").join(sql.Identifier(name) for name in columns),
+                        sql.Identifier("supply_chain", table),
+                    )
+                )
             db.execute("GRANT USAGE ON SCHEMA analysis TO supply_chain_reader")
-            db.execute("GRANT SELECT ON ALL TABLES IN SCHEMA analysis TO supply_chain_reader")
-            count = db.execute("SELECT COUNT(*) FROM information_schema.views WHERE table_schema='analysis'").fetchone()[0]
+            db.execute(
+                "GRANT SELECT ON ALL TABLES IN SCHEMA analysis TO supply_chain_reader"
+            )
+            count = db.execute(
+                "SELECT COUNT(*) FROM information_schema.views WHERE table_schema='analysis'"
+            ).fetchone()[0]
             if count < len(profiles):
                 raise RuntimeError("Not all business tables are exposed")
     print(f"analysis schema exposes {len(profiles)} business tables")

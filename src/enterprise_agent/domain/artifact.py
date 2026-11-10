@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import Field
 
-from enterprise_agent.domain.base import ContentType, Model
+from enterprise_agent.domain.contract import ContentType, Model
 
 
 class Artifact(Model):

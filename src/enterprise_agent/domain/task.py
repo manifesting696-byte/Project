@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import Field
 
-from enterprise_agent.domain.base import AgentName, Model
+from enterprise_agent.domain.contract import AgentName, Model
 from enterprise_agent.domain.refs import InputBinding, ResourceRef
 
 

@@ -4,7 +4,6 @@ import sqlglot
 from sqlglot import exp
 from sqlglot.optimizer.qualify import qualify
 
-
 SAFE_ANONYMOUS = {
     "date",
     "round",

@@ -5,7 +5,7 @@ from typing import Any, Literal
 from pydantic import model_validator
 
 from enterprise_agent.domain.answer import ResponseBlock
-from enterprise_agent.domain.base import Model
+from enterprise_agent.domain.contract import Model
 from enterprise_agent.domain.refs import ResourceRef
 
 

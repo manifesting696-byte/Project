@@ -1,46 +1,13 @@
 """Provider-independent model loop with role-scoped tools and typed outputs."""
 
 import json
-from collections.abc import Callable
-from dataclasses import dataclass
 from typing import Protocol
 
 from pydantic import BaseModel, ValidationError
 
-from enterprise_agent.settings import MAX_TOOL_ROUNDS
+from enterprise_agent.model.tool_call import Tool
 from enterprise_agent.model.transport import ChatTransport, OpenAICompatibleTransport
-
-
-@dataclass
-class Tool:
-    description: str
-    parameters: dict
-    call: Callable
-
-
-def tool(description, call, **properties):
-    import inspect
-
-    required = [
-        name
-        for name, parameter in inspect.signature(call).parameters.items()
-        if parameter.default is inspect.Parameter.empty and name in properties
-    ]
-    return Tool(
-        description,
-        {
-            "type": "object",
-            "properties": properties,
-            "required": required,
-            "additionalProperties": False,
-        },
-        call,
-    )
-
-
-STRING = {"type": "string"}
-OBJECT = {"type": "object"}
-ARRAY = {"type": "array", "items": STRING}
+from enterprise_agent.settings import MAX_TOOL_ROUNDS
 
 
 class ModelRunner(Protocol):

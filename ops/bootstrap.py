@@ -2,10 +2,11 @@
 
 import hashlib
 import json
-from enterprise_agent.settings import WORK
-from ops.profile_data import profile, import_data
-from enterprise_agent.server.identity import bootstrap_admin
+
 from enterprise_agent.ledger.ledger import Stores
+from enterprise_agent.server.auth import bootstrap_admin
+from enterprise_agent.settings import WORK
+from ops.profile_data import import_data, profile
 
 
 def main():
