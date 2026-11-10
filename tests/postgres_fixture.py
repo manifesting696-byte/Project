@@ -6,9 +6,9 @@ from pathlib import Path
 import psycopg
 from psycopg import sql
 
-from ..core.config import setting
-from ..persistence.postgres import Postgres
-from ..persistence.stores import Stores
+from enterprise_agent.core.config import setting
+from enterprise_agent.persistence.postgres import Postgres
+from enterprise_agent.persistence.stores import Stores
 
 _schemas = set()
 
@@ -37,7 +37,7 @@ class TestStores(Stores):
 
 
 def identity_scope(directory):
-    from ..api import identity
+    from enterprise_agent.api import identity
     from unittest.mock import patch
 
     return patch.multiple(
@@ -46,7 +46,7 @@ def identity_scope(directory):
 
 
 def cleanup():
-    from ..api import identity
+    from enterprise_agent.api import identity
 
     schemas = _schemas | {
         (instance.dsn, instance.schema)
@@ -70,7 +70,7 @@ class LegacyTestStores:
     """Exercise the offline archive upgrader with PostgreSQL execution infrastructure."""
 
     def __new__(cls, directory):
-        from ..persistence.legacy_sqlite import LegacyStores
+        from enterprise_agent.persistence.legacy_sqlite import LegacyStores
 
         instance = LegacyStores(Path(directory))
         instance.persistence = Postgres(test_dsn(), namespace(directory))

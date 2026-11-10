@@ -12,9 +12,47 @@
 
 浏览器打开 http://127.0.0.1:8000。启动脚本使用 Docker Compose 构建应用并初始化 PostgreSQL。请在 .env 配置 POSTGRES_ADMIN_PASSWORD、POSTGRES_RUNTIME_PASSWORD、POSTGRES_READONLY_PASSWORD、INITIAL_ADMIN_PASSWORD，以及 LLM_URL、LLM_API_KEY、LLM_MODEL。密码使用适合 URL 的随机值。已有业务快照和账号继续使用。数据库仅绑定本机 5433 端口。
 
+## 目录结构
+
+```text
+Project/
+├── src/enterprise_agent/       应用源码
+│   ├── agents/                Agent、提示词和授权工具
+│   ├── api/                   HTTP 接口与身份认证
+│   ├── application/           需求、版本、计划与回复处理
+│   ├── context/               分阶段上下文组装
+│   ├── core/                  领域模型、模型调用和公共配置
+│   ├── harness/               插件发现、依赖与生命周期
+│   ├── intent/                意图输出契约
+│   ├── persistence/           PostgreSQL、产物存储与离线迁移
+│   ├── pipeline/              LangGraph 图与调度
+│   ├── profile/               数据画像与数据库初始化
+│   ├── query/                 只读查询与 SQL 校验
+│   ├── semantic/              语义目录与数据表接入
+│   └── ui/                    聊天页面、样式和交互
+├── tests/                     回归测试、实库验收及测试夹具
+├── config/                    插件组合、关系与语义配置
+│   └── semantic/              catalog.yaml 与 versions/
+├── data/                      schema.sql 与 seed/ 示例 CSV
+├── docs/                      文档索引
+│   ├── architecture/          当前字段、数据流和插件架构
+│   ├── operations/            PostgreSQL 部署与迁移
+│   ├── reference/             数据字典及原始需求文档
+│   └── archive/               v1、v2 设计和早期验收记录
+└── runtime/                   本地运行文件，由 Git 排除
+    ├── content/               当前产物正文
+    ├── backups/               数据备份与目录调整记录
+    ├── diagnostics/           验证报告
+    ├── logs/                  运行与测试日志
+    ├── scratch/               临时验证脚本
+    └── archive/               旧版本运行文件
+```
+
+根目录的 start-local.ps1、evaluate.py 分别是启动和验收入口。Dockerfile、compose.yaml 与依赖声明保留在根目录。runtime 中的 manifest.json、data_quality.json、db_profile.json 为本地数据画像文件。
+
 ## 当前设计
 
-完整字段定义、数据流、HTTP 接口和迁移说明见 [第三版字段与数据流](docs/第三版设计/字段与数据流.md)。
+完整字段定义、数据流、HTTP 接口和迁移说明见 [第三版字段与数据流](docs/architecture/字段与数据流.md)。
 
 - intent/models.py 定义 none/create_task/update_task 和四类 category。
 - core/models.py 定义 Request、快照、执行节点、交付与引用。
@@ -46,10 +84,10 @@
 
 AGENT_PROFILE 可选择 default、data 或 minimal。管理员通过 /runtime/plugins 管理运行时插件，通过 /catalog/tables 接入或移出已有数据表。运行中的工作结束后可以切换插件及目录配置。
 
-字段、接口、插件示例和数据流见 [插件运行时与数据表接入](docs/第三版设计/插件运行时与数据表接入.md)。
+字段、接口、插件示例和数据流见 [插件运行时与数据表接入](docs/architecture/插件运行时与数据表接入.md)。
 
 ## 原项目记录
 
-main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改造前源码。新实现位于 refactor/request-task-model 分支。.env、虚拟环境和 runtime 被 Git 排除。PostgreSQL 改造前的源码由 before-postgres-only 标签保留。旧 SQLite 文件仅作为离线迁移来源与备份保存，运行时持久化使用 PostgreSQL。部署、迁移结果和恢复说明见 [PostgreSQL 部署与迁移](docs/第三版设计/PostgreSQL部署与迁移.md)。
+main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改造前源码。新实现位于 refactor/request-task-model 分支。.env、虚拟环境和 runtime 被 Git 排除。PostgreSQL 改造前的源码由 before-postgres-only 标签保留。旧 SQLite 文件仅作为离线迁移来源与备份保存，运行时持久化使用 PostgreSQL。部署、迁移结果和恢复说明见 [PostgreSQL 部署与迁移](docs/operations/PostgreSQL部署与迁移.md)。
 
-旧设计材料保存在 docs/第一版设计 和 docs/第二版设计。
+旧设计材料保存在 docs/archive/v1 和 docs/archive/v2。

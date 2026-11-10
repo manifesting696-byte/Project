@@ -11,11 +11,17 @@ from unittest.mock import patch
 
 from pydantic import BaseModel
 
-from ..application.service import Application
-from ..core.model import STRING, ModelClient, tool
-from ..core.transport import ChatResponse, ToolCall
-from ..harness import Plugin, PluginConfig, PluginError, PluginSpec, Runtime
-from ..harness.profiles import load_profile
+from enterprise_agent.application.service import Application
+from enterprise_agent.core.model import STRING, ModelClient, tool
+from enterprise_agent.core.transport import ChatResponse, ToolCall
+from enterprise_agent.harness import (
+    Plugin,
+    PluginConfig,
+    PluginError,
+    PluginSpec,
+    Runtime,
+)
+from enterprise_agent.harness.profiles import load_profile
 from .postgres_fixture import TestStores as Stores, identity_scope, cleanup
 from .fixtures import FixtureModel
 
@@ -469,8 +475,8 @@ profiles:
 
     def test_admin_http_management_and_analyst_denial(self):
         from fastapi.testclient import TestClient
-        from ..api import app as adapter
-        from ..api import identity
+        from enterprise_agent.api import app as adapter
+        from enterprise_agent.api import identity
 
         engine = self.application()
         with (

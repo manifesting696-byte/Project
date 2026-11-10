@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from ..core.config import ROOT, WORK
 
-DATASET = ROOT / "dataset"
+DATASET = ROOT / "data" / "seed"
 DATE = re.compile(r"^\d{4}[-/]\d{1,2}[-/]\d{1,2}$")
 DATETIME = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 INTEGER = re.compile(r"^-?\d+$")

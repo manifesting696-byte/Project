@@ -10,9 +10,9 @@ from threading import Event, Thread
 
 import psycopg
 
-from ..api import identity
-from ..persistence.migrate_postgres import import_snapshot
-from ..query.database import ReadonlyDatabase
+from enterprise_agent.api import identity
+from enterprise_agent.persistence.migrate_postgres import import_snapshot
+from enterprise_agent.query.database import ReadonlyDatabase
 from .legacy_fixture import legacy_ledger
 from .postgres_fixture import TestStores, cleanup, identity_scope
 

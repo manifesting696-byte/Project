@@ -1,6 +1,6 @@
 # 供应商交付与来料质量语义口径审核包
 
-此文件供采购、质量、数据责任人核对。当前运行目录仍为 `demo-1`、`candidate`；以下数值是固定快照 `bc507973f100da89` 上的演示试算，不代表业务口径获批。编辑源为 [semantic.yaml](../semantic.yaml)，其 SHA-256 为 `b8b2df4e477ee2974f1cb948b87b35ae129ef57a00140b4e36b0cfffceed7f76`。`semantic_governance validate` 已返回 `errors: []`；此检查只证明字段、类型和关系与当前快照相符，不代替业务判断。
+此文件供采购、质量、数据责任人核对。当前运行目录仍为 `demo-1`、`candidate`；以下数值是固定快照 `bc507973f100da89` 上的演示试算，不代表业务口径获批。编辑源为 [semantic.yaml](../../../config/semantic/catalog.yaml)，其 SHA-256 为 `b8b2df4e477ee2974f1cb948b87b35ae129ef57a00140b4e36b0cfffceed7f76`。`semantic_governance validate` 已返回 `errors: []`；此检查只证明字段、类型和关系与当前快照相符，不代替业务判断。
 
 ## 需要确认的指标
 

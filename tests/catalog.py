@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
-from ..application.service import Application
+from enterprise_agent.application.service import Application
 from .postgres_fixture import (
     TestStores as Stores,
     identity_scope,
@@ -15,7 +15,7 @@ from .postgres_fixture import (
     namespace,
     test_dsn,
 )
-from ..persistence.postgres import Postgres
+from enterprise_agent.persistence.postgres import Postgres
 from .fixtures import FixtureModel
 
 
@@ -222,7 +222,7 @@ class Catalog(unittest.TestCase):
 
     def test_source_provider_reload_keeps_catalogs_separate(self):
         engine = self.application()
-        from ..semantic.registry import Registry
+        from enterprise_agent.semantic.registry import Registry
 
         with patch.dict(
             "os.environ", {"DATABASE_URL": "postgresql://unused.invalid/unused"}
@@ -288,8 +288,8 @@ class Catalog(unittest.TestCase):
 
     def test_admin_http_enrollment_and_removal(self):
         from fastapi.testclient import TestClient
-        from ..api import app as adapter
-        from ..api import identity
+        from enterprise_agent.api import app as adapter
+        from enterprise_agent.api import identity
 
         engine = self.application()
         with (

@@ -8,9 +8,7 @@ COPY src ./src
 RUN pip install --no-cache-dir --no-deps .
 COPY docs ./docs
 COPY config ./config
-COPY dataset ./dataset
-COPY semantic.yaml schema.sql ./
-COPY semantic_versions ./semantic_versions
+COPY data ./data
 RUN groupadd --system --gid 10001 app && useradd --system --uid 10001 --gid app --home-dir /app app && mkdir -p /app/runtime && chown app:app /app/runtime
 USER app
 EXPOSE 8000

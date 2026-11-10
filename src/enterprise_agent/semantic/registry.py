@@ -15,11 +15,11 @@ class Registry:
         profile = json.loads((WORK / "data_quality.json").read_text(encoding="utf-8"))
         self.snapshot_id = profile["snapshot_id"]
         version = os.getenv("SEMANTIC_CATALOG_VERSION")
-        path = ROOT / "semantic.yaml"
+        path = ROOT / "config" / "semantic" / "catalog.yaml"
         if version:
             if not re.fullmatch(r"[\w.-]+", version):
                 raise ValueError("无效语义版本")
-            path = ROOT / "semantic_versions" / f"{version}.yaml"
+            path = ROOT / "config" / "semantic" / "versions" / f"{version}.yaml"
             expected = path.with_suffix(".sha256").read_text(encoding="ascii").strip()
             if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
                 raise ValueError("语义目录校验不一致")
@@ -31,7 +31,7 @@ class Registry:
             raise ValueError("发布目录或快照不匹配")
         meanings, table = {}, None
         for line in (
-            (ROOT / "docs" / "电子供应链数据表说明.md")
+            (ROOT / "docs" / "reference" / "电子供应链数据表说明.md")
             .read_text(encoding="utf-8")
             .splitlines()
         ):

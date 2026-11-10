@@ -38,7 +38,7 @@
 
 新增业务表后，先由数据库管理员在 analysis 中开放相应视图并授予 supply_chain_reader 查询权限，再通过目录管理接口接入。目录保存实际字段、说明、关系和修订号。移出目录会更新后续查询的可见范围，历史产物仍可按来源链读取。
 
-默认 Profile 使用 source_id 为 supply-chain-analysis。本机和 Docker 使用相同逻辑标识，不同数据源需配置不同标识。管理员接口及插件契约见 [插件运行时与数据表接入](插件运行时与数据表接入.md)。
+默认 Profile 使用 source_id 为 supply-chain-analysis。本机和 Docker 使用相同逻辑标识，不同数据源需配置不同标识。管理员接口及插件契约见 [插件运行时与数据表接入](../architecture/插件运行时与数据表接入.md)。
 
 ## 本次迁移
 

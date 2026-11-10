@@ -14,21 +14,25 @@ from unittest.mock import patch
 import httpx
 from pydantic import ValidationError
 
-from ..application.service import Application
-from ..core.config import ROOT
-from ..core.model import STRING, ModelClient, tool
-from ..core.models import AnswerDraft, ResourceRef
-from ..core.transport import ChatResponse, OpenAICompatibleTransport, ToolCall
-from ..intent.models import Intent, RequestPreparation
-from ..persistence.stores import RECORD_MODELS
+from enterprise_agent.application.service import Application
+from enterprise_agent.core.config import ROOT
+from enterprise_agent.core.model import STRING, ModelClient, tool
+from enterprise_agent.core.models import AnswerDraft, ResourceRef
+from enterprise_agent.core.transport import (
+    ChatResponse,
+    OpenAICompatibleTransport,
+    ToolCall,
+)
+from enterprise_agent.intent.models import Intent, RequestPreparation
+from enterprise_agent.persistence.stores import RECORD_MODELS
 from .postgres_fixture import (
     TestStores as Stores,
     LegacyTestStores,
     identity_scope,
     cleanup,
 )
-from ..persistence.summaries import compress
-from ..query.validation import validate_readonly
+from enterprise_agent.persistence.summaries import compress
+from enterprise_agent.query.validation import validate_readonly
 from .fixtures import FixtureModel
 from .legacy_fixture import legacy_ledger
 
@@ -1044,8 +1048,8 @@ class Smoke(unittest.TestCase):
 
     def test_http_requests_revisions_artifacts_and_resume(self):
         from fastapi.testclient import TestClient
-        from ..api import app as adapter
-        from ..api import identity
+        from enterprise_agent.api import app as adapter
+        from enterprise_agent.api import identity
 
         with (
             identity_scope(self.directory.name),
@@ -1364,7 +1368,7 @@ class Smoke(unittest.TestCase):
                 )
 
     def test_composed_table_preserves_sources_and_content(self):
-        from ..agents.tools import SpecialistToolbox
+        from enterprise_agent.agents.tools import SpecialistToolbox
 
         result = self.completed()
         request = result["requests"][0]
@@ -2620,7 +2624,14 @@ def main():
                     "revisions": result["revisions"],
                     "events": events,
                 }
-                (ROOT / "runtime" / "request-model-live-verification.json").write_text(
+                diagnostic_path = (
+                    ROOT
+                    / "runtime"
+                    / "diagnostics"
+                    / "request-model-live-verification.json"
+                )
+                diagnostic_path.parent.mkdir(parents=True, exist_ok=True)
+                diagnostic_path.write_text(
                     json.dumps(diagnostics, ensure_ascii=False, indent=2),
                     encoding="utf-8",
                 )

@@ -7,3 +7,4 @@ runtime_import.log
 src/*.egg-info/
 .ruff_cache/
 .mypy_cache/
+~$*
