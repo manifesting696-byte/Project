@@ -19,20 +19,19 @@ Project/
 ├── src/enterprise_agent/       应用源码
 │   ├── main.py                 进程入口：uvicorn enterprise_agent.main:app
 │   ├── settings.py             路径与限额的唯一读取点
-│   ├── domain/                 数据形状与不变量（base/refs/request/task/answer/artifact/session/errors）
+│   ├── domain/                 数据形状与不变量（contract/refs/request/task/answer/artifact/session/errors）
 │   ├── flow/                   主流程：三张图、状态、checkpoint、Application 编排、FLOW.md
 │   ├── stages/                 按阶段竖切
-│   │   ├── intent/             意图契约与输出
+│   │   ├── intent/             Schema、提示词、模型调用、归一、重试
 │   │   ├── prepare/            Request 聚合根、规格合并、计划校验、提交
-│   │   ├── execute/agents/     Supervisor 与四个专业 Agent、工具与授权
-│   │   ├── verify/             交付验收的硬校验
+│   │   ├── execute/            专业 Agent、调度节点、按能力分组的授权工具
+│   │   ├── verify/             模型验收、证据解析、硬校验与重试
 │   │   └── answer/             文稿→Artifact→Response 块
-│   ├── prompt/                 提示词：supervisor.py、specialists.py
 │   ├── ledger/                 PostgreSQL 账本、产物、会话摘要
 │   ├── catalog/                语义目录、指标发布门禁、表接入状态
 │   ├── query/                  只读数据源、SQL 静态校验、查询网关
-│   ├── model/                  模型客户端与 OpenAI 兼容传输
-│   ├── plugins/                插件发现、依赖、生命周期、内置目录
+│   ├── model/                  模型客户端、传输、工具契约与上下文
+│   ├── plugins/                插件发现、依赖、生命周期、内置插件组合
 │   ├── server/                 FastAPI 装配、路由（routes/）、身份认证、静态资源
 ├── ops/                        运维脚本：建库、初始化、只读授权、数据画像、离线迁移（python -m ops.initialize）
 ├── tests/                     回归测试、实库验收及测试夹具
@@ -95,6 +94,8 @@ AGENT_PROFILE 可选择 default、data 或 minimal。管理员通过 /runtime/pl
 
 ## 原项目记录
 
-main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改造前源码。新实现位于 refactor/request-task-model 分支。.env、虚拟环境和 runtime 被 Git 排除。PostgreSQL 改造前的源码由 before-postgres-only 标签保留。旧 SQLite 文件仅作为离线迁移来源与备份保存，运行时持久化使用 PostgreSQL。部署、迁移结果和恢复说明见 [PostgreSQL 部署与迁移](docs/operations/PostgreSQL部署与迁移.md)。
+main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改造前源码。本次阶段重构位于 refactor/stage-owned-workflows 分支，基线标签为 refactor-stage-baseline-20261111。.env、虚拟环境和 runtime 被 Git 排除。PostgreSQL 改造前的源码由 before-postgres-only 标签保留。旧 SQLite 文件仅作为离线迁移来源与备份保存，运行时持久化使用 PostgreSQL。部署、迁移结果和恢复说明见 [PostgreSQL 部署与迁移](docs/operations/PostgreSQL部署与迁移.md)。
 
 旧设计材料保存在 docs/archive/v1 和 docs/archive/v2。
+
+本次文件职责、数据流和验证方式见 [阶段重构与验证](docs/architecture/阶段重构与验证.md)。

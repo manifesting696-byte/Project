@@ -4,7 +4,9 @@ __pycache__/
 .venv/
 .env
 runtime_import.log
-src/*.egg-info/
+*.egg-info/
 .ruff_cache/
 .mypy_cache/
 ~$*
+build/
+dist/

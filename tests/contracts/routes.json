@@ -1,0 +1,30 @@
+[
+  [
+    "/docs",
+    [
+      "GET",
+      "HEAD"
+    ]
+  ],
+  [
+    "/docs/oauth2-redirect",
+    [
+      "GET",
+      "HEAD"
+    ]
+  ],
+  [
+    "/openapi.json",
+    [
+      "GET",
+      "HEAD"
+    ]
+  ],
+  [
+    "/redoc",
+    [
+      "GET",
+      "HEAD"
+    ]
+  ]
+]

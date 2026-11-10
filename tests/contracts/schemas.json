@@ -1,0 +1,3122 @@
+{
+  "Request": {
+    "$defs": {
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "OutputSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "content_type": {
+            "enum": [
+              "text",
+              "table",
+              "chart",
+              "report"
+            ],
+            "title": "Content Type",
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": true,
+            "title": "Options",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "content_type",
+          "description"
+        ],
+        "title": "OutputSpec",
+        "type": "object"
+      },
+      "RequestSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/$defs/InputBinding"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/$defs/OutputSpec"
+            },
+            "minItems": 1,
+            "title": "Outputs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "outputs"
+        ],
+        "title": "RequestSpec",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Complete request returned to callers with its current specification.",
+    "properties": {
+      "request_id": {
+        "title": "Request Id",
+        "type": "string"
+      },
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      },
+      "created_by_turn_id": {
+        "title": "Created By Turn Id",
+        "type": "string"
+      },
+      "current_revision_id": {
+        "title": "Current Revision Id",
+        "type": "string"
+      },
+      "plan_version": {
+        "default": 0,
+        "title": "Plan Version",
+        "type": "integer"
+      },
+      "status": {
+        "enum": [
+          "pending",
+          "running",
+          "needs_clarification",
+          "completed",
+          "failed",
+          "archived"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "updated_at": {
+        "title": "Updated At",
+        "type": "string"
+      },
+      "spec": {
+        "$ref": "#/$defs/RequestSpec"
+      }
+    },
+    "required": [
+      "request_id",
+      "session_id",
+      "title",
+      "created_by_turn_id",
+      "current_revision_id",
+      "status",
+      "created_at",
+      "updated_at",
+      "spec"
+    ],
+    "title": "Request",
+    "type": "object"
+  },
+  "RequestRecord": {
+    "additionalProperties": false,
+    "description": "Stored identity and state; the specification lives in an immutable revision.",
+    "properties": {
+      "request_id": {
+        "title": "Request Id",
+        "type": "string"
+      },
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      },
+      "created_by_turn_id": {
+        "title": "Created By Turn Id",
+        "type": "string"
+      },
+      "current_revision_id": {
+        "title": "Current Revision Id",
+        "type": "string"
+      },
+      "plan_version": {
+        "default": 0,
+        "title": "Plan Version",
+        "type": "integer"
+      },
+      "status": {
+        "enum": [
+          "pending",
+          "running",
+          "needs_clarification",
+          "completed",
+          "failed",
+          "archived"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "updated_at": {
+        "title": "Updated At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "request_id",
+      "session_id",
+      "title",
+      "created_by_turn_id",
+      "current_revision_id",
+      "status",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "RequestRecord",
+    "type": "object"
+  },
+  "RequestRevision": {
+    "$defs": {
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "OutputSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "content_type": {
+            "enum": [
+              "text",
+              "table",
+              "chart",
+              "report"
+            ],
+            "title": "Content Type",
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": true,
+            "title": "Options",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "content_type",
+          "description"
+        ],
+        "title": "OutputSpec",
+        "type": "object"
+      },
+      "RequestSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/$defs/InputBinding"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/$defs/OutputSpec"
+            },
+            "minItems": 1,
+            "title": "Outputs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "outputs"
+        ],
+        "title": "RequestSpec",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "revision_id": {
+        "title": "Revision Id",
+        "type": "string"
+      },
+      "request_id": {
+        "title": "Request Id",
+        "type": "string"
+      },
+      "parent_revision_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Parent Revision Id"
+      },
+      "source_intent_event_id": {
+        "title": "Source Intent Event Id",
+        "type": "string"
+      },
+      "spec": {
+        "$ref": "#/$defs/RequestSpec"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "revision_id",
+      "request_id",
+      "source_intent_event_id",
+      "spec",
+      "created_at"
+    ],
+    "title": "RequestRevision",
+    "type": "object"
+  },
+  "RequestSpec": {
+    "$defs": {
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "OutputSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "content_type": {
+            "enum": [
+              "text",
+              "table",
+              "chart",
+              "report"
+            ],
+            "title": "Content Type",
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": true,
+            "title": "Options",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "content_type",
+          "description"
+        ],
+        "title": "OutputSpec",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "description": {
+        "minLength": 1,
+        "title": "Description",
+        "type": "string"
+      },
+      "parameters": {
+        "additionalProperties": true,
+        "title": "Parameters",
+        "type": "object"
+      },
+      "inputs": {
+        "items": {
+          "$ref": "#/$defs/InputBinding"
+        },
+        "title": "Inputs",
+        "type": "array"
+      },
+      "outputs": {
+        "items": {
+          "$ref": "#/$defs/OutputSpec"
+        },
+        "minItems": 1,
+        "title": "Outputs",
+        "type": "array"
+      }
+    },
+    "required": [
+      "description",
+      "outputs"
+    ],
+    "title": "RequestSpec",
+    "type": "object"
+  },
+  "Task": {
+    "$defs": {
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      },
+      "SemanticBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "enum": [
+              "bound",
+              "ambiguous",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "tables": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tables",
+            "type": "array"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "relations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Relations",
+            "type": "array"
+          },
+          "dimensions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "time": {
+            "additionalProperties": true,
+            "title": "Time",
+            "type": "object"
+          },
+          "grain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Grain"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "ambiguities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ambiguities",
+            "type": "array"
+          }
+        },
+        "required": [
+          "status",
+          "explanation"
+        ],
+        "title": "SemanticBinding",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "task_id": {
+        "minLength": 1,
+        "title": "Task Id",
+        "type": "string"
+      },
+      "objective": {
+        "minLength": 1,
+        "title": "Objective",
+        "type": "string"
+      },
+      "assigned_agent": {
+        "minLength": 1,
+        "title": "Assigned Agent",
+        "type": "string"
+      },
+      "depends_on": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Depends On",
+        "type": "array"
+      },
+      "input_bindings": {
+        "items": {
+          "$ref": "#/$defs/InputBinding"
+        },
+        "title": "Input Bindings",
+        "type": "array"
+      },
+      "expected_outputs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Expected Outputs",
+        "type": "array"
+      },
+      "params": {
+        "additionalProperties": true,
+        "title": "Params",
+        "type": "object"
+      },
+      "replan_after": {
+        "default": false,
+        "title": "Replan After",
+        "type": "boolean"
+      },
+      "request_id": {
+        "title": "Request Id",
+        "type": "string"
+      },
+      "revision_id": {
+        "title": "Revision Id",
+        "type": "string"
+      },
+      "plan_version": {
+        "title": "Plan Version",
+        "type": "integer"
+      },
+      "created_by_turn_id": {
+        "title": "Created By Turn Id",
+        "type": "string"
+      },
+      "produced_outputs": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ResourceRef"
+        },
+        "title": "Produced Outputs",
+        "type": "object"
+      },
+      "status": {
+        "enum": [
+          "pending",
+          "running",
+          "completed",
+          "failed",
+          "needs_clarification",
+          "skipped",
+          "cancelled",
+          "superseded"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Summary"
+      },
+      "semantic_binding": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/SemanticBinding"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "suggestions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Suggestions",
+        "type": "array"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "started_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Started At"
+      },
+      "completed_at": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Completed At"
+      }
+    },
+    "required": [
+      "task_id",
+      "objective",
+      "assigned_agent",
+      "request_id",
+      "revision_id",
+      "plan_version",
+      "created_by_turn_id",
+      "status",
+      "created_at"
+    ],
+    "title": "Task",
+    "type": "object"
+  },
+  "Plan": {
+    "$defs": {
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "PlannedTask": {
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "minLength": 1,
+            "title": "Task Id",
+            "type": "string"
+          },
+          "objective": {
+            "minLength": 1,
+            "title": "Objective",
+            "type": "string"
+          },
+          "assigned_agent": {
+            "minLength": 1,
+            "title": "Assigned Agent",
+            "type": "string"
+          },
+          "depends_on": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Depends On",
+            "type": "array"
+          },
+          "input_bindings": {
+            "items": {
+              "$ref": "#/$defs/InputBinding"
+            },
+            "title": "Input Bindings",
+            "type": "array"
+          },
+          "expected_outputs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Expected Outputs",
+            "type": "array"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "replan_after": {
+            "default": false,
+            "title": "Replan After",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "task_id",
+          "objective",
+          "assigned_agent"
+        ],
+        "title": "PlannedTask",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "tasks": {
+        "items": {
+          "$ref": "#/$defs/PlannedTask"
+        },
+        "title": "Tasks",
+        "type": "array"
+      },
+      "cancel_task_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Cancel Task Ids",
+        "type": "array"
+      },
+      "output_bindings": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ResourceRef"
+        },
+        "title": "Output Bindings",
+        "type": "object"
+      },
+      "reason": {
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "reason"
+    ],
+    "title": "Plan",
+    "type": "object"
+  },
+  "PlannedTask": {
+    "$defs": {
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "task_id": {
+        "minLength": 1,
+        "title": "Task Id",
+        "type": "string"
+      },
+      "objective": {
+        "minLength": 1,
+        "title": "Objective",
+        "type": "string"
+      },
+      "assigned_agent": {
+        "minLength": 1,
+        "title": "Assigned Agent",
+        "type": "string"
+      },
+      "depends_on": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Depends On",
+        "type": "array"
+      },
+      "input_bindings": {
+        "items": {
+          "$ref": "#/$defs/InputBinding"
+        },
+        "title": "Input Bindings",
+        "type": "array"
+      },
+      "expected_outputs": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Expected Outputs",
+        "type": "array"
+      },
+      "params": {
+        "additionalProperties": true,
+        "title": "Params",
+        "type": "object"
+      },
+      "replan_after": {
+        "default": false,
+        "title": "Replan After",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "task_id",
+      "objective",
+      "assigned_agent"
+    ],
+    "title": "PlannedTask",
+    "type": "object"
+  },
+  "SemanticBinding": {
+    "additionalProperties": false,
+    "properties": {
+      "status": {
+        "enum": [
+          "bound",
+          "ambiguous",
+          "unavailable"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "metrics": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Metrics",
+        "type": "array"
+      },
+      "tables": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Tables",
+        "type": "array"
+      },
+      "fields": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Fields",
+        "type": "array"
+      },
+      "relations": {
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Relations",
+        "type": "array"
+      },
+      "dimensions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Dimensions",
+        "type": "array"
+      },
+      "time": {
+        "additionalProperties": true,
+        "title": "Time",
+        "type": "object"
+      },
+      "grain": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Grain"
+      },
+      "explanation": {
+        "title": "Explanation",
+        "type": "string"
+      },
+      "ambiguities": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Ambiguities",
+        "type": "array"
+      }
+    },
+    "required": [
+      "status",
+      "explanation"
+    ],
+    "title": "SemanticBinding",
+    "type": "object"
+  },
+  "AgentResult": {
+    "$defs": {
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "summary": {
+        "title": "Summary",
+        "type": "string"
+      },
+      "produced_outputs": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ResourceRef"
+        },
+        "title": "Produced Outputs",
+        "type": "object"
+      },
+      "suggestions": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Suggestions",
+        "type": "array"
+      }
+    },
+    "required": [
+      "summary"
+    ],
+    "title": "AgentResult",
+    "type": "object"
+  },
+  "Artifact": {
+    "additionalProperties": false,
+    "properties": {
+      "artifact_id": {
+        "title": "Artifact Id",
+        "type": "string"
+      },
+      "content_type": {
+        "enum": [
+          "text",
+          "table",
+          "chart",
+          "report"
+        ],
+        "title": "Content Type",
+        "type": "string"
+      },
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "created_by_turn_id": {
+        "title": "Created By Turn Id",
+        "type": "string"
+      },
+      "request_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Request Id"
+      },
+      "revision_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Revision Id"
+      },
+      "task_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Task Id"
+      },
+      "producer": {
+        "minLength": 1,
+        "title": "Producer",
+        "type": "string"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      },
+      "summary": {
+        "title": "Summary",
+        "type": "string"
+      },
+      "source_artifact_ids": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Source Artifact Ids",
+        "type": "array"
+      },
+      "content_ref": {
+        "title": "Content Ref",
+        "type": "string"
+      },
+      "payload": {
+        "additionalProperties": true,
+        "title": "Payload",
+        "type": "object"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "artifact_id",
+      "content_type",
+      "session_id",
+      "created_by_turn_id",
+      "producer",
+      "title",
+      "summary",
+      "content_ref",
+      "payload",
+      "created_at"
+    ],
+    "title": "Artifact",
+    "type": "object"
+  },
+  "ResourceRef": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "enum": [
+          "request",
+          "task",
+          "artifact",
+          "event"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "output": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Output"
+      },
+      "block_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Block Id"
+      }
+    },
+    "required": [
+      "kind",
+      "id"
+    ],
+    "title": "ResourceRef",
+    "type": "object"
+  },
+  "IntentRef": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "enum": [
+          "request",
+          "artifact"
+        ],
+        "title": "Kind",
+        "type": "string"
+      },
+      "id": {
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "output": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Output"
+      }
+    },
+    "required": [
+      "kind",
+      "id"
+    ],
+    "title": "IntentRef",
+    "type": "object"
+  },
+  "InputBinding": {
+    "$defs": {
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "slot": {
+        "minLength": 1,
+        "title": "Slot",
+        "type": "string"
+      },
+      "source": {
+        "$ref": "#/$defs/ResourceRef"
+      }
+    },
+    "required": [
+      "slot",
+      "source"
+    ],
+    "title": "InputBinding",
+    "type": "object"
+  },
+  "OutputSpec": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "minLength": 1,
+        "title": "Name",
+        "type": "string"
+      },
+      "content_type": {
+        "enum": [
+          "text",
+          "table",
+          "chart",
+          "report"
+        ],
+        "title": "Content Type",
+        "type": "string"
+      },
+      "description": {
+        "minLength": 1,
+        "title": "Description",
+        "type": "string"
+      },
+      "options": {
+        "additionalProperties": true,
+        "title": "Options",
+        "type": "object"
+      }
+    },
+    "required": [
+      "name",
+      "content_type",
+      "description"
+    ],
+    "title": "OutputSpec",
+    "type": "object"
+  },
+  "Completion": {
+    "$defs": {
+      "OutputCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "completed",
+              "unfulfilled",
+              "needs_clarification"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "refs": {
+            "items": {
+              "$ref": "#/$defs/ResourceRef"
+            },
+            "title": "Refs",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status",
+          "reason"
+        ],
+        "title": "OutputCheck",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "outputs": {
+        "items": {
+          "$ref": "#/$defs/OutputCheck"
+        },
+        "title": "Outputs",
+        "type": "array"
+      },
+      "next_action": {
+        "enum": [
+          "answer",
+          "replan",
+          "clarify"
+        ],
+        "title": "Next Action",
+        "type": "string"
+      },
+      "reason": {
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "outputs",
+      "next_action",
+      "reason"
+    ],
+    "title": "Completion",
+    "type": "object"
+  },
+  "OutputCheck": {
+    "$defs": {
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string"
+      },
+      "status": {
+        "enum": [
+          "completed",
+          "unfulfilled",
+          "needs_clarification"
+        ],
+        "title": "Status",
+        "type": "string"
+      },
+      "refs": {
+        "items": {
+          "$ref": "#/$defs/ResourceRef"
+        },
+        "title": "Refs",
+        "type": "array"
+      },
+      "reason": {
+        "title": "Reason",
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "status",
+      "reason"
+    ],
+    "title": "OutputCheck",
+    "type": "object"
+  },
+  "AnswerDraft": {
+    "$defs": {
+      "AnswerDraftBlock": {
+        "additionalProperties": false,
+        "description": "Transient model output, materialized before publishing a response.",
+        "properties": {
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Request Id"
+          },
+          "output_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output Name"
+          },
+          "content_type": {
+            "enum": [
+              "text",
+              "table",
+              "chart",
+              "report"
+            ],
+            "title": "Content Type",
+            "type": "string"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Content"
+          },
+          "refs": {
+            "items": {
+              "$ref": "#/$defs/IntentRef"
+            },
+            "title": "Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "content_type"
+        ],
+        "title": "AnswerDraftBlock",
+        "type": "object"
+      },
+      "IntentRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "artifact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "IntentRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "blocks": {
+        "items": {
+          "$ref": "#/$defs/AnswerDraftBlock"
+        },
+        "title": "Blocks",
+        "type": "array"
+      }
+    },
+    "required": [
+      "blocks"
+    ],
+    "title": "AnswerDraft",
+    "type": "object"
+  },
+  "AnswerDraftBlock": {
+    "$defs": {
+      "IntentRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "artifact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "IntentRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "Transient model output, materialized before publishing a response.",
+    "properties": {
+      "request_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Request Id"
+      },
+      "output_name": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Output Name"
+      },
+      "content_type": {
+        "enum": [
+          "text",
+          "table",
+          "chart",
+          "report"
+        ],
+        "title": "Content Type",
+        "type": "string"
+      },
+      "content": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Content"
+      },
+      "refs": {
+        "items": {
+          "$ref": "#/$defs/IntentRef"
+        },
+        "title": "Refs",
+        "type": "array"
+      }
+    },
+    "required": [
+      "content_type"
+    ],
+    "title": "AnswerDraftBlock",
+    "type": "object"
+  },
+  "Response": {
+    "$defs": {
+      "ResponseBlock": {
+        "additionalProperties": false,
+        "properties": {
+          "block_id": {
+            "title": "Block Id",
+            "type": "string"
+          },
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Request Id"
+          },
+          "revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Revision Id"
+          }
+        },
+        "required": [
+          "block_id",
+          "artifact_id"
+        ],
+        "title": "ResponseBlock",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "blocks": {
+        "items": {
+          "$ref": "#/$defs/ResponseBlock"
+        },
+        "title": "Blocks",
+        "type": "array"
+      }
+    },
+    "required": [
+      "blocks"
+    ],
+    "title": "Response",
+    "type": "object"
+  },
+  "ResponseBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "block_id": {
+        "title": "Block Id",
+        "type": "string"
+      },
+      "artifact_id": {
+        "title": "Artifact Id",
+        "type": "string"
+      },
+      "request_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Request Id"
+      },
+      "revision_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Revision Id"
+      }
+    },
+    "required": [
+      "block_id",
+      "artifact_id"
+    ],
+    "title": "ResponseBlock",
+    "type": "object"
+  },
+  "Session": {
+    "additionalProperties": false,
+    "properties": {
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "user_id": {
+        "title": "User Id",
+        "type": "string"
+      },
+      "title": {
+        "title": "Title",
+        "type": "string"
+      },
+      "last_active_request_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Last Active Request Id"
+      },
+      "last_response_event_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Last Response Event Id"
+      },
+      "last_seq": {
+        "default": 0,
+        "title": "Last Seq",
+        "type": "integer"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      },
+      "updated_at": {
+        "title": "Updated At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "session_id",
+      "user_id",
+      "title",
+      "created_at",
+      "updated_at"
+    ],
+    "title": "Session",
+    "type": "object"
+  },
+  "SessionEvent": {
+    "additionalProperties": false,
+    "properties": {
+      "event_id": {
+        "title": "Event Id",
+        "type": "string"
+      },
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "seq": {
+        "title": "Seq",
+        "type": "integer"
+      },
+      "turn_id": {
+        "title": "Turn Id",
+        "type": "string"
+      },
+      "event_type": {
+        "enum": [
+          "user_message",
+          "intent_resolved",
+          "request_revised",
+          "plan_updated",
+          "agent_output",
+          "tool_call",
+          "tool_result",
+          "assistant_response"
+        ],
+        "title": "Event Type",
+        "type": "string"
+      },
+      "request_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Request Id"
+      },
+      "task_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Task Id"
+      },
+      "actor": {
+        "title": "Actor",
+        "type": "string"
+      },
+      "payload": {
+        "additionalProperties": true,
+        "title": "Payload",
+        "type": "object"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "event_id",
+      "session_id",
+      "seq",
+      "turn_id",
+      "event_type",
+      "actor",
+      "payload",
+      "created_at"
+    ],
+    "title": "SessionEvent",
+    "type": "object"
+  },
+  "SessionSummary": {
+    "$defs": {
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "summary_id": {
+        "title": "Summary Id",
+        "type": "string"
+      },
+      "session_id": {
+        "title": "Session Id",
+        "type": "string"
+      },
+      "covered_to_seq": {
+        "title": "Covered To Seq",
+        "type": "integer"
+      },
+      "content": {
+        "title": "Content",
+        "type": "string"
+      },
+      "key_refs": {
+        "items": {
+          "$ref": "#/$defs/ResourceRef"
+        },
+        "title": "Key Refs",
+        "type": "array"
+      },
+      "created_at": {
+        "title": "Created At",
+        "type": "string"
+      }
+    },
+    "required": [
+      "summary_id",
+      "session_id",
+      "covered_to_seq",
+      "content",
+      "key_refs",
+      "created_at"
+    ],
+    "title": "SessionSummary",
+    "type": "object"
+  },
+  "Intent": {
+    "$defs": {
+      "Clarification": {
+        "additionalProperties": false,
+        "properties": {
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Request Id"
+          },
+          "subject": {
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          },
+          "question": {
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "refs": {
+            "items": {
+              "$ref": "#/$defs/IntentRef"
+            },
+            "title": "Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "subject",
+          "question"
+        ],
+        "title": "Clarification",
+        "type": "object"
+      },
+      "IntentRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "artifact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "IntentRef",
+        "type": "object"
+      },
+      "RequestOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "request_id": {
+            "minLength": 1,
+            "title": "Request Id",
+            "type": "string"
+          },
+          "action": {
+            "enum": [
+              "none",
+              "create_task",
+              "update_task"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "general_qa",
+              "business_knowledge",
+              "data_analysis",
+              "result_interaction"
+            ],
+            "title": "Category",
+            "type": "string"
+          },
+          "instruction": {
+            "minLength": 1,
+            "title": "Instruction",
+            "type": "string"
+          },
+          "refs": {
+            "items": {
+              "$ref": "#/$defs/IntentRef"
+            },
+            "title": "Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "request_id",
+          "action",
+          "category",
+          "instruction"
+        ],
+        "title": "RequestOperation",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "operations": {
+        "items": {
+          "$ref": "#/$defs/RequestOperation"
+        },
+        "title": "Operations",
+        "type": "array"
+      },
+      "clarifications": {
+        "items": {
+          "$ref": "#/$defs/Clarification"
+        },
+        "title": "Clarifications",
+        "type": "array"
+      }
+    },
+    "title": "Intent",
+    "type": "object"
+  },
+  "Clarification": {
+    "$defs": {
+      "IntentRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "artifact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "IntentRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "request_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Request Id"
+      },
+      "subject": {
+        "minLength": 1,
+        "title": "Subject",
+        "type": "string"
+      },
+      "question": {
+        "minLength": 1,
+        "title": "Question",
+        "type": "string"
+      },
+      "refs": {
+        "items": {
+          "$ref": "#/$defs/IntentRef"
+        },
+        "title": "Refs",
+        "type": "array"
+      }
+    },
+    "required": [
+      "subject",
+      "question"
+    ],
+    "title": "Clarification",
+    "type": "object"
+  },
+  "RequestOperation": {
+    "$defs": {
+      "IntentRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "artifact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "IntentRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "request_id": {
+        "minLength": 1,
+        "title": "Request Id",
+        "type": "string"
+      },
+      "action": {
+        "enum": [
+          "none",
+          "create_task",
+          "update_task"
+        ],
+        "title": "Action",
+        "type": "string"
+      },
+      "category": {
+        "enum": [
+          "general_qa",
+          "business_knowledge",
+          "data_analysis",
+          "result_interaction"
+        ],
+        "title": "Category",
+        "type": "string"
+      },
+      "instruction": {
+        "minLength": 1,
+        "title": "Instruction",
+        "type": "string"
+      },
+      "refs": {
+        "items": {
+          "$ref": "#/$defs/IntentRef"
+        },
+        "title": "Refs",
+        "type": "array"
+      }
+    },
+    "required": [
+      "request_id",
+      "action",
+      "category",
+      "instruction"
+    ],
+    "title": "RequestOperation",
+    "type": "object"
+  },
+  "RequestPreparation": {
+    "$defs": {
+      "Clarification": {
+        "additionalProperties": false,
+        "properties": {
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Request Id"
+          },
+          "subject": {
+            "minLength": 1,
+            "title": "Subject",
+            "type": "string"
+          },
+          "question": {
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "refs": {
+            "items": {
+              "$ref": "#/$defs/IntentRef"
+            },
+            "title": "Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "subject",
+          "question"
+        ],
+        "title": "Clarification",
+        "type": "object"
+      },
+      "InputBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "slot": {
+            "minLength": 1,
+            "title": "Slot",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/$defs/ResourceRef"
+          }
+        },
+        "required": [
+          "slot",
+          "source"
+        ],
+        "title": "InputBinding",
+        "type": "object"
+      },
+      "IntentRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "artifact"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "IntentRef",
+        "type": "object"
+      },
+      "OutputSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "content_type": {
+            "enum": [
+              "text",
+              "table",
+              "chart",
+              "report"
+            ],
+            "title": "Content Type",
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": true,
+            "title": "Options",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "content_type",
+          "description"
+        ],
+        "title": "OutputSpec",
+        "type": "object"
+      },
+      "Plan": {
+        "additionalProperties": false,
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/$defs/PlannedTask"
+            },
+            "title": "Tasks",
+            "type": "array"
+          },
+          "cancel_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cancel Task Ids",
+            "type": "array"
+          },
+          "output_bindings": {
+            "additionalProperties": {
+              "$ref": "#/$defs/ResourceRef"
+            },
+            "title": "Output Bindings",
+            "type": "object"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "Plan",
+        "type": "object"
+      },
+      "PlannedTask": {
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "minLength": 1,
+            "title": "Task Id",
+            "type": "string"
+          },
+          "objective": {
+            "minLength": 1,
+            "title": "Objective",
+            "type": "string"
+          },
+          "assigned_agent": {
+            "minLength": 1,
+            "title": "Assigned Agent",
+            "type": "string"
+          },
+          "depends_on": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Depends On",
+            "type": "array"
+          },
+          "input_bindings": {
+            "items": {
+              "$ref": "#/$defs/InputBinding"
+            },
+            "title": "Input Bindings",
+            "type": "array"
+          },
+          "expected_outputs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Expected Outputs",
+            "type": "array"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "replan_after": {
+            "default": false,
+            "title": "Replan After",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "task_id",
+          "objective",
+          "assigned_agent"
+        ],
+        "title": "PlannedTask",
+        "type": "object"
+      },
+      "RequestSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/$defs/InputBinding"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "outputs": {
+            "items": {
+              "$ref": "#/$defs/OutputSpec"
+            },
+            "minItems": 1,
+            "title": "Outputs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "outputs"
+        ],
+        "title": "RequestSpec",
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "request",
+              "task",
+              "artifact",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "output": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Output"
+          },
+          "block_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block Id"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "title": "ResourceRef",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "One model proposal for a complete specification and initial execution plan.",
+    "properties": {
+      "spec": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/RequestSpec"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "plan": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/Plan"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "clarifications": {
+        "items": {
+          "$ref": "#/$defs/Clarification"
+        },
+        "title": "Clarifications",
+        "type": "array"
+      }
+    },
+    "title": "RequestPreparation",
+    "type": "object"
+  }
+}
