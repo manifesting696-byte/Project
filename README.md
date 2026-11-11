@@ -99,3 +99,5 @@ main 分支提交 fdde3c2 和标签 baseline-before-request-refactor 保存改�
 旧设计材料保存在 docs/archive/v1 和 docs/archive/v2。
 
 本次文件职责、数据流和验证方式见 [阶段重构与验证](docs/architecture/阶段重构与验证.md)。
+
+执行层按本轮所有 Request 的 Task 统一调度，独立任务并行、依赖任务等待；需求身份与版本仍由 Request 管理。详见 [统一 Task 调度](docs/architecture/统一Task调度.md)。

@@ -30,11 +30,13 @@ class Checkpoints:
             raise
 
     @contextmanager
-    def graph(self, builder):
-        yield builder.compile(checkpointer=self.saver)
+    def graph(self, builder, interrupt_before=None):
+        yield builder.compile(
+            checkpointer=self.saver, interrupt_before=interrupt_before
+        )
 
-    def invoke(self, builder, thread_id, value, context=None):
-        with self.graph(builder) as graph:
+    def invoke(self, builder, thread_id, value, context=None, *, interrupt_before=None):
+        with self.graph(builder, interrupt_before) as graph:
             config = {
                 "configurable": {"thread_id": thread_id, "checkpoint_ns": ""},
                 "recursion_limit": 1000,

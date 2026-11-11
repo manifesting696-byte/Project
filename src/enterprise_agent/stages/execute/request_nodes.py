@@ -8,9 +8,11 @@ from enterprise_agent.ledger.ledger import now
 from enterprise_agent.settings import MAX_REPLANS
 
 
-def begin(self, state):
+def begin(self, state, runtime: Runtime[ExecutionContext]):
     request = self.request(state)
-    if not self.upstream_ready(request):
+    if (
+        not runtime.context.get("unified") or state["preview"]
+    ) and not self.upstream_ready(request):
         return {
             "route": "waiting_answer",
             "wait_kind": "upstream",
@@ -27,7 +29,8 @@ def begin(self, state):
 
 def execute(self, state, runtime: Runtime[ExecutionContext]):
     request = self.request(state)
-    if not self.upstream_ready(request):
+    supplied = runtime.context.get("schedule_result")
+    if supplied is None and not self.upstream_ready(request):
         return {
             "route": "waiting_answer",
             "wait_kind": "upstream",
@@ -35,11 +38,17 @@ def execute(self, state, runtime: Runtime[ExecutionContext]):
         }
     request.update(status="running", updated_at=now())
     self.app.stores.put("requests", request)
-    execution = self.app.scheduler.run(
-        request,
-        runtime.context["turn_id"],
-        state["pause"],
-        execution_key=self.key(state, "schedule"),
+    if supplied is not None and supplied["key"] != self.key(state, "schedule"):
+        raise ValueError("调度结果与当前执行阶段不匹配")
+    execution = (
+        supplied["outcome"]
+        if supplied is not None
+        else self.app.scheduler.run(
+            request,
+            runtime.context["turn_id"],
+            state["pause"],
+            execution_key=self.key(state, "schedule"),
+        )
     )
     update = {
         "new_results": execution["new_results"],

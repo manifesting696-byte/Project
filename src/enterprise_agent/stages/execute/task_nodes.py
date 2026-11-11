@@ -1,65 +1,114 @@
 """LangGraph fan-out scheduling over the persisted execution Task DAG."""
 
-from langgraph.graph import END
-
-from enterprise_agent.domain.errors import UpstreamPending, public_message
+from enterprise_agent.domain.errors import (
+    UpstreamPending,
+    VersionConflict,
+    public_message,
+)
 from enterprise_agent.ledger.ledger import now
 from enterprise_agent.settings import MAX_PARALLEL
 
 
 def dispatch(self, state):
-    if state["decision_required"] or state["paused"]:
-        return {"ready": [], "retry_dispatch": False}
-    nodes = self.stores.list("tasks", "request_id", state["request_id"])
     by_id = {
         node["task_id"]: node for node in self.stores.session_tasks(state["session_id"])
     }
-    ready, waiting, changed = [], False, False
-    for node in nodes:
-        if node["status"] not in ("pending", "running"):
+    ready_by_owner = {key: [] for key in state["scopes"]}
+    errors, changed = dict(state["scope_errors"]), False
+    for key, scope in state["scopes"].items():
+        if key in state["stopped"] or key in errors:
             continue
-        dependencies = [by_id.get(key) for key in node["depends_on"]]
-        if any(
-            dep is None
-            or dep["status"]
-            in (
-                "failed",
-                "skipped",
-                "needs_clarification",
-                "cancelled",
-                "superseded",
-            )
-            for dep in dependencies
-        ):
-            node.update(
-                status="skipped", summary="依赖没有可用输出", completed_at=now()
-            )
-            self.stores.save_many(
-                [("tasks", node)],
-                expected_revisions={state["request_id"]: state["revision_id"]},
-            )
-            changed = True
-            continue
-        try:
-            for binding in node["input_bindings"]:
-                if binding["source"]["kind"] == "request":
-                    self.context.requests.resolve(
-                        state["session_id"], binding["source"]
+        for node in by_id.values():
+            if node["request_id"] != key or node["status"] not in (
+                "pending",
+                "running",
+            ):
+                continue
+            try:
+                dependencies = [by_id.get(tid) for tid in node["depends_on"]]
+                if any(
+                    dep is None
+                    or dep["status"]
+                    in (
+                        "failed",
+                        "skipped",
+                        "needs_clarification",
+                        "cancelled",
+                        "superseded",
                     )
-        except UpstreamPending:
-            waiting = True
-            continue
-        if all(dep["status"] == "completed" for dep in dependencies):
-            ready.append(node["task_id"])
+                    for dep in dependencies
+                ):
+                    node.update(
+                        status="skipped", summary="依赖没有可用输出", completed_at=now()
+                    )
+                    self.stores.save_many(
+                        [("tasks", node)],
+                        expected_revisions={key: scope["revision_id"]},
+                    )
+                    changed = True
+                    continue
+                for binding in node["input_bindings"]:
+                    if binding["source"]["kind"] == "request":
+                        if binding["source"]["id"] in state["stopped"]:
+                            raise UpstreamPending("上游正在重规划或等待继续")
+                        self.context.requests.resolve(
+                            state["session_id"], binding["source"]
+                        )
+                if all(dep["status"] == "completed" for dep in dependencies):
+                    ready_by_owner[key].append(node["task_id"])
+            except UpstreamPending:
+                continue
+            except Exception as exc:
+                errors[key] = failure(exc)
+                ready_by_owner[key] = []
+                break
+    # Round-robin selection prevents one large Request occupying every slot.
+    ready = []
+    while len(ready) < MAX_PARALLEL and any(ready_by_owner.values()):
+        for values in ready_by_owner.values():
+            if values and len(ready) < MAX_PARALLEL:
+                ready.append(values.pop(0))
     return {
-        "ready": ready[:MAX_PARALLEL],
-        "waiting_for_requests": waiting,
-        "blocked": "上游执行尚未完成" if waiting else None,
+        "ready": ready,
+        "scope_errors": errors,
+        "ready_scopes": {
+            tid: state["scopes"][by_id[tid]["request_id"]] for tid in ready
+        },
         "retry_dispatch": changed and not ready,
     }
 
 
 def execute(self, state):
+    try:
+        return execute_task(self, state)
+    except (VersionConflict, PermissionError) as exc:
+        # Do not overwrite stale records; isolate this owner from the other Tasks.
+        return {
+            "results": {
+                state["task_id"]: {
+                    "task_id": state["task_id"],
+                    "status": "failed",
+                    "scope_failure": failure(exc),
+                    "summary": public_message(exc),
+                }
+            }
+        }
+
+
+def failure(exc):
+    kind = (
+        "version_conflict"
+        if isinstance(exc, VersionConflict)
+        else (
+            "permission_denied"
+            if isinstance(exc, PermissionError)
+            else "execution_failed"
+        )
+    )
+    return {"kind": kind, "message": public_message(exc)}
+
+
+def execute_task(self, state):
     node = self.stores.get("tasks", state["task_id"])
     expected = {state["request_id"]: state["revision_id"]}
     if node["status"] != "completed":
@@ -122,11 +171,18 @@ def execute(self, state):
 
 
 def collect(state):
-    wave = [state["results"][key] for key in state["ready"]]
-    decision = any(node.get("replan_after") or node.get("suggestions") for node in wave)
-    stop = state["pause"] or decision
-    return {
-        "paused": state["pause"],
-        "decision_required": decision,
-        "route": END if stop else "dispatch",
-    }
+    stopped = set(state["stopped"])
+    errors = dict(state["scope_errors"])
+    for key in state["ready"]:
+        scope = state["ready_scopes"][key]
+        result = state["results"][key]
+        if result.get("scope_failure"):
+            errors[scope["request_id"]] = result["scope_failure"]
+        if (
+            scope["request_id"] in errors
+            or scope["pause"]
+            or result.get("replan_after")
+            or result.get("suggestions")
+        ):
+            stopped.add(scope["request_id"])
+    return {"stopped": list(stopped), "scope_errors": errors, "route": "dispatch"}

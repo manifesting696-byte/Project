@@ -32,7 +32,15 @@ class Execution:
     def start(
         self, request, turn_id, query, pause=False, output_names=None, preview=False
     ):
-        initial = {
+        initial = self.initial(request, turn_id, query, pause, output_names, preview)
+        result = self.checkpoints.invoke(
+            self.builder, self.thread_id(request), initial, {"turn_id": turn_id}
+        )
+        return self.result(request, result)
+
+    @staticmethod
+    def initial(request, turn_id, query, pause=False, output_names=None, preview=False):
+        return {
             "request_id": request["request_id"],
             "revision_id": request["current_revision_id"],
             "session_id": request["session_id"],
@@ -48,10 +56,45 @@ class Execution:
             "outcome": "pending",
             "wait_kind": "",
         }
-        result = self.checkpoints.invoke(
-            self.builder, self.thread_id(request), initial, {"turn_id": turn_id}
+
+    def advance(
+        self,
+        request,
+        turn_id,
+        query,
+        pause=False,
+        output_names=None,
+        preview=False,
+        schedule_result=None,
+    ):
+        """Advance control nodes to the shared Task boundary or a user-facing wait.
+
+        Static execute boundaries persist in the same historical request thread.
+        A normal single-request resume can also continue these checkpoints.
+        """
+        snapshot = self.snapshot(request)
+        current = snapshot and snapshot.values.get("run_id") == turn_id
+        if current:
+            if not snapshot.next or any(task.interrupts for task in snapshot.tasks):
+                return snapshot
+            if snapshot.next == ("execute",) and schedule_result is None:
+                return snapshot
+            initial = None
+        else:
+            initial = self.initial(
+                request, turn_id, query, pause, output_names, preview
+            )
+        context = {"turn_id": turn_id, "unified": True}
+        if schedule_result is not None:
+            context["schedule_result"] = schedule_result
+        self.checkpoints.invoke(
+            self.builder,
+            self.thread_id(request),
+            initial,
+            context,
+            interrupt_before=["execute"],
         )
-        return self.result(request, result)
+        return self.snapshot(request)
 
     def resume(self, request, turn_id):
         snapshot = self.snapshot(request)

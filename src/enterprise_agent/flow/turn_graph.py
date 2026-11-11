@@ -1,4 +1,4 @@
-"""One turn: intent → prepare → commit → process each request → respond."""
+"""One turn: intent → prepare → commit → unified Task execution → respond."""
 
 from functools import partial
 
@@ -13,6 +13,8 @@ from enterprise_agent.stages.prepare.graph_node import prepare
 
 
 def next_operation(state):
+    # Cursor retains old checkpoint compatibility; process now handles the entire
+    # remaining turn through the shared Task scheduler, not one private DAG each.
     return "process" if state["cursor"] < len(state["ordered"]) else "respond"
 
 

@@ -6,6 +6,14 @@ from enterprise_agent.stages.intent.schema import Clarification, RequestOperatio
 
 
 def process(self, state):
+    if len(state["ordered"]) - state["cursor"] > 1:
+        from enterprise_agent.stages.execute.turn_schedule import process_turn
+
+        return process_turn(self, state)
+    return process_one(self, state)
+
+
+def process_one(self, state, resolved=None, failure=None):
     operation = RequestOperation.model_validate(state["ordered"][state["cursor"]])
     key, session_id, turn_id = (
         operation.request_id,
@@ -22,6 +30,8 @@ def process(self, state):
         blocks, status = cached["payload"]["blocks"], cached["payload"]["status"]
     else:
         try:
+            if failure is not None:
+                raise failure
             if key in state["errors"]:
                 raise ValueError(state["errors"][key])
             proposal = state["proposals"][key]
@@ -48,14 +58,18 @@ def process(self, state):
                     != state["prepared"][key]["current_revision_id"]
                 ):
                     raise VersionConflict("该轮对应的需求版本已失效，请使用当前版本")
-                request, answer, status = self.app.process_operation(
-                    session_id,
-                    turn_id,
-                    operation,
-                    request,
-                    state["previous"].get(key),
-                    state["pause"],
-                    state["preview"],
+                request, answer, status = (
+                    resolved
+                    if resolved is not None
+                    else self.app.process_operation(
+                        session_id,
+                        turn_id,
+                        operation,
+                        request,
+                        state["previous"].get(key),
+                        state["pause"],
+                        state["preview"],
+                    )
                 )
                 blocks = [
                     block.model_dump(exclude_none=True) for block in answer.blocks

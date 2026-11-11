@@ -9,17 +9,7 @@ def process_operation(
     self, session_id, turn_id, operation, request, previous, pause, preview
 ):
     emit = self.emitter(session_id, turn_id, operation.request_id)
-    visible_names = None
-    if previous:
-        old_outputs = {item["name"]: item for item in previous["spec"]["outputs"]}
-        current_outputs = {item["name"]: item for item in request["spec"]["outputs"]}
-        changed = {
-            name
-            for name, item in current_outputs.items()
-            if old_outputs.get(name) != item
-        }
-        if changed or old_outputs.keys() != current_outputs.keys():
-            visible_names = sorted(changed)
+    visible_names = visible_outputs(request, previous)
     if not self.execution.upstream_ready(request):
         answer, state = self.execution.start(
             request, turn_id, operation.instruction, pause, visible_names, preview
@@ -144,3 +134,18 @@ def _resume(self, user_id, request_id, continue_analysis, answer):
             )
             state = "failed"
         return self.respond(request["session_id"], turn_id, answer, [request_id], state)
+
+
+def visible_outputs(request, previous):
+    visible_names = None
+    if previous:
+        old_outputs = {item["name"]: item for item in previous["spec"]["outputs"]}
+        current_outputs = {item["name"]: item for item in request["spec"]["outputs"]}
+        changed = {
+            name
+            for name, item in current_outputs.items()
+            if old_outputs.get(name) != item
+        }
+        if changed or old_outputs.keys() != current_outputs.keys():
+            visible_names = sorted(changed)
+    return visible_names

@@ -32,8 +32,10 @@ class TurnState(TypedDict, total=False):
     result: dict
 
 
-class ExecutionContext(TypedDict):
+class ExecutionContext(TypedDict, total=False):
     turn_id: str
+    unified: bool
+    schedule_result: dict
 
 
 class ExecutionState(TypedDict, total=False):
@@ -55,6 +57,10 @@ class ExecutionState(TypedDict, total=False):
 
 
 class ScheduleState(TypedDict, total=False):
+    scopes: dict[str, dict]
+    stopped: list[str]
+    ready_scopes: dict[str, dict]
+    scope_errors: dict[str, dict]
     request_id: str
     session_id: str
     revision_id: str

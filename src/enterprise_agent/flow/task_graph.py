@@ -12,7 +12,10 @@ from enterprise_agent.stages.execute.task_nodes import collect, dispatch, execut
 def send_ready(state):
     if not state["ready"]:
         return "dispatch" if state["retry_dispatch"] else END
-    return [Send("execute_task", {**state, "task_id": key}) for key in state["ready"]]
+    return [
+        Send("execute_task", {**state, **state["ready_scopes"][key], "task_id": key})
+        for key in state["ready"]
+    ]
 
 
 def build(runner):
