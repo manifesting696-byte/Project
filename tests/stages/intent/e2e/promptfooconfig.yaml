@@ -1,0 +1,35 @@
+# 测试A：意图识别（端到端，阶段级）
+#
+# 只走应用自身的意图阶段：POST /bind（预览）→ 读 /sessions/{id}/events 里的 intent_resolved。
+# 不执行任何 Task、不跑 SQL、不产出回答；每条用例约 2 次模型调用（intent + prepare）。
+#
+#   cd tests/stages/intent/e2e
+#   $env:APP_URL="http://127.0.0.1:8000"; $env:APP_USER="blackbox_runner"; $env:APP_PASSWORD="..."
+#   $env:DEEPSEEK_API_KEY="..."      # 仅 instruction 语义判定（llm-rubric）需要
+#   npx --yes promptfoo@latest eval -c promptfooconfig.yaml --max-concurrency 2 --no-cache
+
+description: 意图识别（端到端：/bind 预览只取 intent 事件，不执行 Task）
+
+prompts:
+  - '{{query}}'
+
+providers:
+  - id: file://provider-app.js
+    label: intent-via-app
+
+defaultTest:
+  threshold: 1
+  options:
+    provider:
+      id: openai:chat:deepseek-chat
+      config:
+        apiBaseUrl: https://api.deepseek.com/v1
+        apiKey: '{{env:DEEPSEEK_API_KEY}}'
+        temperature: 0
+
+tests: file://promptfoo-tests.json
+
+evaluateOptions:
+  maxConcurrency: 2
+
+sharing: false

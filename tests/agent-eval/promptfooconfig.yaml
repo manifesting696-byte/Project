@@ -1,0 +1,40 @@
+# 【真实测试】Promptfoo 配置：这一层才会调用被测 Agent。
+# 离线核对与判分器自测在 tests/preflight/，两者互不依赖。
+#
+#   cd tests/agent-eval
+#   $env:APP_PASSWORD = <admin 密码>            # 或从 ../../../Project/.env 读取
+#   $env:DEEPSEEK_API_KEY = <LLM_API_KEY>       # 仅 llm-rubric 需要
+#   npx --yes promptfoo@latest eval -c promptfooconfig.yaml --max-concurrency 2
+#
+# 数据集由 tests/preflight/export_dataset.py 从 cases.json 生成，
+# promptfoo-tests.json（同目录）是本文件的 tests 来源。
+
+description: 企业数据智能问析 Agent 黑盒测试（快照 4c21d53a83016f2e）
+
+prompts:
+  - '{{query}}'
+
+providers:
+  - id: file://provider.js
+    label: enterprise-agent
+    config:
+      appUrl: http://127.0.0.1:8000
+
+defaultTest:
+  threshold: 1
+  options:
+    # llm-rubric 使用的判定模型（DeepSeek 开放平台，OpenAI 兼容）
+    provider:
+      id: openai:chat:deepseek-chat
+      config:
+        apiBaseUrl: https://api.deepseek.com/v1
+        apiKey: '{{env.DEEPSEEK_API_KEY}}'
+        temperature: 0
+
+tests: file://promptfoo-tests.json
+
+evaluateOptions:
+  maxConcurrency: 2
+  showProgressBar: true
+
+sharing: false

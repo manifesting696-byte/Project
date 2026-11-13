@@ -1,0 +1,138 @@
+{
+ "description": "真实抓取：D01 第一轮（promptfoo eval 2026-11-11）",
+ "vars": {
+  "case_id": "D01",
+  "category": "基础数据查询",
+  "turn": 1,
+  "query": "查询Products表的产品记录总数。",
+  "history": [],
+  "expected": {
+   "outcome": "answer",
+   "outputs": [
+    {
+     "type": "table",
+     "label": "产品总数",
+     "columns": [
+      "product_count"
+     ],
+     "row_count": 1,
+     "ordered": true,
+     "reference_notes": [],
+     "rows": [
+      {
+       "product_count": 16
+      }
+     ]
+    }
+   ]
+  },
+  "judge": [
+   {
+    "mode": "ordered",
+    "tolerance": 0.01,
+    "columns": [
+     "product_count"
+    ]
+   }
+  ]
+ },
+ "output": {
+  "case_id": "D01",
+  "turn": 1,
+  "status": "completed",
+  "session_id": "session_009",
+  "snapshot_id": "4c21d53a83016f2e",
+  "semantic_version": "demo-1",
+  "trace": [
+   {
+    "question": "查询Products表的产品记录总数。",
+    "status": "completed"
+   }
+  ],
+  "artifacts": [
+   {
+    "artifact_id": "result_050",
+    "content_type": "table",
+    "title": "products 表记录总数",
+    "summary": "按 COUNT(*) 口径统计 supply-chain-analysis 数据库 products 表整表记录总数，无过滤条件、无分组，输出单行单列 row_count（快照 4c21d53a83016f2e）。",
+    "payload": {
+     "columns": [
+      {
+       "name": "row_count",
+       "dtype": "int"
+      }
+     ],
+     "sql_ref": "storage://artifacts/result_050/query.sql",
+     "row_count": 1,
+     "source_id": "supply-chain-analysis",
+     "provenance": {
+      "method": "business_sql",
+      "sql_ref": "storage://artifacts/result_050/query.sql",
+      "source_id": "supply-chain-analysis",
+      "snapshot_id": "4c21d53a83016f2e",
+      "catalog_version": "00cde9ba3449c25c4b68",
+      "semantic_version": "demo-1"
+     },
+     "snapshot_id": "4c21d53a83016f2e",
+     "catalog_version": "00cde9ba3449c25c4b68",
+     "semantic_binding": [
+      {
+       "time": {
+        "mode": "none",
+        "note": "整表计数，无时间范围过滤",
+        "column": null,
+        "snapshot_id": "4c21d53a83016f2e"
+       },
+       "grain": "整表记录总数（单行，row_count）",
+       "fields": [
+        "products.product_id"
+       ],
+       "status": "bound",
+       "tables": [
+        "products"
+       ],
+       "metrics": [],
+       "relations": [],
+       "dimensions": [],
+       "ambiguities": [
+        "products 无登记主键且 product_id 可空，按 product_id 计数与 COUNT(*) 可能不同；本绑定明确采用 COUNT(*) 作为整表记录数口径",
+        "Registry 无已发布指标可用于此计数，故 metrics 为空（基础计数不作为业务指标）"
+       ],
+       "explanation": "已在 Registry（source_id=supply-chain-analysis，snapshot_id=4c21d53a83016f2e，catalog_version=00cde9ba3449c25c4b68）确认表 products 存在，包含 8 个字段（product_id、product_code、product_name、product_category、uom、standard_cost、selling_price、status），登记表级行数为 16。计数口径确定为整表记录数 COUNT(*)，无过滤条件、无分组，输出单行单列 row_count。该计数属于基础表级计数，不引用任何已发布业务指标；Registry 的 metrics 为空，未批准候选指标（on_time_rate、average_delay_days、rejection_rate、shipment_cohort_rejection_rate）均未使用。需特别说明：products 未登记主键，product_id 可空，因此按 product_id 计数可能与 COUNT(*) 不一致，绑定以 COUNT(*) 为准，product_id 仅作为行标识参考列出，不参与计数表达式。仅需单表扫描，无关联关系，故 relations 为空。"
+      }
+     ],
+     "semantic_version": "demo-1",
+     "write_fingerprint": "3e2e3ffc61d99375d29bd97c8f37a8f4969ec41fdff343529c46f0945cc35ded"
+    },
+    "source_artifact_ids": [],
+    "content": {
+     "rows": [
+      {
+       "row_count": 16
+      }
+     ]
+    }
+   },
+   {
+    "artifact_id": "result_052",
+    "content_type": "text",
+    "title": "统计 supply-chain-analysis 数据库中 Products 表（表名 products）的产品记录总数，返回该表的行数（单行单列 row_co",
+    "summary": "products 表的产品记录总数为 16 行（row_count = 16）。统计口径为 products 整表记录数，采用 COUNT(*) 对全表计数，未加任何过滤条件、无时间范围限制、无分组，输出单行单列 row_count。数据源为 supply-chain-analysis，快照为 4c21d53a8301",
+    "payload": {
+     "provenance": {
+      "method": "answer",
+      "workflow_key": "request:req_017:rev_024:turn_021:4:answer",
+      "input_artifact_ids": []
+     },
+     "write_fingerprint": "a2f31be5114fd37f8c514e33434b5f41925585548a4311adff001c17d35774c0"
+    },
+    "source_artifact_ids": [
+     "result_050",
+     "result_051"
+    ],
+    "content": "products 表的产品记录总数为 16 行（row_count = 16）。统计口径为 products 整表记录数，采用 COUNT(*) 对全表计数，未加任何过滤条件、无时间范围限制、无分组，输出单行单列 row_count。数据源为 supply-chain-analysis，快照为 4c21d53a83016f2e（catalog_version 00cde9ba3449c25c4b68）。需说明：products 未登记主键且 product_id 可为空，按 product_id 计数可能与 COUNT(*) 不一致，本结果以 COUNT(*) 为准；该数值与 Registry 登记的表级行数 16 一致。"
+   }
+  ],
+  "text": "products 表的产品记录总数为 16 行（row_count = 16）。统计口径为 products 整表记录数，采用 COUNT(*) 对全表计数，未加任何过滤条件、无时间范围限制、无分组，输出单行单列 row_count。数据源为 supply-chain-analysis，快照为 4c21d53a83016f2e（catalog_version 00cde9ba3449c25c4b68）。需说明：products 未登记主键且 product_id 可为空，按 product_id 计数可能与 COUNT(*) 不一致，本结果以 COUNT(*) 为准；该数值与 Registry 登记的表级行数 16 一致。"
+ }
+}

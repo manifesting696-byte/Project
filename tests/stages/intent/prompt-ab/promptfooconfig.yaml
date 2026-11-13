@@ -1,0 +1,39 @@
+# 测试B：意图识别提示词改进（A/B）
+#
+# 同一套 52 条语料、同一份上下文，只换提示词变体：prompts/intent-v1.txt（当前线上）vs intent-v2.txt（候选）。
+# 直接调用模型，不访问应用、不建会话、不调度 Task —— 用来快速迭代提示词。
+#
+#   cd tests/stages/intent/prompt-ab
+#   $env:LLM_URL="https://api.deepseek.com"; $env:LLM_API_KEY="..."; $env:LLM_MODEL="deepseek-chat"
+#   $env:DEEPSEEK_API_KEY=$env:LLM_API_KEY      # llm-rubric 判定模型
+#   npx --yes promptfoo@latest eval -c promptfooconfig.yaml --max-concurrency 3 --no-cache
+#   npx --yes promptfoo@latest view             # 视图里按 v1 / v2 对比通过率
+
+description: 意图识别提示词改进（v1 vs v2，同一语料，直连模型）
+
+prompts:
+  - id: file://prompts/intent-v1.txt
+    label: v1-线上
+  - id: file://prompts/intent-v2.txt
+    label: v2-候选
+
+providers:
+  - id: file://provider-llm.js
+    label: direct-llm
+
+defaultTest:
+  threshold: 1
+  options:
+    provider:
+      id: openai:chat:deepseek-chat
+      config:
+        apiBaseUrl: https://api.deepseek.com/v1
+        apiKey: '{{env:DEEPSEEK_API_KEY}}'
+        temperature: 0
+
+tests: file://promptfoo-tests.json
+
+evaluateOptions:
+  maxConcurrency: 3
+
+sharing: false

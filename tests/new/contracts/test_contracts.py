@@ -52,7 +52,7 @@ class FrozenContractsTests(unittest.TestCase):
                 if hasattr(item, "methods")
             )
         routes.sort()
-        expected = json.loads(Path(__file__).with_name("routes.json").read_text())
+        expected = json.loads(Path(__file__).with_name("routes.json").read_text(encoding="utf-8"))
         self.assertEqual(json.loads(json.dumps(routes)), expected)
 
     def test_checkpoint_node_names_and_keys_are_unchanged(self):
@@ -94,6 +94,6 @@ class FrozenContractsTests(unittest.TestCase):
         from enterprise_agent.settings import ROOT
 
         for name in ("turn_graph.py", "request_graph.py", "task_graph.py"):
-            source = (ROOT / "src/enterprise_agent/flow" / name).read_text()
+            source = (ROOT / "src/enterprise_agent/flow" / name).read_text(encoding="utf-8")
             self.assertLessEqual(len(source.splitlines()), 80, name)
             self.assertNotIn(".stores.", source)

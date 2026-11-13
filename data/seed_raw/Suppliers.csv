@@ -1,0 +1,26 @@
+﻿supplier_id,supplier_code,supplier_name,supplier_type,supplier_category,country,city,address,contact_person,phone,email,payment_terms,status
+1,SUP-001,Al Nile Electronic Components,Component Supplier,Local Manufacturer,Egypt,Giza,6th of October City -  Industrial Zone,Mahmoud Mahmoud,01120272597,al.nile.electronic.components@supplier.eg,Net 30,Active
+2,SUP-002,Misr Advanced Circuits,Component Supplier,Local Distributor,Egypt,Alexandria,Smouha -  Fawzy Moaz Street,Mahmoud Mahmoud,01220280516,misr.advanced.circuits@supplier.eg,Net 45,Active
+3,SUP-003,Suez Tech Supplies,Component Supplier,Local Manufacturer,Egypt,Gharbia,Tanta -  El Bahr Street,Mahmoud Hamdy,01520288435,suez.tech.supplies@supplier.eg,Net 30,Active
+4,SUP-004,Canal Microelectronics ,Component Supplier,Local Distributor,Egypt,Port Said,El Arab District -  23 July Street,Tarek Zaki,01020296354,canal.microelectronics@supplier.eg,Net 30,Active
+5,SUP-005,Delta Display Solutions,Component Supplier,Local Manufacturer,Egypt,Minya,Minya City -  Taha Hussein Street,Nour Elsayed,01120304273,delta.display.solutions@supplier.eg,30% Advance - 70% Net 30,Active
+6,SUP-006,Cairo Battery Systems,Component Supplier,Local Distributor,Egypt,Cairo,New Cairo -  North 90th Street,Doaa Abdelaziz,01220312192,cairo.battery.systems@supplier.eg,30% Advance - 70% Net 30,Active
+7,SUP-007,Alexandria Precision Parts,Component Supplier,Local Manufacturer,Egypt,Al Sharqia,10th of Ramadan City -  Industrial Zone A3,Peter Gaber,01520320111,alexandria.precision.parts@supplier.eg,Net 45,Active
+8,SUP-008,Obour Connectivity Trading,Component Supplier,Local Distributor,Egypt,Alexandria,Borg El Arab -  Third Industrial Zone,Reem Samir,01020328030,obour.connectivity.trading@supplier.eg,Net 30,Active
+9,SUP-009,Sinai Semiconductor Distribution,Component Supplier,Local Manufacturer,Egypt,Qalyubia,Obour City -  First Industrial Zone,Mostafa Abdelrahman,01120335949,sinai.semiconductor.distribution@supplier.eg,30% Advance - 70% Net 30,Active
+10,SUP-010,Nile Memory and Storage,Component Supplier,Local Distributor,Egypt,Damietta,New Damietta -  Central District,Ibrahim Kamel,01220343868,nile.memory.and.storage@supplier.eg,Net 45,Active
+11,SUP-011,Al Sharqia Industrial Electronics,Component Supplier,Local Manufacturer,Egypt,Beni Suef,Beni Suef City -  Salah Salem Street,Ibrahim Nassar,01520351787,al.sharqia.industrial.electronics@supplier.eg,30% Advance - 70% Net 30,Active
+12,SUP-012,Giza Smart Components,Component Supplier,Local Distributor,Egypt,Giza,Dokki -  Tahrir Street,Mohamed Abdelrahman,01020359706,giza.smart.components@supplier.eg,Net 30,Active
+13,SUP-013,Mansoura Sensor Technologies,Component Supplier,Local Manufacturer,Egypt,Ismailia,Sheikh Zayed District -  El Geish Street,Ali Ashour,01120367625,mansoura.sensor.technologies@supplier.eg,Net 30,Active
+14,SUP-014,Egypt Power Modules,Component Supplier,Local Distributor,Egypt,Dakahlia ,Mansoura -  El Gomhoria Street,Karim Fawzy,01220375544,egypt.power.modules@supplier.eg,Net 30,Active
+15,SUP-015,Borg El Arab PCB Solutions,Component Supplier,Local Manufacturer,Egypt,Suez,Ataqa Industrial Zone,Nour Nassar,01520383463,borg.el.arab.pcb.solutions@supplier.eg,Net 30,Active
+16,SUP-016,Tanta Packaging Industries,Packaging Supplier,Local Manufacturer,Egypt,ASSIUT,Assiut City -  El Hilaly Street,Ibrahim Farag,01020391382,tanta.packaging.industries@supplier.eg,Net 45,Active
+17,SUP-017,Ismailia Cable Systems,Component Supplier,Local Manufacturer,Egypt,Cairo,Nasr City -  Mostafa El Nahas Street,Mina Gaber,01120399301,ismailia.cable.systems@supplier.eg,Net 30,Active
+18,SUP-018,Red Sea Electronics Trading,Component Supplier,Local Distributor,Egypt,Giza,6th of October City -  Industrial Zone,Mina Shawky,01220407220,red.sea.electronics.trading@supplier.eg,Net 30,Active
+19,SUP-019,New Cairo Device Parts,Component Supplier,Local Manufacturer,Egypt,Alexandria,Smouha -  Fawzy Moaz Street,Mohamed Shawky,01520415139,new.cairo.device.parts@supplier.eg,Net 30,Active
+20,SUP-020,Damietta Plastics and Casings,Materials Supplier,Local Manufacturer,Egypt,GHARBIA,Tanta -  El Bahr Street,Mahmoud Gaber,01020423058,damietta.plastics.and.casings@supplier.eg,Net 45,Active
+21,SUP-021,Upper Egypt Technology Supplies,Component Supplier,Local Manufacturer,Egypt,Port Said,El Arab District -  23 July Street,Peter Fawzy,01120430977,upper.egypt.technology.supplies@supplier.eg,Net 45,Active
+22,SUP-022,Port Said Import Services ,Component Supplier,Local Distributor,Egypt,Minya,Minya City -  Taha Hussein Street,Yasmin Mahmoud,01220438896,port.said.import.services@supplier.eg,Net 30,Active
+23,SUP-023, October Electronic Distribution,Component Supplier,Local Manufacturer,Egypt,Cairo,New Cairo -  North 90th Street,Ali Hassan,01520446815,october.electronic.distribution@supplier.eg,Net 45,Active
+24,SUP-024,Helwan Metal Frames,Materials Supplier,Local Manufacturer,Egypt,Al Sharqia,10th of Ramadan City -  Industrial Zone A3,Tarek Nassar,01020454734,helwan.metal.frames@supplier.eg,30% Advance - 70% Net 30,Active
+25,SUP-025,Al Ahram Accessories Manufacturing,Materials Supplier,Industrial Wholesaler,Egypt,Alexandria,Borg El Arab -  Third Industrial Zone,Rana Shawky,01120462653,al.ahram.accessories.manufacturing@supplier.eg,Net 45,Active

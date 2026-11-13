@@ -1,0 +1,5 @@
+﻿warehouse_id,warehouse_code,warehouse_name,warehouse_type,country,city,location_description,status
+1,WH-RM-01,10th Ramadan Raw Materials Warehouse,Raw Material,Egypt,Al Sharqia,10th of Ramadan City -  Industrial Zone A3,Active
+2,WH-RM-02,Ismailia Raw Materials Warehouse,Raw Material,Egypt,Ismailia,Abu Khalifa Industrial Area -  Ismailia,Active
+3,WH-FG-01,New Cairo Finished Goods Warehouse,Finished Goods,Egypt,Cairo,New Cairo -  Industrial Services Area,Active
+4,WH-FG-02,Borg El Arab Finished Goods Warehouse,Finished Goods,Egypt,Alexandria,Borg El Arab -  Third Industrial Zone,Active

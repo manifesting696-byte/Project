@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "Clarification": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Id"
+        },
+        "subject": {
+          "minLength": 1,
+          "title": "Subject",
+          "type": "string"
+        },
+        "question": {
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "refs": {
+          "items": {
+            "$ref": "#/$defs/IntentRef"
+          },
+          "title": "Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "subject",
+        "question"
+      ],
+      "title": "Clarification",
+      "type": "object"
+    },
+    "IntentRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "request",
+            "artifact"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "output": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "IntentRef",
+      "type": "object"
+    },
+    "RequestOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "minLength": 1,
+          "title": "Request Id",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "none",
+            "create_task",
+            "update_task"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "general_qa",
+            "business_knowledge",
+            "data_analysis",
+            "result_interaction"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "instruction": {
+          "minLength": 1,
+          "title": "Instruction",
+          "type": "string"
+        },
+        "refs": {
+          "items": {
+            "$ref": "#/$defs/IntentRef"
+          },
+          "title": "Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "request_id",
+        "action",
+        "category",
+        "instruction"
+      ],
+      "title": "RequestOperation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "operations": {
+      "items": {
+        "$ref": "#/$defs/RequestOperation"
+      },
+      "title": "Operations",
+      "type": "array"
+    },
+    "clarifications": {
+      "items": {
+        "$ref": "#/$defs/Clarification"
+      },
+      "title": "Clarifications",
+      "type": "array"
+    }
+  },
+  "title": "Intent",
+  "type": "object"
+}

@@ -1,6 +1,7 @@
 version: demo-1
 status: provisional
 source: docs/电子供应链数据表说明.md
+snapshot_id: 4c21d53a83016f2e
 metrics:
   on_time_rate:
     status: candidate

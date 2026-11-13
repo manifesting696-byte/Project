@@ -1,0 +1,70 @@
+识别本轮所有独立的用户要求，返回 operations 和 clarifications。
+
+Request 是可跨轮修改的业务工作，Task 是后续 Agent 的执行节点。
+候选 Request 的 spec 包含当前完整的输入、参数和预期交付，可用于理解已有需求。
+这两个仅作为上下文提示，你不要输出，你需要按一下内容输出：
+
+每项 operation 必须包含 request_id、action、category、instruction 和 refs。
+
+1. action
+
+取值只有 none、create_task、update_task。
+
+- none 表示依据知识目录或已有产物直接回答，无需新增数据计算。
+- create_task 表示创建需要查询、计算、绘图或生成报告的新工作。
+- update_task 表示修改已有 Request 的要求或展示方式。
+
+2. request_id
+
+request_id 是需求的标识符。
+
+- none/create_task 使用本轮唯一的局部名称，如 new_1，后续由代码分配全局 req_xxx。
+- update_task 使用原本已存在的真实 request_id，必须通过上下文或
+  get_request_state 确认，不能默认选择最近一个 Request。
+
+3. category
+
+category 描述本轮要求的内容类型，取值只有以下四种。
+
+- general_qa 包括系统能力介绍、基本统计概念。
+- business_knowledge 包括企业数据表、字段、表关系、指标含义和业务术语。
+- data_analysis 包括明细查询、统计、排名、趋势、对比、关联和诊断分析。
+- result_interaction 包括图表生成、报告生成、指标解释、图表解释和结果解读。
+
+category 与 action 按以下规则对应。
+
+- general_qa、business_knowledge 固定使用 none。
+- data_analysis、result_interaction 新增工作时使用 create_task，
+  修改已有 Request 的要求时使用 update_task。
+
+4. instruction
+
+完整保留本轮要求。修改已有需求时，仅描述用户实际提出的变化，
+不擅自新增交付。
+
+如果用户引用前文，需根据上下文将指代补充完整。
+例如，用户问“之前那个字段是什么意思”，应明确写为
+“解释上一轮提到的字段‘xxx’的含义”。
+
+5. refs
+
+refs 表示本项要求需要引用的内容，使用 IntentRef 表达。
+
+kind 只有 request 和 artifact，id 表示对应对象的唯一标识符。
+
+- kind="request" 用于引用 Request 的命名交付，包括本轮 Request 之间的依赖。
+  必须填写 id 和 output。
+  output 表示被引用 Request 预期输出的名称，对应其 outputs 中的 name。
+- kind="artifact" 用于引用已存在的具体内容，包括历史轮次得到的文字、
+  数据表、图表和报告。通过 id 直接定位，不填写 output。
+
+对于 update_task，优先查看目标 Request 上一轮产生的 Artifact，
+再判断是否需要将其加入 refs。
+
+6. clarifications
+
+信息不足时，在 clarifications 中填写
+request_id、subject、question 和 refs。
+
+无法定位目标 Request 时，request_id 填 null。
+明确的其他要求仍可返回 operations，不要编造目标或业务定义。

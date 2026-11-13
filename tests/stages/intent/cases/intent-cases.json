@@ -1,0 +1,5719 @@
+{
+  "schema_version": 1,
+  "purpose": "意图识别阶段测试：字段 + instruction 校对",
+  "source": "tests/new/intent/cases.json",
+  "groups": {
+    "G1": {
+      "name": "四个基础类别识别",
+      "fields": [
+        "category"
+      ]
+    },
+    "G2": {
+      "name": "多需求识别",
+      "fields": [
+        "operation_count",
+        "category"
+      ]
+    },
+    "G3": {
+      "name": "新建与修改",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ]
+    },
+    "G4": {
+      "name": "同轮依赖识别",
+      "fields": [
+        "category",
+        "refs"
+      ]
+    },
+    "G5": {
+      "name": "信息不足与澄清",
+      "fields": [
+        "clarifications"
+      ]
+    }
+  },
+  "case_count": 52,
+  "shared_context_keys": [
+    "database_metadata",
+    "available_capabilities"
+  ],
+  "shared_context_ref": "shared/context-base.json",
+  "cases": [
+    {
+      "case_id": "G1-01",
+      "group": "G1",
+      "title": "系统能力介绍",
+      "query": "介绍你在这个供应链数据项目中的用途。",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "介绍你在这个供应链数据项目中的用途。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "介绍你在这个供应链数据项目中的用途。",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：介绍你在这个供应链数据项目中的用途。"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：介绍你在这个供应链数据项目中的用途。）。\n判定要点：\n- 第1项（介绍你在这个供应链数据项目中的用途。）需满足：\n  · 保留业务对象与要求：介绍你在这个供应链数据项目中的用途。\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-02",
+      "group": "G1",
+      "title": "通用统计概念",
+      "query": "一般统计分析中，平均值与中位数有什么区别？",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "一般统计分析中，平均值与中位数有什么区别？"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "一般统计分析中，平均值与中位数有什么区别？",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：一般统计分析中，平均值与中位数有什么区别？"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：一般统计分析中，平均值与中位数有什么区别？）。\n判定要点：\n- 第1项（一般统计分析中，平均值与中位数有什么区别？）需满足：\n  · 保留业务对象与要求：一般统计分析中，平均值与中位数有什么区别？\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-03",
+      "group": "G1",
+      "title": "明确通用的库存概念",
+      "query": "在一般库存管理中，现存量与预留量通常有什么区别？",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "在一般库存管理中，现存量与预留量通常有什么区别？"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "在一般库存管理中，现存量与预留量通常有什么区别？",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [
+                [
+                  "quantity_on_hand",
+                  "现存量"
+                ],
+                [
+                  "quantity_reserved",
+                  "预留量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：在一般库存管理中，现存量与预留量通常有什么区别？"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：在一般库存管理中，现存量与预留量通常有什么区别？）。\n判定要点：\n- 第1项（在一般库存管理中，现存量与预留量通常有什么区别？）需满足：\n  · 保留业务对象与要求：在一般库存管理中，现存量与预留量通常有什么区别？\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-04",
+      "group": "G1",
+      "title": "项目库存字段",
+      "query": "本项目RawMaterialInventory中的quantity_reserved表示什么？",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "本项目RawMaterialInventory中的quantity_reserved表示什么？"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "本项目RawMaterialInventory中的quantity_reserved表示什么？",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [
+                "RawMaterialInventory"
+              ],
+              "must_include_any": [
+                [
+                  "quantity_reserved",
+                  "预留量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：本项目RawMaterialInventory中的quantity_reserved表示什么？"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：本项目RawMaterialInventory中的quantity_reserved表示什么？）。\n判定要点：\n- 第1项（本项目RawMaterialInventory中的quantity_reserved表示什么？）需满足：\n  · 保留业务对象与要求：本项目RawMaterialInventory中的quantity_reserved表示什么？\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-05",
+      "group": "G1",
+      "title": "项目真实表关系",
+      "query": "本项目采购订单与收货单通过哪些表和字段关联？",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "本项目采购订单与收货单通过哪些表和字段关联？"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "本项目采购订单与收货单通过哪些表和字段关联？",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：本项目采购订单与收货单通过哪些表和字段关联？"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：本项目采购订单与收货单通过哪些表和字段关联？）。\n判定要点：\n- 第1项（本项目采购订单与收货单通过哪些表和字段关联？）需满足：\n  · 保留业务对象与要求：本项目采购订单与收货单通过哪些表和字段关联？\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-06",
+      "group": "G1",
+      "title": "省略范围的项目术语",
+      "query": "现存量与预留量有什么区别？",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "现存量与预留量有什么区别？"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "现存量与预留量有什么区别？",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [
+                [
+                  "quantity_on_hand",
+                  "现存量"
+                ],
+                [
+                  "quantity_reserved",
+                  "预留量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.0,
+              "elements": [
+                "保留业务对象与要求：现存量与预留量有什么区别？"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：现存量与预留量有什么区别？）。\n判定要点：\n- 第1项（现存量与预留量有什么区别？）需满足：\n  · 保留业务对象与要求：现存量与预留量有什么区别？\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "按项目术语的默认判定约定标注为企业知识。"
+      ]
+    },
+    {
+      "case_id": "G1-07",
+      "group": "G1",
+      "title": "产品数量查询",
+      "query": "查询Products中的产品记录总数。",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "查询Products中的产品记录总数。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询Products中的产品记录总数。",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "Products"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询Products中的产品记录总数。"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：查询Products中的产品记录总数。）。\n判定要点：\n- 第1项（查询Products中的产品记录总数。）需满足：\n  · 保留业务对象与要求：查询Products中的产品记录总数。\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-08",
+      "group": "G1",
+      "title": "供应商订单排名",
+      "query": "按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ],
+                [
+                  "order_date",
+                  "下单日期"
+                ],
+                [
+                  "降序",
+                  "由大到小",
+                  "倒序",
+                  "降序排列"
+                ],
+                [
+                  "前5",
+                  "top5",
+                  "前 5",
+                  "5名",
+                  "5个"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。",
+                "保留时间条件：2025",
+                "保留排序或取数要求：降序、前5"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。）。\n判定要点：\n- 第1项（按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。）需满足：\n  · 保留业务对象与要求：按下单日期统计2025年上半年各供应商的采购订单数，降序取前5名。\n  · 保留时间条件：2025\n  · 保留排序或取数要求：降序、前5\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-09",
+      "group": "G1",
+      "title": "产品实际产量统计",
+      "query": "按实际完工日期统计2025年第二季度各产品的实际产量合计。",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "按实际完工日期统计2025年第二季度各产品的实际产量合计。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "按实际完工日期统计2025年第二季度各产品的实际产量合计。",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "第二季度"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ],
+                [
+                  "actual_end_date",
+                  "实际完工日期"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：按实际完工日期统计2025年第二季度各产品的实际产量合计。",
+                "保留时间条件：2025"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：按实际完工日期统计2025年第二季度各产品的实际产量合计。）。\n判定要点：\n- 第1项（按实际完工日期统计2025年第二季度各产品的实际产量合计。）需满足：\n  · 保留业务对象与要求：按实际完工日期统计2025年第二季度各产品的实际产量合计。\n  · 保留时间条件：2025\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-10",
+      "group": "G1",
+      "title": "已有图表解读",
+      "query": "解释刚才这张产品产量图表达了什么。",
+      "context_id": "product_chart",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_102",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "给产品产量前5名生成竖向柱状图。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_201",
+                  "request_id": "req_102"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_102",
+            "title": "产品产量前5名竖向柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_102",
+            "spec": {
+              "description": "产品产量前5名竖向柱状图",
+              "parameters": {
+                "chart_type": "bar",
+                "orientation": "vertical"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_101"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "production_chart",
+                  "content_type": "chart",
+                  "description": "产品产量前5名竖向柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_201",
+            "request_id": "req_102",
+            "revision_id": "rev_102",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "产品产量前5名竖向柱状图",
+            "summary": "产品产量前5名竖向柱状图",
+            "source_artifact_ids": [
+              "result_101"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "production_chart"
+          }
+        ],
+        "history_summary": null,
+        "query": "解释刚才这张产品产量图表达了什么。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释刚才这张产品产量图表达了什么。",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释刚才这张产品产量图表达了什么。"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：解释刚才这张产品产量图表达了什么。）。\n判定要点：\n- 第1项（解释刚才这张产品产量图表达了什么。）需满足：\n  · 保留业务对象与要求：解释刚才这张产品产量图表达了什么。\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-11",
+      "group": "G1",
+      "title": "根据已有表绘图",
+      "query": "把刚才的产品产量结果画成柱状图。",
+      "context_id": "product",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "把刚才的产品产量结果画成柱状图。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "把刚才的产品产量结果画成柱状图。",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [
+                "柱状图"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：把刚才的产品产量结果画成柱状图。",
+                "保留交付形态：柱状图"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：把刚才的产品产量结果画成柱状图。）。\n判定要点：\n- 第1项（把刚才的产品产量结果画成柱状图。）需满足：\n  · 保留业务对象与要求：把刚才的产品产量结果画成柱状图。\n  · 保留交付形态：柱状图\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-12",
+      "group": "G1",
+      "title": "根据已有表生成报告",
+      "query": "根据刚才的产品产量结果生成一份简短报告。",
+      "context_id": "product",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "根据刚才的产品产量结果生成一份简短报告。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "根据刚才的产品产量结果生成一份简短报告。",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：根据刚才的产品产量结果生成一份简短报告。",
+                "保留交付形态：报告"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：根据刚才的产品产量结果生成一份简短报告。）。\n判定要点：\n- 第1项（根据刚才的产品产量结果生成一份简短报告。）需满足：\n  · 保留业务对象与要求：根据刚才的产品产量结果生成一份简短报告。\n  · 保留交付形态：报告\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-13",
+      "group": "G1",
+      "title": "通用相关性概念",
+      "query": "一般数据分析中，相关性与因果关系有什么区别？",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "一般数据分析中，相关性与因果关系有什么区别？"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "一般数据分析中，相关性与因果关系有什么区别？",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：一般数据分析中，相关性与因果关系有什么区别？"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：一般数据分析中，相关性与因果关系有什么区别？）。\n判定要点：\n- 第1项（一般数据分析中，相关性与因果关系有什么区别？）需满足：\n  · 保留业务对象与要求：一般数据分析中，相关性与因果关系有什么区别？\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-14",
+      "group": "G1",
+      "title": "项目指标定义及发布状态",
+      "query": "介绍本项目到货准时率的定义及当前发布状态。",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "介绍本项目到货准时率的定义及当前发布状态。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "介绍本项目到货准时率的定义及当前发布状态。",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：介绍本项目到货准时率的定义及当前发布状态。"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：介绍本项目到货准时率的定义及当前发布状态。）。\n判定要点：\n- 第1项（介绍本项目到货准时率的定义及当前发布状态。）需满足：\n  · 保留业务对象与要求：介绍本项目到货准时率的定义及当前发布状态。\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-15",
+      "group": "G1",
+      "title": "按明确公式计算库存差值",
+      "query": "查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。",
+      "context_id": "empty",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [
+                [
+                  "quantity_on_hand",
+                  "现存量"
+                ],
+                [
+                  "quantity_reserved",
+                  "预留量"
+                ],
+                [
+                  "升序",
+                  "由小到大",
+                  "正序",
+                  "升序排列"
+                ],
+                [
+                  "前5",
+                  "top5",
+                  "前 5",
+                  "5名",
+                  "5个"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。",
+                "保留排序或取数要求：升序、前5"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。）。\n判定要点：\n- 第1项（查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。）需满足：\n  · 保留业务对象与要求：查询仓库1每种原材料的现存量减预留量，按这个差值升序列出前5项。\n  · 保留排序或取数要求：升序、前5\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G1-16",
+      "group": "G1",
+      "title": "解读已有结果中的差异",
+      "query": "解读刚才产品产量前5名结果中，第一名与第五名的产量差异。",
+      "context_id": "product",
+      "fields": [
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "解读刚才产品产量前5名结果中，第一名与第五名的产量差异。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解读刚才产品产量前5名结果中，第一名与第五名的产量差异。",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ],
+                [
+                  "前5",
+                  "top5",
+                  "前 5",
+                  "5名",
+                  "5个"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解读刚才产品产量前5名结果中，第一名与第五名的产量差异。",
+                "保留排序或取数要求：前5"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：解读刚才产品产量前5名结果中，第一名与第五名的产量差异。）。\n判定要点：\n- 第1项（解读刚才产品产量前5名结果中，第一名与第五名的产量差异。）需满足：\n  · 保留业务对象与要求：解读刚才产品产量前5名结果中，第一名与第五名的产量差异。\n  · 保留排序或取数要求：前5\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-01",
+      "group": "G2",
+      "title": "基础问答加数据查询",
+      "query": "先解释算术平均值，再查询产品总数。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "先解释算术平均值，再查询产品总数。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释算术平均值",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释算术平均值"
+              ]
+            }
+          },
+          {
+            "requirement": "查询产品总数",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询产品总数"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：先解释算术平均值，再查询产品总数。）。\n判定要点：\n- 第1项（解释算术平均值）需满足：\n  · 保留业务对象与要求：解释算术平均值\n- 第2项（查询产品总数）需满足：\n  · 保留业务对象与要求：查询产品总数\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-02",
+      "group": "G2",
+      "title": "企业知识加数据查询",
+      "query": "先说明本项目po_id和po_detail_id的区别，再查询采购订单总数。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "先说明本项目po_id和po_detail_id的区别，再查询采购订单总数。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释两个采购标识",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [
+                "po_id",
+                "po_detail_id"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释两个采购标识"
+              ]
+            }
+          },
+          {
+            "requirement": "查询采购订单总数",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "po_id",
+                "po_detail_id"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询采购订单总数"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：先说明本项目po_id和po_detail_id的区别，再查询采购订单总数。）。\n判定要点：\n- 第1项（解释两个采购标识）需满足：\n  · 保留业务对象与要求：解释两个采购标识\n- 第2项（查询采购订单总数）需满足：\n  · 保留业务对象与要求：查询采购订单总数\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-03",
+      "group": "G2",
+      "title": "两个独立数据查询",
+      "query": "分别查询Products的产品总数和Materials的材料总数。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "分别查询Products的产品总数和Materials的材料总数。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询产品总数",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "Products",
+                "Materials"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询产品总数"
+              ]
+            }
+          },
+          {
+            "requirement": "查询材料总数",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "Products",
+                "Materials"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询材料总数"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：分别查询Products的产品总数和Materials的材料总数。）。\n判定要点：\n- 第1项（查询产品总数）需满足：\n  · 保留业务对象与要求：查询产品总数\n- 第2项（查询材料总数）需满足：\n  · 保留业务对象与要求：查询材料总数\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "保留两个相同类别，操作数为2。"
+      ]
+    },
+    {
+      "case_id": "G2-04",
+      "group": "G2",
+      "title": "两个独立基础问答",
+      "query": "分两项回答，第一项解释算术平均值，第二项解释异常值的含义。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "分两项回答，第一项解释算术平均值，第二项解释异常值的含义。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释算术平均值",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释算术平均值"
+              ]
+            }
+          },
+          {
+            "requirement": "解释异常值",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释异常值"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：分两项回答，第一项解释算术平均值，第二项解释异常值的含义。）。\n判定要点：\n- 第1项（解释算术平均值）需满足：\n  · 保留业务对象与要求：解释算术平均值\n- 第2项（解释异常值）需满足：\n  · 保留业务对象与要求：解释异常值\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-05",
+      "group": "G2",
+      "title": "两个独立企业知识问题",
+      "query": "分别介绍Products表和Warehouses表的字段含义，各自给出说明。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "分别介绍Products表和Warehouses表的字段含义，各自给出说明。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "Products字段说明",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [
+                "Products",
+                "Warehouses"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：Products字段说明"
+              ]
+            }
+          },
+          {
+            "requirement": "Warehouses字段说明",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [
+                "Products",
+                "Warehouses"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：Warehouses字段说明"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：分别介绍Products表和Warehouses表的字段含义，各自给出说明。）。\n判定要点：\n- 第1项（Products字段说明）需满足：\n  · 保留业务对象与要求：Products字段说明\n- 第2项（Warehouses字段说明）需满足：\n  · 保留业务对象与要求：Warehouses字段说明\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-06",
+      "group": "G2",
+      "title": "同一结果的两项交付",
+      "query": "请分别为刚才的产品产量结果生成一张柱状图和一份简短报告。",
+      "context_id": "product",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "请分别为刚才的产品产量结果生成一张柱状图和一份简短报告。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "生成柱状图",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [
+                "柱状图",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：生成柱状图",
+                "保留交付形态：柱状图、报告"
+              ]
+            }
+          },
+          {
+            "requirement": "生成报告",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [
+                "柱状图",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：生成报告",
+                "保留交付形态：柱状图、报告"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：请分别为刚才的产品产量结果生成一张柱状图和一份简短报告。）。\n判定要点：\n- 第1项（生成柱状图）需满足：\n  · 保留业务对象与要求：生成柱状图\n  · 保留交付形态：柱状图、报告\n- 第2项（生成报告）需满足：\n  · 保留业务对象与要求：生成报告\n  · 保留交付形态：柱状图、报告\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-07",
+      "group": "G2",
+      "title": "四种类别同时出现",
+      "query": "请分四项完成这些工作，分别为解释平均值、解释本项目production_quantity字段、查询2025年上半年各产品实际产量，以及根据查询结果生成报告。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "请分四项完成这些工作，分别为解释平均值、解释本项目production_quantity字段、查询2025年上半年各产品实际产量，以及根据查询结果生成报告。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释平均值",
+            "alias": null,
+            "match": {
+              "category": "general_qa"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释平均值",
+                "保留时间条件：2025"
+              ]
+            }
+          },
+          {
+            "requirement": "解释项目实际产量字段",
+            "alias": null,
+            "match": {
+              "category": "business_knowledge"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释项目实际产量字段",
+                "保留时间条件：2025"
+              ]
+            }
+          },
+          {
+            "requirement": "查询各产品实际产量",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询各产品实际产量",
+                "保留时间条件：2025"
+              ]
+            }
+          },
+          {
+            "requirement": "生成报告",
+            "alias": null,
+            "match": {
+              "category": "result_interaction"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：生成报告",
+                "保留时间条件：2025",
+                "保留交付形态：报告"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：请分四项完成这些工作，分别为解释平均值、解释本项目production_quantity字段、查询2025年上半年各产品实际产量，以及根据查询结果生成报告。）。\n判定要点：\n- 第1项（解释平均值）需满足：\n  · 保留业务对象与要求：解释平均值\n  · 保留时间条件：2025\n- 第2项（解释项目实际产量字段）需满足：\n  · 保留业务对象与要求：解释项目实际产量字段\n  · 保留时间条件：2025\n- 第3项（查询各产品实际产量）需满足：\n  · 保留业务对象与要求：查询各产品实际产量\n  · 保留时间条件：2025\n- 第4项（生成报告）需满足：\n  · 保留业务对象与要求：生成报告\n  · 保留时间条件：2025\n  · 保留交付形态：报告\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G2-08",
+      "group": "G2",
+      "title": "单个复杂查询的对照",
+      "query": "筛选2025年上半年的采购订单，按供应商分组统计订单数，按数量降序取前5名。",
+      "context_id": "empty",
+      "fields": [
+        "operation_count",
+        "category"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "筛选2025年上半年的采购订单，按供应商分组统计订单数，按数量降序取前5名。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "供应商订单数前5名查询",
+            "alias": null,
+            "match": {
+              "category": "data_analysis"
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ],
+                [
+                  "降序",
+                  "由大到小",
+                  "倒序",
+                  "降序排列"
+                ],
+                [
+                  "前5",
+                  "top5",
+                  "前 5",
+                  "5名",
+                  "5个"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：供应商订单数前5名查询",
+                "保留时间条件：2025",
+                "保留排序或取数要求：降序、前5"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：筛选2025年上半年的采购订单，按供应商分组统计订单数，按数量降序取前5名。）。\n判定要点：\n- 第1项（供应商订单数前5名查询）需满足：\n  · 保留业务对象与要求：供应商订单数前5名查询\n  · 保留时间条件：2025\n  · 保留排序或取数要求：降序、前5\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "筛选、分组和排序共同定义一项查询。"
+      ]
+    },
+    {
+      "case_id": "G3-01",
+      "group": "G3",
+      "title": "新会话创建查询",
+      "query": "查询2025年上半年各产品的实际产量，按实际完工日期入期。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "查询2025年上半年各产品的实际产量，按实际完工日期入期。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "新产品产量查询",
+            "alias": "$new_query",
+            "match": {
+              "category": "data_analysis",
+              "action": "create_task",
+              "request_id": "$new_query",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ],
+                [
+                  "actual_end_date",
+                  "实际完工日期"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：新产品产量查询",
+                "保留时间条件：2025"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：查询2025年上半年各产品的实际产量，按实际完工日期入期。）。\n判定要点：\n- 第1项（新产品产量查询）需满足：\n  · 保留业务对象与要求：新产品产量查询\n  · 保留时间条件：2025\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-02",
+      "group": "G3",
+      "title": "已有相近工作时明确另建",
+      "query": "另外新建一项独立查询，统计2024年上半年各产品实际产量，按实际完工日期入期。",
+      "context_id": "product",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "另外新建一项独立查询，统计2024年上半年各产品实际产量，按实际完工日期入期。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "独立的2024产品查询",
+            "alias": "$new_query",
+            "match": {
+              "category": "data_analysis",
+              "action": "create_task",
+              "request_id": "$new_query",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "2024",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ],
+                [
+                  "actual_end_date",
+                  "实际完工日期"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：独立的2024产品查询",
+                "保留时间条件：2024"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：另外新建一项独立查询，统计2024年上半年各产品实际产量，按实际完工日期入期。）。\n判定要点：\n- 第1项（独立的2024产品查询）需满足：\n  · 保留业务对象与要求：独立的2024产品查询\n  · 保留时间条件：2024\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "局部ID与已有req_101不同。"
+      ]
+    },
+    {
+      "case_id": "G3-03",
+      "group": "G3",
+      "title": "修改唯一的既有查询",
+      "query": "把刚才产品产量统计的年份改为2024年，其他要求沿用。",
+      "context_id": "product",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "把刚才产品产量统计的年份改为2024年，其他要求沿用。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "修改产品产量年份",
+            "alias": null,
+            "match": {
+              "category": "data_analysis",
+              "action": "update_task",
+              "request_id": "req_101",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "2024"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：修改产品产量年份",
+                "保留时间条件：2024",
+                "只描述本次实际变化，不擅自新增交付"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：把刚才产品产量统计的年份改为2024年，其他要求沿用。）。\n判定要点：\n- 第1项（修改产品产量年份）需满足：\n  · 保留业务对象与要求：修改产品产量年份\n  · 保留时间条件：2024\n  · 只描述本次实际变化，不擅自新增交付\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "旧结果用于识别目标，年份修改需按新条件求值，未要求消费旧结果。"
+      ]
+    },
+    {
+      "case_id": "G3-04",
+      "group": "G3",
+      "title": "定位较早的产品工作",
+      "query": "只把产品产量统计改为2024年上半年，供应商订单统计保留原要求。",
+      "context_id": "product_and_supplier",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_103",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "分别查询产品产量前5名和供应商订单数前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_301",
+                  "request_id": "req_103"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_103",
+            "title": "2025年上半年供应商采购订单数量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_103",
+            "spec": {
+              "description": "2025年上半年供应商采购订单数量前5名",
+              "parameters": {
+                "date_field": "order_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "supplier_counts",
+                  "content_type": "table",
+                  "description": "2025年上半年供应商采购订单数量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_301",
+            "request_id": "req_103",
+            "revision_id": "rev_103",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年供应商采购订单数量前5名",
+            "summary": "2025上半年供应商采购订单数量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "supplier_id"
+                },
+                {
+                  "name": "supplier_name"
+                },
+                {
+                  "name": "order_count"
+                }
+              ]
+            },
+            "fixture_output_name": "supplier_counts"
+          }
+        ],
+        "history_summary": null,
+        "query": "只把产品产量统计改为2024年上半年，供应商订单统计保留原要求。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "修改较早的产品统计",
+            "alias": null,
+            "match": {
+              "category": "data_analysis",
+              "action": "update_task",
+              "request_id": "req_101",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "2024",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：修改较早的产品统计",
+                "保留时间条件：2024",
+                "只描述本次实际变化，不擅自新增交付"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：只把产品产量统计改为2024年上半年，供应商订单统计保留原要求。）。\n判定要点：\n- 第1项（修改较早的产品统计）需满足：\n  · 保留业务对象与要求：修改较早的产品统计\n  · 保留时间条件：2024\n  · 只描述本次实际变化，不擅自新增交付\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "最近活跃req_103指向供应商工作，本题目标为req_101。"
+      ]
+    },
+    {
+      "case_id": "G3-05",
+      "group": "G3",
+      "title": "使用指定旧图修改样式",
+      "query": "以产品产量图result_201为修改依据，把这张图改为横向条形图，沿用原来的数据和排序。",
+      "context_id": "two_charts",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_105",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "请同时展示产品产量图和供应商订单数图。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_201",
+                  "request_id": "req_102"
+                },
+                {
+                  "block_id": "block_3",
+                  "artifact_id": "result_301",
+                  "request_id": "req_103"
+                },
+                {
+                  "block_id": "block_4",
+                  "artifact_id": "result_202",
+                  "request_id": "req_105"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_102",
+            "title": "产品产量前5名竖向柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_102",
+            "spec": {
+              "description": "产品产量前5名竖向柱状图",
+              "parameters": {
+                "chart_type": "bar",
+                "orientation": "vertical"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_101"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "production_chart",
+                  "content_type": "chart",
+                  "description": "产品产量前5名竖向柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_103",
+            "title": "2025年上半年供应商采购订单数量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_103",
+            "spec": {
+              "description": "2025年上半年供应商采购订单数量前5名",
+              "parameters": {
+                "date_field": "order_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "supplier_counts",
+                  "content_type": "table",
+                  "description": "2025年上半年供应商采购订单数量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_105",
+            "title": "供应商采购订单数量柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_105",
+            "spec": {
+              "description": "供应商采购订单数量柱状图",
+              "parameters": {
+                "chart_type": "bar"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_301"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "supplier_chart",
+                  "content_type": "chart",
+                  "description": "供应商采购订单数量柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_201",
+            "request_id": "req_102",
+            "revision_id": "rev_102",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "产品产量前5名竖向柱状图",
+            "summary": "产品产量前5名竖向柱状图",
+            "source_artifact_ids": [
+              "result_101"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "production_chart"
+          },
+          {
+            "artifact_id": "result_301",
+            "request_id": "req_103",
+            "revision_id": "rev_103",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年供应商采购订单数量前5名",
+            "summary": "2025上半年供应商采购订单数量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "supplier_id"
+                },
+                {
+                  "name": "supplier_name"
+                },
+                {
+                  "name": "order_count"
+                }
+              ]
+            },
+            "fixture_output_name": "supplier_counts"
+          },
+          {
+            "artifact_id": "result_202",
+            "request_id": "req_105",
+            "revision_id": "rev_105",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "供应商采购订单数量柱状图",
+            "summary": "供应商采购订单数量柱状图",
+            "source_artifact_ids": [
+              "result_301"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "supplier_chart"
+          }
+        ],
+        "history_summary": null,
+        "query": "以产品产量图result_201为修改依据，把这张图改为横向条形图，沿用原来的数据和排序。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "修改产品图方向",
+            "alias": null,
+            "match": {
+              "category": "result_interaction",
+              "action": "update_task",
+              "request_id": "req_102",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_201"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "result_201"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ],
+                [
+                  "排名",
+                  "排序"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：修改产品图方向",
+                "保留排序或取数要求：排序",
+                "只描述本次实际变化，不擅自新增交付",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：以产品产量图result_201为修改依据，把这张图改为横向条形图，沿用原来的数据和排序。）。\n判定要点：\n- 第1项（修改产品图方向）需满足：\n  · 保留业务对象与要求：修改产品图方向\n  · 保留排序或取数要求：排序\n  · 只描述本次实际变化，不擅自新增交付\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-06",
+      "group": "G3",
+      "title": "使用指定旧报告修改表述",
+      "query": "修改原来的产品产量报告，以result_401为依据，将文字压缩为三段，保留已有数据和结论。",
+      "context_id": "report",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_104",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "根据产品产量查询结果生成报告。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_401",
+                  "request_id": "req_104"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_104",
+            "title": "产品产量分析报告",
+            "status": "completed",
+            "current_revision_id": "rev_104",
+            "spec": {
+              "description": "产品产量分析报告",
+              "parameters": {},
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_101"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "production_report",
+                  "content_type": "report",
+                  "description": "产品产量分析报告",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_401",
+            "request_id": "req_104",
+            "revision_id": "rev_104",
+            "session_id": "session_intent_fixture",
+            "content_type": "report",
+            "title": "产品产量分析报告",
+            "summary": "产品产量分析报告",
+            "source_artifact_ids": [
+              "result_101"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "production_report"
+          }
+        ],
+        "history_summary": null,
+        "query": "修改原来的产品产量报告，以result_401为依据，将文字压缩为三段，保留已有数据和结论。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "压缩已有报告",
+            "alias": null,
+            "match": {
+              "category": "result_interaction",
+              "action": "update_task",
+              "request_id": "req_104",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_401"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "result_401",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：压缩已有报告",
+                "保留交付形态：报告",
+                "只描述本次实际变化，不擅自新增交付",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：修改原来的产品产量报告，以result_401为依据，将文字压缩为三段，保留已有数据和结论。）。\n判定要点：\n- 第1项（压缩已有报告）需满足：\n  · 保留业务对象与要求：压缩已有报告\n  · 保留交付形态：报告\n  · 只描述本次实际变化，不擅自新增交付\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-07",
+      "group": "G3",
+      "title": "从固定历史数据另建报告",
+      "query": "固定使用result_101这份历史数据，另外创建一份报告，原统计工作保留。",
+      "context_id": "product",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "固定使用result_101这份历史数据，另外创建一份报告，原统计工作保留。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "基于历史表另建报告",
+            "alias": "$new_report",
+            "match": {
+              "category": "result_interaction",
+              "action": "create_task",
+              "request_id": "$new_report",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_101"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "result_101",
+                "报告"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：基于历史表另建报告",
+                "保留交付形态：报告",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：固定使用result_101这份历史数据，另外创建一份报告，原统计工作保留。）。\n判定要点：\n- 第1项（基于历史表另建报告）需满足：\n  · 保留业务对象与要求：基于历史表另建报告\n  · 保留交付形态：报告\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-08",
+      "group": "G3",
+      "title": "已有图表的新解读工作",
+      "query": "新建一项解读工作，解释图表result_201中各产品产量的差异。",
+      "context_id": "product_chart",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_102",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "给产品产量前5名生成竖向柱状图。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_201",
+                  "request_id": "req_102"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_102",
+            "title": "产品产量前5名竖向柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_102",
+            "spec": {
+              "description": "产品产量前5名竖向柱状图",
+              "parameters": {
+                "chart_type": "bar",
+                "orientation": "vertical"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_101"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "production_chart",
+                  "content_type": "chart",
+                  "description": "产品产量前5名竖向柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_201",
+            "request_id": "req_102",
+            "revision_id": "rev_102",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "产品产量前5名竖向柱状图",
+            "summary": "产品产量前5名竖向柱状图",
+            "source_artifact_ids": [
+              "result_101"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "production_chart"
+          }
+        ],
+        "history_summary": null,
+        "query": "新建一项解读工作，解释图表result_201中各产品产量的差异。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解读指定图表",
+            "alias": "$new_explanation",
+            "match": {
+              "category": "result_interaction",
+              "action": "create_task",
+              "request_id": "$new_explanation",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_201"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "result_201"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解读指定图表",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：新建一项解读工作，解释图表result_201中各产品产量的差异。）。\n判定要点：\n- 第1项（解读指定图表）需满足：\n  · 保留业务对象与要求：解读指定图表\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-09",
+      "group": "G3",
+      "title": "历史产品集合作为新查询输入",
+      "query": "以result_102列出的产品ID为范围，另外查询这些产品2024年上半年的实际产量，按实际完工日期入期。",
+      "context_id": "product_rows",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_107",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按product_id升序列出前2个产品的基础资料。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_102",
+                  "request_id": "req_107"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_107",
+            "title": "前2个产品的基础资料",
+            "status": "completed",
+            "current_revision_id": "rev_107",
+            "spec": {
+              "description": "前2个产品的基础资料",
+              "parameters": {
+                "limit": 2,
+                "order": "product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_rows",
+                  "content_type": "table",
+                  "description": "前2个产品的基础资料",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_102",
+            "request_id": "req_107",
+            "revision_id": "rev_107",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "product_id为1和2的产品资料",
+            "summary": "product_id为1和2的产品资料",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_code"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "standard_cost"
+                },
+                {
+                  "name": "selling_price"
+                }
+              ]
+            },
+            "fixture_output_name": "product_rows"
+          }
+        ],
+        "history_summary": null,
+        "query": "以result_102列出的产品ID为范围，另外查询这些产品2024年上半年的实际产量，按实际完工日期入期。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "对历史产品集合新取数",
+            "alias": "$new_query",
+            "match": {
+              "category": "data_analysis",
+              "action": "create_task",
+              "request_id": "$new_query",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_102"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "result_102",
+                "2024",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "product_id",
+                  "产品ID",
+                  "产品id",
+                  "产品编号"
+                ],
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ],
+                [
+                  "actual_end_date",
+                  "实际完工日期"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：对历史产品集合新取数",
+                "保留时间条件：2024",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：以result_102列出的产品ID为范围，另外查询这些产品2024年上半年的实际产量，按实际完工日期入期。）。\n判定要点：\n- 第1项（对历史产品集合新取数）需满足：\n  · 保留业务对象与要求：对历史产品集合新取数\n  · 保留时间条件：2024\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-10",
+      "group": "G3",
+      "title": "引用历史文字进行知识问答",
+      "query": "依据上轮说明文字result_501，解释其中quantity_reserved字段的项目含义。",
+      "context_id": "field_text",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_109",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "解释本项目quantity_on_hand与quantity_reserved字段。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_501",
+                  "request_id": "req_109"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_109",
+            "title": "项目库存字段含义说明",
+            "status": "completed",
+            "current_revision_id": "rev_109",
+            "spec": {
+              "description": "项目库存字段含义说明",
+              "parameters": {},
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "field_explanation",
+                  "content_type": "text",
+                  "description": "项目库存字段含义说明",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_501",
+            "request_id": "req_109",
+            "revision_id": "rev_109",
+            "session_id": "session_intent_fixture",
+            "content_type": "text",
+            "title": "quantity_on_hand与quantity_reserved字段说明",
+            "summary": "quantity_on_hand与quantity_reserved字段说明",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "field_explanation"
+          }
+        ],
+        "history_summary": null,
+        "query": "依据上轮说明文字result_501，解释其中quantity_reserved字段的项目含义。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释历史文字中的字段",
+            "alias": "$new_answer",
+            "match": {
+              "category": "business_knowledge",
+              "action": "none",
+              "request_id": "$new_answer",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_501"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "result_501"
+              ],
+              "must_include_any": [
+                [
+                  "quantity_reserved",
+                  "预留量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释历史文字中的字段",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：依据上轮说明文字result_501，解释其中quantity_reserved字段的项目含义。）。\n判定要点：\n- 第1项（解释历史文字中的字段）需满足：\n  · 保留业务对象与要求：解释历史文字中的字段\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-11",
+      "group": "G3",
+      "title": "修改查询并引入固定产品集合",
+      "query": "修改原产品产量统计req_101，产品范围以result_102列出的ID为准，年份改为2024年，其他条件沿用。",
+      "context_id": "product_with_selection",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_107",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "产品产量汇总已完成，另外列出了产品ID为1和2的资料。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_102",
+                  "request_id": "req_107"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_107",
+            "title": "前2个产品的基础资料",
+            "status": "completed",
+            "current_revision_id": "rev_107",
+            "spec": {
+              "description": "前2个产品的基础资料",
+              "parameters": {
+                "limit": 2,
+                "order": "product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_rows",
+                  "content_type": "table",
+                  "description": "前2个产品的基础资料",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_102",
+            "request_id": "req_107",
+            "revision_id": "rev_107",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "product_id为1和2的产品资料",
+            "summary": "product_id为1和2的产品资料",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_code"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "standard_cost"
+                },
+                {
+                  "name": "selling_price"
+                }
+              ]
+            },
+            "fixture_output_name": "product_rows"
+          }
+        ],
+        "history_summary": null,
+        "query": "修改原产品产量统计req_101，产品范围以result_102列出的ID为准，年份改为2024年，其他条件沿用。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "修改产品范围和年份",
+            "alias": null,
+            "match": {
+              "category": "data_analysis",
+              "action": "update_task",
+              "request_id": "req_101",
+              "refs": [
+                {
+                  "kind": "artifact",
+                  "id": "result_102"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "req_101",
+                "result_102",
+                "2024"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：修改产品范围和年份",
+                "保留时间条件：2024",
+                "只描述本次实际变化，不擅自新增交付",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：修改原产品产量统计req_101，产品范围以result_102列出的ID为准，年份改为2024年，其他条件沿用。）。\n判定要点：\n- 第1项（修改产品范围和年份）需满足：\n  · 保留业务对象与要求：修改产品范围和年份\n  · 保留时间条件：2024\n  · 只描述本次实际变化，不擅自新增交付\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G3-12",
+      "group": "G3",
+      "title": "引用已有Request的命名交付",
+      "query": "新建一张柱状图，数据跟随req_101当前版本的product_totals命名交付。",
+      "context_id": "product",
+      "fields": [
+        "category",
+        "action",
+        "refs",
+        "request_id"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "新建一张柱状图，数据跟随req_101当前版本的product_totals命名交付。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "跟随当前交付创建图表",
+            "alias": "$new_chart",
+            "match": {
+              "category": "result_interaction",
+              "action": "create_task",
+              "request_id": "$new_chart",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "req_101",
+                  "output": "product_totals"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "req_101",
+                "product_totals",
+                "柱状图"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：跟随当前交付创建图表",
+                "保留交付形态：柱状图",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：新建一张柱状图，数据跟随req_101当前版本的product_totals命名交付。）。\n判定要点：\n- 第1项（跟随当前交付创建图表）需满足：\n  · 保留业务对象与要求：跟随当前交付创建图表\n  · 保留交付形态：柱状图\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "题目明确引用Request当前交付，应保留request/output引用含义。"
+      ]
+    },
+    {
+      "case_id": "G4-01",
+      "group": "G4",
+      "title": "查询后绘图",
+      "query": "先查询各产品实际产量合计，将结果命名为product_totals。再基于product_totals生成柱状图。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "先查询各产品实际产量合计，将结果命名为product_totals。再基于product_totals生成柱状图。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询产品产量合计",
+            "alias": "$totals",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_totals"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询产品产量合计"
+              ]
+            }
+          },
+          {
+            "requirement": "根据合计绘图",
+            "alias": "$chart",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$totals",
+                  "output": "product_totals"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_totals",
+                "柱状图"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：根据合计绘图",
+                "保留交付形态：柱状图",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：先查询各产品实际产量合计，将结果命名为product_totals。再基于product_totals生成柱状图。）。\n判定要点：\n- 第1项（查询产品产量合计）需满足：\n  · 保留业务对象与要求：查询产品产量合计\n- 第2项（根据合计绘图）需满足：\n  · 保留业务对象与要求：根据合计绘图\n  · 保留交付形态：柱状图\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-02",
+      "group": "G4",
+      "title": "查询后生成报告",
+      "query": "先查询2025年上半年各供应商采购订单数，将结果命名为supplier_counts。再基于supplier_counts生成报告。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "先查询2025年上半年各供应商采购订单数，将结果命名为supplier_counts。再基于supplier_counts生成报告。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询供应商订单数",
+            "alias": "$counts",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "supplier_counts",
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询供应商订单数",
+                "保留时间条件：2025"
+              ]
+            }
+          },
+          {
+            "requirement": "根据供应商结果生成报告",
+            "alias": "$report",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$counts",
+                  "output": "supplier_counts"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "supplier_counts",
+                "2025",
+                "上半年",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：根据供应商结果生成报告",
+                "保留时间条件：2025",
+                "保留交付形态：报告",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：先查询2025年上半年各供应商采购订单数，将结果命名为supplier_counts。再基于supplier_counts生成报告。）。\n判定要点：\n- 第1项（查询供应商订单数）需满足：\n  · 保留业务对象与要求：查询供应商订单数\n  · 保留时间条件：2025\n- 第2项（根据供应商结果生成报告）需满足：\n  · 保留业务对象与要求：根据供应商结果生成报告\n  · 保留时间条件：2025\n  · 保留交付形态：报告\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-03",
+      "group": "G4",
+      "title": "两项分析之间的依赖",
+      "query": "请分两项交付：第一项查询2025年上半年采购明细，命名为purchase_rows。第二项仅根据purchase_rows计算每月采购金额合计，命名为monthly_amounts。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "请分两项交付：第一项查询2025年上半年采购明细，命名为purchase_rows。第二项仅根据purchase_rows计算每月采购金额合计，命名为monthly_amounts。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询采购明细",
+            "alias": "$rows",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "purchase_rows",
+                "monthly_amounts",
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询采购明细",
+                "保留时间条件：2025"
+              ]
+            }
+          },
+          {
+            "requirement": "基于明细计算月合计",
+            "alias": "$amounts",
+            "match": {
+              "category": "data_analysis",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$rows",
+                  "output": "purchase_rows"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "purchase_rows",
+                "monthly_amounts",
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：基于明细计算月合计",
+                "保留时间条件：2025",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：请分两项交付：第一项查询2025年上半年采购明细，命名为purchase_rows。第二项仅根据purchase_rows计算每月采购金额合计，命名为monthly_amounts。）。\n判定要点：\n- 第1项（查询采购明细）需满足：\n  · 保留业务对象与要求：查询采购明细\n  · 保留时间条件：2025\n- 第2项（基于明细计算月合计）需满足：\n  · 保留业务对象与要求：基于明细计算月合计\n  · 保留时间条件：2025\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-04",
+      "group": "G4",
+      "title": "一个上游供两项交付使用",
+      "query": "查询各产品实际产量合计，命名为product_totals。基于product_totals分别创建柱状图和简短报告。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "查询各产品实际产量合计，命名为product_totals。基于product_totals分别创建柱状图和简短报告。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询产品产量合计",
+            "alias": "$totals",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_totals"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询产品产量合计"
+              ]
+            }
+          },
+          {
+            "requirement": "创建产量图",
+            "alias": "$chart",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$totals",
+                  "output": "product_totals"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_totals",
+                "柱状图",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：创建产量图",
+                "保留交付形态：柱状图、报告",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          },
+          {
+            "requirement": "创建产量报告",
+            "alias": "$report",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$totals",
+                  "output": "product_totals"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_totals",
+                "柱状图",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "production_quantity",
+                  "实际产量",
+                  "产量"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：创建产量报告",
+                "保留交付形态：柱状图、报告",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：查询各产品实际产量合计，命名为product_totals。基于product_totals分别创建柱状图和简短报告。）。\n判定要点：\n- 第1项（查询产品产量合计）需满足：\n  · 保留业务对象与要求：查询产品产量合计\n- 第2项（创建产量图）需满足：\n  · 保留业务对象与要求：创建产量图\n  · 保留交付形态：柱状图、报告\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\n- 第3项（创建产量报告）需满足：\n  · 保留业务对象与要求：创建产量报告\n  · 保留交付形态：柱状图、报告\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-05",
+      "group": "G4",
+      "title": "独立问答与查询绘图并存",
+      "query": "解释平均值。另外查询每月采购订单数，结果命名为monthly_counts。再基于monthly_counts绘制折线图。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "解释平均值。另外查询每月采购订单数，结果命名为monthly_counts。再基于monthly_counts绘制折线图。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "解释平均值",
+            "alias": "$answer",
+            "match": {
+              "category": "general_qa",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "monthly_counts"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：解释平均值"
+              ]
+            }
+          },
+          {
+            "requirement": "查询月度订单数",
+            "alias": "$counts",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "monthly_counts"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询月度订单数"
+              ]
+            }
+          },
+          {
+            "requirement": "绘制月度折线图",
+            "alias": "$chart",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$counts",
+                  "output": "monthly_counts"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "monthly_counts",
+                "折线图"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：绘制月度折线图",
+                "保留交付形态：折线图",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：解释平均值。另外查询每月采购订单数，结果命名为monthly_counts。再基于monthly_counts绘制折线图。）。\n判定要点：\n- 第1项（解释平均值）需满足：\n  · 保留业务对象与要求：解释平均值\n- 第2项（查询月度订单数）需满足：\n  · 保留业务对象与要求：查询月度订单数\n- 第3项（绘制月度折线图）需满足：\n  · 保留业务对象与要求：绘制月度折线图\n  · 保留交付形态：折线图\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-06",
+      "group": "G4",
+      "title": "两套查询分别供两张图使用",
+      "query": "查询各产品类别数量，命名为category_counts。查询每月采购订单数，命名为monthly_counts。分别基于category_counts画饼图、基于monthly_counts画折线图。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "查询各产品类别数量，命名为category_counts。查询每月采购订单数，命名为monthly_counts。分别基于category_counts画饼图、基于monthly_counts画折线图。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询产品类别数量",
+            "alias": "$categories",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "category_counts",
+                "monthly_counts"
+              ],
+              "must_include_any": [
+                [
+                  "product_category",
+                  "产品类别"
+                ],
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询产品类别数量"
+              ]
+            }
+          },
+          {
+            "requirement": "查询月度订单数",
+            "alias": "$months",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "category_counts",
+                "monthly_counts"
+              ],
+              "must_include_any": [
+                [
+                  "product_category",
+                  "产品类别"
+                ],
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询月度订单数"
+              ]
+            }
+          },
+          {
+            "requirement": "类别饼图",
+            "alias": "$pie",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$categories",
+                  "output": "category_counts"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "category_counts",
+                "monthly_counts",
+                "折线图",
+                "饼图"
+              ],
+              "must_include_any": [
+                [
+                  "product_category",
+                  "产品类别"
+                ],
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：类别饼图",
+                "保留交付形态：折线图、饼图",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          },
+          {
+            "requirement": "月度折线图",
+            "alias": "$line",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$months",
+                  "output": "monthly_counts"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "category_counts",
+                "monthly_counts",
+                "折线图",
+                "饼图"
+              ],
+              "must_include_any": [
+                [
+                  "product_category",
+                  "产品类别"
+                ],
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：月度折线图",
+                "保留交付形态：折线图、饼图",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：查询各产品类别数量，命名为category_counts。查询每月采购订单数，命名为monthly_counts。分别基于category_counts画饼图、基于monthly_counts画折线图。）。\n判定要点：\n- 第1项（查询产品类别数量）需满足：\n  · 保留业务对象与要求：查询产品类别数量\n- 第2项（查询月度订单数）需满足：\n  · 保留业务对象与要求：查询月度订单数\n- 第3项（类别饼图）需满足：\n  · 保留业务对象与要求：类别饼图\n  · 保留交付形态：折线图、饼图\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\n- 第4项（月度折线图）需满足：\n  · 保留业务对象与要求：月度折线图\n  · 保留交付形态：折线图、饼图\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-07",
+      "group": "G4",
+      "title": "三级结果依赖",
+      "query": "第一项查询产品名称、售价和标准成本，命名为product_prices。第二项基于product_prices另做售价减标准成本的差额表，命名为difference_table。第三项只根据difference_table生成报告。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "第一项查询产品名称、售价和标准成本，命名为product_prices。第二项基于product_prices另做售价减标准成本的差额表，命名为difference_table。第三项只根据difference_table生成报告。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "查询产品价格",
+            "alias": "$prices",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_prices",
+                "difference_table"
+              ],
+              "must_include_any": [
+                [
+                  "product_name",
+                  "产品名称"
+                ],
+                [
+                  "selling_price",
+                  "销售价格",
+                  "售价"
+                ],
+                [
+                  "standard_cost",
+                  "标准成本"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询产品价格"
+              ]
+            }
+          },
+          {
+            "requirement": "制作价格差额表",
+            "alias": "$differences",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$prices",
+                  "output": "product_prices"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_prices",
+                "difference_table",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "product_name",
+                  "产品名称"
+                ],
+                [
+                  "selling_price",
+                  "销售价格",
+                  "售价"
+                ],
+                [
+                  "standard_cost",
+                  "标准成本"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：制作价格差额表",
+                "保留交付形态：报告",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          },
+          {
+            "requirement": "根据差额表生成报告",
+            "alias": "$report",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$differences",
+                  "output": "difference_table"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "product_prices",
+                "difference_table",
+                "报告"
+              ],
+              "must_include_any": [
+                [
+                  "product_name",
+                  "产品名称"
+                ],
+                [
+                  "selling_price",
+                  "销售价格",
+                  "售价"
+                ],
+                [
+                  "standard_cost",
+                  "标准成本"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：根据差额表生成报告",
+                "保留交付形态：报告",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：第一项查询产品名称、售价和标准成本，命名为product_prices。第二项基于product_prices另做售价减标准成本的差额表，命名为difference_table。第三项只根据difference_table生成报告。）。\n判定要点：\n- 第1项（查询产品价格）需满足：\n  · 保留业务对象与要求：查询产品价格\n- 第2项（制作价格差额表）需满足：\n  · 保留业务对象与要求：制作价格差额表\n  · 保留交付形态：报告\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\n- 第3项（根据差额表生成报告）需满足：\n  · 保留业务对象与要求：根据差额表生成报告\n  · 保留交付形态：报告\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G4-08",
+      "group": "G4",
+      "title": "引用在后文声明的上游",
+      "query": "请创建一张基于supplier_counts的供应商订单数柱状图。其中supplier_counts由本轮另一项工作提供，这项工作查询2025年上半年各供应商采购订单数量。",
+      "context_id": "empty",
+      "fields": [
+        "category",
+        "refs"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "请创建一张基于supplier_counts的供应商订单数柱状图。其中supplier_counts由本轮另一项工作提供，这项工作查询2025年上半年各供应商采购订单数量。"
+      },
+      "expected": {
+        "operations": [
+          {
+            "requirement": "生成供应商订单图",
+            "alias": "$chart",
+            "match": {
+              "category": "result_interaction",
+              "refs": [
+                {
+                  "kind": "request",
+                  "id": "$counts",
+                  "output": "supplier_counts"
+                }
+              ]
+            },
+            "instruction": {
+              "must_include_all": [
+                "supplier_counts",
+                "2025",
+                "上半年",
+                "柱状图"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：生成供应商订单图",
+                "保留时间条件：2025",
+                "保留交付形态：柱状图",
+                "引用来源与 refs 一致（已有结果或上游命名交付）"
+              ]
+            }
+          },
+          {
+            "requirement": "查询供应商订单数",
+            "alias": "$counts",
+            "match": {
+              "category": "data_analysis",
+              "refs": []
+            },
+            "instruction": {
+              "must_include_all": [
+                "supplier_counts",
+                "2025",
+                "上半年"
+              ],
+              "must_include_any": [
+                [
+                  "order_count",
+                  "订单数量",
+                  "订单数"
+                ]
+              ],
+              "must_not_include": [],
+              "min_length_ratio": 0.45,
+              "elements": [
+                "保留业务对象与要求：查询供应商订单数",
+                "保留时间条件：2025"
+              ]
+            }
+          }
+        ],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：请创建一张基于supplier_counts的供应商订单数柱状图。其中supplier_counts由本轮另一项工作提供，这项工作查询2025年上半年各供应商采购订单数量。）。\n判定要点：\n- 第1项（生成供应商订单图）需满足：\n  · 保留业务对象与要求：生成供应商订单图\n  · 保留时间条件：2025\n  · 保留交付形态：柱状图\n  · 引用来源与 refs 一致（已有结果或上游命名交付）\n- 第2项（查询供应商订单数）需满足：\n  · 保留业务对象与要求：查询供应商订单数\n  · 保留时间条件：2025\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "允许operations按依赖顺序输出，需求与引用关系正确即可。"
+      ]
+    },
+    {
+      "case_id": "G5-01",
+      "group": "G5",
+      "title": "没有历史工作时缺少修改目标",
+      "query": "改成2024年的。",
+      "context_id": "empty",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "改成2024年的。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": [
+          {
+            "request_id": null,
+            "subject": "修改目标",
+            "question_example": "请说明要把哪项查询或分析改为2024年？",
+            "question_must_resolve": [
+              "待修改的工作或查询对象"
+            ],
+            "already_known": [
+              "年份已指定为2024年"
+            ]
+          }
+        ]
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：改成2024年的。）。\n判定要点：\n- 澄清问题需补足下列信息缺口，且不得重复询问上下文已知信息：\n  · 缺口：待修改的工作或查询对象\n  · 已知，不得重复询问：年份已指定为2024年\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G5-02",
+      "group": "G5",
+      "title": "两张图同时存在时指代不明",
+      "query": "把那张图改成折线图。",
+      "context_id": "two_charts",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_105",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "请同时展示产品产量图和供应商订单数图。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_201",
+                  "request_id": "req_102"
+                },
+                {
+                  "block_id": "block_3",
+                  "artifact_id": "result_301",
+                  "request_id": "req_103"
+                },
+                {
+                  "block_id": "block_4",
+                  "artifact_id": "result_202",
+                  "request_id": "req_105"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_102",
+            "title": "产品产量前5名竖向柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_102",
+            "spec": {
+              "description": "产品产量前5名竖向柱状图",
+              "parameters": {
+                "chart_type": "bar",
+                "orientation": "vertical"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_101"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "production_chart",
+                  "content_type": "chart",
+                  "description": "产品产量前5名竖向柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_103",
+            "title": "2025年上半年供应商采购订单数量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_103",
+            "spec": {
+              "description": "2025年上半年供应商采购订单数量前5名",
+              "parameters": {
+                "date_field": "order_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "supplier_counts",
+                  "content_type": "table",
+                  "description": "2025年上半年供应商采购订单数量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_105",
+            "title": "供应商采购订单数量柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_105",
+            "spec": {
+              "description": "供应商采购订单数量柱状图",
+              "parameters": {
+                "chart_type": "bar"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_301"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "supplier_chart",
+                  "content_type": "chart",
+                  "description": "供应商采购订单数量柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_201",
+            "request_id": "req_102",
+            "revision_id": "rev_102",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "产品产量前5名竖向柱状图",
+            "summary": "产品产量前5名竖向柱状图",
+            "source_artifact_ids": [
+              "result_101"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "production_chart"
+          },
+          {
+            "artifact_id": "result_301",
+            "request_id": "req_103",
+            "revision_id": "rev_103",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年供应商采购订单数量前5名",
+            "summary": "2025上半年供应商采购订单数量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "supplier_id"
+                },
+                {
+                  "name": "supplier_name"
+                },
+                {
+                  "name": "order_count"
+                }
+              ]
+            },
+            "fixture_output_name": "supplier_counts"
+          },
+          {
+            "artifact_id": "result_202",
+            "request_id": "req_105",
+            "revision_id": "rev_105",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "供应商采购订单数量柱状图",
+            "summary": "供应商采购订单数量柱状图",
+            "source_artifact_ids": [
+              "result_301"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "supplier_chart"
+          }
+        ],
+        "history_summary": null,
+        "query": "把那张图改成折线图。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": [
+          {
+            "request_id": null,
+            "subject": "待修改图表",
+            "question_example": "要修改产品产量图result_201，还是供应商订单图result_202？",
+            "question_must_resolve": [
+              "在两张候选图中确认目标"
+            ],
+            "already_known": [
+              "目标图形已指定为折线图"
+            ]
+          }
+        ]
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：把那张图改成折线图。）。\n判定要点：\n- 澄清问题需补足下列信息缺口，且不得重复询问上下文已知信息：\n  · 缺口：在两张候选图中确认目标\n  · 已知，不得重复询问：目标图形已指定为折线图\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G5-03",
+      "group": "G5",
+      "title": "目标明确但缺少新时间范围",
+      "query": "把刚才产品产量统计的时间范围改一下。",
+      "context_id": "product",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "把刚才产品产量统计的时间范围改一下。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": [
+          {
+            "request_id": "req_101",
+            "subject": "新的统计时间范围",
+            "question_example": "要将产品产量统计改为哪个时间范围？",
+            "question_must_resolve": [
+              "新的年份、日期区间或季度"
+            ],
+            "already_known": [
+              "目标为产品统计req_101"
+            ]
+          }
+        ]
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：把刚才产品产量统计的时间范围改一下。）。\n判定要点：\n- 澄清问题需补足下列信息缺口，且不得重复询问上下文已知信息：\n  · 缺口：新的年份、日期区间或季度\n  · 已知，不得重复询问：目标为产品统计req_101\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G5-04",
+      "group": "G5",
+      "title": "明确问答与含糊修改并存",
+      "query": "先解释平均值，再把刚才那张产品产量图改一种样式。",
+      "context_id": "product_chart",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_102",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "给产品产量前5名生成竖向柱状图。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_201",
+                  "request_id": "req_102"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_102",
+            "title": "产品产量前5名竖向柱状图",
+            "status": "completed",
+            "current_revision_id": "rev_102",
+            "spec": {
+              "description": "产品产量前5名竖向柱状图",
+              "parameters": {
+                "chart_type": "bar",
+                "orientation": "vertical"
+              },
+              "inputs": [
+                {
+                  "slot": "data",
+                  "source": {
+                    "kind": "artifact",
+                    "id": "result_101"
+                  }
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "production_chart",
+                  "content_type": "chart",
+                  "description": "产品产量前5名竖向柱状图",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_201",
+            "request_id": "req_102",
+            "revision_id": "rev_102",
+            "session_id": "session_intent_fixture",
+            "content_type": "chart",
+            "title": "产品产量前5名竖向柱状图",
+            "summary": "产品产量前5名竖向柱状图",
+            "source_artifact_ids": [
+              "result_101"
+            ],
+            "payload": {
+              "columns": []
+            },
+            "fixture_output_name": "production_chart"
+          }
+        ],
+        "history_summary": null,
+        "query": "先解释平均值，再把刚才那张产品产量图改一种样式。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": [
+          {
+            "request_id": "req_102",
+            "subject": "新的图表样式",
+            "question_example": "希望将产品产量图改成哪种图形或样式？",
+            "question_must_resolve": [
+              "希望采用的新图形类型或样式"
+            ],
+            "already_known": [
+              "目标为产品产量图req_102/result_201"
+            ]
+          }
+        ]
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：先解释平均值，再把刚才那张产品产量图改一种样式。）。\n判定要点：\n- 澄清问题需补足下列信息缺口，且不得重复询问上下文已知信息：\n  · 缺口：希望采用的新图形类型或样式\n  · 已知，不得重复询问：目标为产品产量图req_102/result_201\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "本组只评价clarifications，基础问答操作不计入评分。"
+      ]
+    },
+    {
+      "case_id": "G5-05",
+      "group": "G5",
+      "title": "查询对象明确留待补充",
+      "query": "查询指定供应商在2025年上半年的采购订单数量，供应商我还没有选定。",
+      "context_id": "empty",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "查询指定供应商在2025年上半年的采购订单数量，供应商我还没有选定。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": [
+          {
+            "request_id": null,
+            "subject": "供应商选择",
+            "question_example": "请提供要查询的供应商名称或supplier_id。",
+            "question_must_resolve": [
+              "供应商名称或ID"
+            ],
+            "already_known": [
+              "时间为2025年上半年",
+              "查询内容为采购订单数量"
+            ]
+          }
+        ]
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：查询指定供应商在2025年上半年的采购订单数量，供应商我还没有选定。）。\n判定要点：\n- 澄清问题需补足下列信息缺口，且不得重复询问上下文已知信息：\n  · 缺口：供应商名称或ID\n  · 已知，不得重复询问：时间为2025年上半年\n  · 已知，不得重复询问：查询内容为采购订单数量\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G5-06",
+      "group": "G5",
+      "title": "两个统计工作之间目标不明",
+      "query": "把统计改为按月展示。",
+      "context_id": "product_and_supplier",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_103",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "分别查询产品产量前5名和供应商订单数前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                },
+                {
+                  "block_id": "block_2",
+                  "artifact_id": "result_301",
+                  "request_id": "req_103"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          },
+          {
+            "request_id": "req_103",
+            "title": "2025年上半年供应商采购订单数量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_103",
+            "spec": {
+              "description": "2025年上半年供应商采购订单数量前5名",
+              "parameters": {
+                "date_field": "order_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "supplier_counts",
+                  "content_type": "table",
+                  "description": "2025年上半年供应商采购订单数量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          },
+          {
+            "artifact_id": "result_301",
+            "request_id": "req_103",
+            "revision_id": "rev_103",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年供应商采购订单数量前5名",
+            "summary": "2025上半年供应商采购订单数量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "supplier_id"
+                },
+                {
+                  "name": "supplier_name"
+                },
+                {
+                  "name": "order_count"
+                }
+              ]
+            },
+            "fixture_output_name": "supplier_counts"
+          }
+        ],
+        "history_summary": null,
+        "query": "把统计改为按月展示。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": [
+          {
+            "request_id": null,
+            "subject": "待修改统计",
+            "question_example": "要修改产品产量统计，还是供应商采购订单统计？",
+            "question_must_resolve": [
+              "在两个已有统计工作中确定目标"
+            ],
+            "already_known": [
+              "新分组方式为按月"
+            ]
+          }
+        ]
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：把统计改为按月展示。）。\n判定要点：\n- 澄清问题需补足下列信息缺口，且不得重复询问上下文已知信息：\n  · 缺口：在两个已有统计工作中确定目标\n  · 已知，不得重复询问：新分组方式为按月\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": []
+    },
+    {
+      "case_id": "G5-07",
+      "group": "G5",
+      "title": "信息充分的修改对照",
+      "query": "将产品产量统计年份改成2024年，其他条件沿用。",
+      "context_id": "product",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": "req_101",
+          "last_response_event_id": "event_fixture_answer"
+        },
+        "recent_messages": [
+          {
+            "event_id": "event_fixture_user",
+            "event_type": "user_message",
+            "payload": {
+              "content": "按实际完工日期统计2025上半年产品实际产量前5名。"
+            }
+          },
+          {
+            "event_id": "event_fixture_answer",
+            "event_type": "assistant_response",
+            "payload": {
+              "blocks": [
+                {
+                  "block_id": "block_1",
+                  "artifact_id": "result_101",
+                  "request_id": "req_101"
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_requests": [
+          {
+            "request_id": "req_101",
+            "title": "2025年上半年产品实际产量前5名",
+            "status": "completed",
+            "current_revision_id": "rev_101",
+            "spec": {
+              "description": "2025年上半年产品实际产量前5名",
+              "parameters": {
+                "date_field": "actual_end_date",
+                "start": "2025-01-01",
+                "end": "2025-06-30",
+                "limit": 5,
+                "order": "production_quantity DESC, product_id ASC"
+              },
+              "inputs": [],
+              "outputs": [
+                {
+                  "name": "product_totals",
+                  "content_type": "table",
+                  "description": "2025年上半年产品实际产量前5名",
+                  "options": {}
+                }
+              ]
+            }
+          }
+        ],
+        "candidate_artifacts": [
+          {
+            "artifact_id": "result_101",
+            "request_id": "req_101",
+            "revision_id": "rev_101",
+            "session_id": "session_intent_fixture",
+            "content_type": "table",
+            "title": "2025上半年产品实际产量前5名",
+            "summary": "2025上半年产品实际产量前5名",
+            "source_artifact_ids": [],
+            "payload": {
+              "columns": [
+                {
+                  "name": "product_id"
+                },
+                {
+                  "name": "product_name"
+                },
+                {
+                  "name": "production_quantity"
+                }
+              ]
+            },
+            "fixture_output_name": "product_totals"
+          }
+        ],
+        "history_summary": null,
+        "query": "将产品产量统计年份改成2024年，其他条件沿用。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：将产品产量统计年份改成2024年，其他条件沿用。）。\n判定要点：\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "预期clarifications为空，现有上下文已提供修改目标。"
+      ]
+    },
+    {
+      "case_id": "G5-08",
+      "group": "G5",
+      "title": "信息充分的基础问答对照",
+      "query": "解释算术平均值的含义。",
+      "context_id": "empty",
+      "fields": [
+        "clarifications"
+      ],
+      "context": {
+        "stage": "initial",
+        "session_hints": {
+          "last_active_request_id": null,
+          "last_response_event_id": null
+        },
+        "recent_messages": [],
+        "candidate_requests": [],
+        "candidate_artifacts": [],
+        "history_summary": null,
+        "query": "解释算术平均值的含义。"
+      },
+      "expected": {
+        "operations": [],
+        "clarifications": []
+      },
+      "instruction_rubric": "请判断被测回答里每项 operation 的 instruction 是否忠实表达了用户本轮要求（问题：解释算术平均值的含义。）。\n判定要点：\ninstruction 可以改写措辞、合并同义表达，但不得丢失上述要素、不得新增用户没提的交付或条件。",
+      "judging_notes": [
+        "预期clarifications为空，通用概念问答已具备必要信息。"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4236 @@
+{
+  "schema_version": 1,
+  "purpose": "用户输入及可见预期结果，用于后续黑盒验收",
+  "dataset": {
+    "snapshot_id": "4c21d53a83016f2e",
+    "total_rows": 62077,
+    "files": [
+      {
+        "file": "data/seed/FinishedGoodsInventory.csv",
+        "rows": 32,
+        "columns": [
+          "finished_goods_inventory_id",
+          "warehouse_id",
+          "product_id",
+          "quantity_on_hand",
+          "quantity_reserved",
+          "reorder_point",
+          "safety_stock_level",
+          "last_updated_at"
+        ],
+        "sha256": "92e3b91d3d7a6c780cc24edd127e871cb98b8563a576d219f8bbcec3e2f760bc"
+      },
+      {
+        "file": "data/seed/GoodsReceiptDetails.csv",
+        "rows": 6600,
+        "columns": [
+          "gr_detail_id",
+          "gr_id",
+          "shipment_detail_id",
+          "material_id",
+          "received_quantity",
+          "accepted_quantity",
+          "rejected_quantity",
+          "inspection_status",
+          "batch_number"
+        ],
+        "sha256": "e24a3292c3d40708dee46b0b5f5148fe86ff89c975ea1622a2f2b1ace0efb400"
+      },
+      {
+        "file": "data/seed/GoodsReceipts.csv",
+        "rows": 2200,
+        "columns": [
+          "gr_id",
+          "gr_code",
+          "shipment_id",
+          "receipt_date",
+          "received_by",
+          "quality_check_status",
+          "total_received_value"
+        ],
+        "sha256": "ebed6b47594385c2af1a0c8a747422eb7a53dba3d1a830962516f2f774fc7c66"
+      },
+      {
+        "file": "data/seed/Materials.csv",
+        "rows": 80,
+        "columns": [
+          "material_id",
+          "material_code",
+          "material_name",
+          "material_category",
+          "material_type",
+          "uom",
+          "unit_weight",
+          "status"
+        ],
+        "sha256": "222db1277f377986acf2aa56eb6f1c5837cf5e31dc077945cae98a0a92939b32"
+      },
+      {
+        "file": "data/seed/ProductBOM.csv",
+        "rows": 160,
+        "columns": [
+          "bom_id",
+          "product_id",
+          "material_id",
+          "quantity_required",
+          "uom",
+          "status"
+        ],
+        "sha256": "0c7aaef4aedac512deb1f8723d415c358d43b2fc7d0fd95e0b3596a17111706d"
+      },
+      {
+        "file": "data/seed/Production.csv",
+        "rows": 2600,
+        "columns": [
+          "production_id",
+          "production_order_code",
+          "product_id",
+          "planned_quantity",
+          "start_date",
+          "expected_end_date",
+          "actual_end_date",
+          "production_quantity",
+          "rejected_quantity",
+          "production_status"
+        ],
+        "sha256": "3793fc48351b39e867cefe652e4266f248a41966d3c09fd0b5307bfd7e8a033f"
+      },
+      {
+        "file": "data/seed/ProductionDetails.csv",
+        "rows": 26000,
+        "columns": [
+          "production_detail_id",
+          "production_id",
+          "bom_id",
+          "raw_inventory_id",
+          "actual_consumed_quantity",
+          "return_quantity",
+          "scrap_quantity",
+          "unit_cost",
+          "total_material_cost"
+        ],
+        "sha256": "c3716f6562c65df99cffa60698e55867babdfedf22a9974ee141fd23a4d27594"
+      },
+      {
+        "file": "data/seed/Products.csv",
+        "rows": 16,
+        "columns": [
+          "product_id",
+          "product_code",
+          "product_name",
+          "product_category",
+          "uom",
+          "standard_cost",
+          "selling_price",
+          "status"
+        ],
+        "sha256": "e45c145c598bb19d2f7a65e7a16adbd0ca908d098a97e7a1cadab398c876294e"
+      },
+      {
+        "file": "data/seed/PurchaseOrderDetails.csv",
+        "rows": 6600,
+        "columns": [
+          "po_detail_id",
+          "po_id",
+          "pr_detail_id",
+          "material_id",
+          "ordered_quantity",
+          "unit_price",
+          "discount_percentage",
+          "expected_delivery_date",
+          "total_amount",
+          "line_status"
+        ],
+        "sha256": "f32db09fed31f2ab9b230674a3e79be3dfea5c5bebc249735ea8b8ec40cf0772"
+      },
+      {
+        "file": "data/seed/PurchaseOrders.csv",
+        "rows": 2200,
+        "columns": [
+          "po_id",
+          "po_code",
+          "supplier_id",
+          "pr_id",
+          "order_date",
+          "expected_delivery_date",
+          "payment_terms",
+          "status"
+        ],
+        "sha256": "92e2261eed1c20d0ffed68742a0959899f5a5d1467bf9951818fc85573663709"
+      },
+      {
+        "file": "data/seed/QualityInspections.csv",
+        "rows": 6600,
+        "columns": [
+          "inspection_id",
+          "gr_detail_id",
+          "inspection_date",
+          "inspection_type",
+          "inspected_quantity",
+          "passed_quantity",
+          "inspection_result",
+          "defect_quantity",
+          "defect_reason",
+          "corrective_action",
+          "reinspection_required",
+          "status"
+        ],
+        "sha256": "26408c72a76ce4295e17b6277f974add7520e6c7e58c3775da03b188c207e9df"
+      },
+      {
+        "file": "data/seed/RawMaterialInventory.csv",
+        "rows": 160,
+        "columns": [
+          "raw_inventory_id",
+          "warehouse_id",
+          "material_id",
+          "quantity_on_hand",
+          "quantity_reserved",
+          "reorder_point",
+          "safety_stock_level",
+          "max_inventory_level",
+          "unit_cost",
+          "last_updated_at"
+        ],
+        "sha256": "1c13de1d9e6064fea7f33d822253e019fe4707955f8bcc7752f6db5daed850b6"
+      },
+      {
+        "file": "data/seed/Suppliers.csv",
+        "rows": 25,
+        "columns": [
+          "supplier_id",
+          "supplier_code",
+          "supplier_name",
+          "supplier_type",
+          "supplier_category",
+          "country",
+          "city",
+          "address",
+          "contact_person",
+          "phone",
+          "email",
+          "payment_terms",
+          "status"
+        ],
+        "sha256": "573068f2cd318cb24822b345c4aeecf508efd31d57e114f81d315c0c81b223c5"
+      },
+      {
+        "file": "data/seed/SupplierShipmentDetails.csv",
+        "rows": 6600,
+        "columns": [
+          "shipment_detail_id",
+          "shipment_id",
+          "po_detail_id",
+          "material_id",
+          "received_quantity",
+          "accepted_quantity",
+          "rejected_quantity"
+        ],
+        "sha256": "26fad5ee590791e08787df1bff28da9d9ce74ea8a1fcca8b3657e85c97d95eae"
+      },
+      {
+        "file": "data/seed/SupplierShipments.csv",
+        "rows": 2200,
+        "columns": [
+          "shipment_id",
+          "shipment_code",
+          "po_id",
+          "supplier_id",
+          "supplier_reference",
+          "ship_date",
+          "expected_arrival_date",
+          "actual_arrival_date",
+          "total_shipment_value",
+          "shipping_cost"
+        ],
+        "sha256": "8a81966fdec8b0f64f95cbc52b108ef41964d2fa6462912415c84fe38fc11374"
+      },
+      {
+        "file": "data/seed/Warehouses.csv",
+        "rows": 4,
+        "columns": [
+          "warehouse_id",
+          "warehouse_code",
+          "warehouse_name",
+          "warehouse_type",
+          "country",
+          "city",
+          "location_description",
+          "status"
+        ],
+        "sha256": "84b48ffefd2d22784ae6d4e3b226e5704ac9d282764a8f034e23301bdecba95b"
+      }
+    ],
+    "references": [
+      {
+        "file": "data/schema.sql",
+        "sha256": "a0a8067658c2048c715fea185a1f2aa0156e208660b7e07be2e9ca55fbc053ba"
+      },
+      {
+        "file": "config/semantic/catalog.yaml",
+        "sha256": "71354bd8b828c05398223eb39bbbc3c307636ba29ed4793f76a9aae76c80cb29"
+      },
+      {
+        "file": "config/relations.json",
+        "sha256": "39eb5baa09ea2f266c00e5c7537d70cc6bb6924136b5a7afb6314af4ddf3cd3a"
+      },
+      {
+        "file": "docs/reference/电子供应链数据表说明.md",
+        "sha256": "2d776f4d1ded3c8c37ebaf7f46d68c9d2f4ae6d9414acf872e1237200889bc60"
+      },
+      {
+        "file": "src/enterprise_agent/stages/execute/agents/capabilities.py",
+        "sha256": "59f030e71986cd948a34cb019fd75e1fe5ebe461430726c24bcf67cffd8b2879"
+      }
+    ]
+  },
+  "comparison": {
+    "integer_tolerance": 0,
+    "decimal_absolute_tolerance": "0.005",
+    "rounding": "ROUND_HALF_UP",
+    "decimal_encoding": "string",
+    "equivalent_column_labels": true,
+    "table_identifiers_case_insensitive": true,
+    "text": "核对事实要点和限定条件，接受同义表达",
+    "case_isolation": "每个案例使用新的会话，案例内按轮次执行"
+  },
+  "cases": [
+    {
+      "case_id": "B01",
+      "category": "基础问答",
+      "title": "问析助手身份与能力",
+      "source_files": [],
+      "reference_method": "依据项目功能说明及 stages/execute/agents/capabilities.py 中的能力描述。",
+      "turns": [
+        {
+          "input": "请介绍你在这个供应链数据项目中的用途。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "系统能力",
+                "required_facts": [
+                  "面向企业供应链数据问答与分析的智能助手。",
+                  "支持查询数据、统计分析、表格或图表展示、报告生成以及基于已有结果继续提问。",
+                  "能力涉及采购、供应商发货与收货、来料检验、生产和库存。"
+                ],
+                "limitations": [
+                  "底层模型厂商和具体模型型号应以可确认的运行配置为依据。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B02",
+      "category": "基础问答",
+      "title": "用项目价格示例计算平均值",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "取 product_id=1、2、3 的 selling_price，Decimal 求和除以3。",
+      "turns": [
+        {
+          "input": "给定三个产品的售价数值 31644.01、25228.49、19753.84，这三个数的算术平均值是多少？保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "计算结果",
+                "columns": [
+                  "mean"
+                ],
+                "row_count": 1,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "mean": "25542.11"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B03",
+      "category": "基础问答",
+      "title": "电子产品BOM概念",
+      "source_files": [
+        "data/seed/ProductBOM.csv",
+        "data/seed/Products.csv",
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "以真实产品、材料和 ProductBOM 的数量配置作为概念依据。",
+      "turns": [
+        {
+          "input": "电子产品装配中的BOM是什么，它在物料需求分析中有什么作用？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "BOM概念",
+                "required_facts": [
+                  "BOM 是 Bill of Materials，即物料清单。",
+                  "描述产品所需的材料或零部件及其配置数量。",
+                  "可以结合计划生产数量计算按配置数量得到的物料需求。"
+                ],
+                "limitations": [
+                  "本项目BOM文件未另列损耗率或版本生效条件。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B04",
+      "category": "基础问答",
+      "title": "现存量与预留量概念",
+      "source_files": [
+        "data/seed/RawMaterialInventory.csv"
+      ],
+      "reference_method": "依据库存字段含义，解释给定的示例计算约定。",
+      "turns": [
+        {
+          "input": "库存分析中现存量与预留量有什么区别？如果暂按现存量减预留量表示可用量，应怎样理解这个计算？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "库存概念",
+                "required_facts": [
+                  "现存量表示库存记录中现有的数量。",
+                  "预留量表示记录中已预留的数量。",
+                  "按题设约定，可用量等于现存量减预留量。"
+                ],
+                "limitations": [
+                  "该差值是本题的计算约定，实际业务是否可直接出库还取决于已确认的规则。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B05",
+      "category": "基础问答",
+      "title": "关联后订单重复计数",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/PurchaseOrderDetails.csv"
+      ],
+      "reference_method": "核实 po_id=1 有3条明细，以一对多关联解释计数粒度。",
+      "turns": [
+        {
+          "input": "一张采购订单有3条明细。关联订单表和明细表后，为什么不能直接把这3行算成3张订单？应该怎样统计订单数？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "计数粒度",
+                "required_facts": [
+                  "一张订单关联3条明细后会展开成3行，行数属于明细粒度。",
+                  "这仍然是1张订单、3条明细。",
+                  "订单数可在订单单头表统计，或对订单标识去重计数。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B06",
+      "category": "基础问答",
+      "title": "库存快照与时间趋势",
+      "source_files": [
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/FinishedGoodsInventory.csv"
+      ],
+      "reference_method": "库存两个文件均只含2025-12-31 18:00:00这一更新时间。",
+      "turns": [
+        {
+          "input": "只有某一时点的库存快照时，库存快照和逐月库存变化趋势有什么区别？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "快照与趋势",
+                "required_facts": [
+                  "库存快照描述特定时点的库存状态。",
+                  "逐月变化趋势需要多个时间点的数据。",
+                  "单个时点的库存数量无法确定之前各月的库存变化。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K01",
+      "category": "企业知识",
+      "title": "项目数据表目录",
+      "source_files": [
+        "data/seed/FinishedGoodsInventory.csv",
+        "data/seed/GoodsReceiptDetails.csv",
+        "data/seed/GoodsReceipts.csv",
+        "data/seed/Materials.csv",
+        "data/seed/ProductBOM.csv",
+        "data/seed/Production.csv",
+        "data/seed/ProductionDetails.csv",
+        "data/seed/Products.csv",
+        "data/seed/PurchaseOrderDetails.csv",
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/QualityInspections.csv",
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/SupplierShipmentDetails.csv",
+        "data/seed/SupplierShipments.csv",
+        "data/seed/Suppliers.csv",
+        "data/seed/Warehouses.csv"
+      ],
+      "reference_method": "逐一读取16个CSV文件名，按文件名去掉扩展名列出表。",
+      "turns": [
+        {
+          "input": "这个项目当前有哪些数据表？请列出全部表名并简要说明业务范围。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "完整表目录",
+                "required_facts": [
+                  "当前数据集包含16张表。",
+                  "表名完整集合为 FinishedGoodsInventory、GoodsReceiptDetails、GoodsReceipts、Materials、ProductBOM、Production、ProductionDetails、Products、PurchaseOrderDetails、PurchaseOrders、QualityInspections、RawMaterialInventory、SupplierShipmentDetails、SupplierShipments、Suppliers、Warehouses。",
+                  "范围覆盖基础资料、BOM、采购、发货、收货、质检、生产及库存。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K02",
+      "category": "企业知识",
+      "title": "产品表字段含义",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "核对数据字典中 Products 八个字段的中文含义。",
+      "turns": [
+        {
+          "input": "介绍Products表各字段的含义。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "产品字段含义",
+                "required_facts": [
+                  "product_id：产品标识",
+                  "product_code：产品编码",
+                  "product_name：产品名称",
+                  "product_category：产品类别",
+                  "uom：计量单位",
+                  "standard_cost：标准成本",
+                  "selling_price：销售价格",
+                  "status：状态"
+                ],
+                "limitations": [
+                  "字段共 8 个，字段名与中文含义需一一对应。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K03",
+      "category": "企业知识",
+      "title": "生产数量字段及口径限制",
+      "source_files": [
+        "data/seed/Production.csv"
+      ],
+      "reference_method": "读取生产工单字段说明，不推导未确认的数量包含关系。",
+      "turns": [
+        {
+          "input": "Production里的planned_quantity、production_quantity和rejected_quantity分别表示什么？production_quantity是否已经扣除了rejected_quantity？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "实际产量与计划量",
+                "required_facts": [
+                  "planned_quantity 是生产工单计划数量。",
+                  "production_quantity 是生产工单记录的实际生产数量。"
+                ],
+                "limitations": [
+                  "原文件未确认 production_quantity 是否包含 rejected_quantity，解释实际产量时需保留此口径限制。"
+                ]
+              },
+              {
+                "type": "text",
+                "label": "拒收数量与包含关系",
+                "required_facts": [
+                  "rejected_quantity 是工单记录的拒收数量。",
+                  "源文件未明确 production_quantity 是否包含 rejected_quantity，也未确认其是否已扣除拒收数量。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K04",
+      "category": "企业知识",
+      "title": "采购订单到收货单关系",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/SupplierShipments.csv",
+        "data/seed/GoodsReceipts.csv"
+      ],
+      "reference_method": "核对 config/relations.json 以及三个CSV的关系键。",
+      "turns": [
+        {
+          "input": "从采购订单单头找到对应收货单，应该经过哪些表，使用哪些关联字段？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "采购单头到收货单的关系",
+                "required_facts": [
+                  "PurchaseOrders.po_id 关联 SupplierShipments.po_id。",
+                  "SupplierShipments.shipment_id 关联 GoodsReceipts.shipment_id。",
+                  "从采购单头到收货单的路径为 PurchaseOrders → SupplierShipments → GoodsReceipts。",
+                  "GoodsReceipts 的单头标识为 gr_id，收货日期字段为 receipt_date。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K05",
+      "category": "企业知识",
+      "title": "供应商地域字段粒度",
+      "source_files": [
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "核对数据字典中 Suppliers.country、city、address 的字段含义与记录粒度。",
+      "turns": [
+        {
+          "input": "Suppliers表的country、city、address三个字段分别是什么粒度？如果按地域统计供应商分布，应该用哪个字段，为什么不能直接用address？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "地域字段粒度",
+                "required_facts": [
+                  "country 是国家或地区级字段，粒度最粗，用于跨国家汇总。",
+                  "city 是城市或行政区级字段，每个供应商一个城市，可按城市分组统计供应商数量。",
+                  "address 是街道级地址文本，粒度细于 city，同一城市对应多条不同地址，只适合定位与核对。",
+                  "按地域统计供应商分布应使用 city：country 粒度过粗，address 会把同一城市的供应商拆散。"
+                ],
+                "limitations": [
+                  "address 不是规范化分组键，地域统计口径以 city 为准。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K06",
+      "category": "企业知识",
+      "title": "候选到货准时率定义",
+      "source_files": [
+        "data/seed/SupplierShipments.csv"
+      ],
+      "reference_method": "核对config/semantic/catalog.yaml的on_time_rate定义与candidate状态。",
+      "turns": [
+        {
+          "input": "项目中的到货准时率已经有正式发布的口径了吗？如果还处于候选阶段，请说明候选定义的记录粒度、入期日期和判定条件。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "指标状态和候选口径",
+                "required_facts": [
+                  "on_time_rate / 到货准时率当前状态为 candidate，演示口径待业务确认。",
+                  "候选粒度为 SupplierShipments.shipment_id，即发货单。",
+                  "按 expected_arrival_date 预计到货日入期。",
+                  "候选准时条件为 actual_arrival_date 不晚于 expected_arrival_date。",
+                  "候选分母为有效发货单数。"
+                ],
+                "limitations": [
+                  "该候选定义的发布状态仍待业务审核确认。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K07",
+      "category": "企业知识",
+      "title": "库存数据时间覆盖",
+      "source_files": [
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/FinishedGoodsInventory.csv"
+      ],
+      "reference_method": "提取两个库存文件的last_updated_at去重集合。",
+      "turns": [
+        {
+          "input": "原料库存和成品库存是什么时间的数据？目前能直接得到2025年每个月的库存快照吗？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "库存时间",
+                "required_facts": [
+                  "两个库存文件的全部更新时间均为2025-12-31 18:00:00。",
+                  "当前文件提供该时点的库存状态。",
+                  "数据集缺少2025年逐月库存快照。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "K08",
+      "category": "企业知识",
+      "title": "设备与销售数据范围",
+      "source_files": [
+        "data/seed/FinishedGoodsInventory.csv",
+        "data/seed/GoodsReceiptDetails.csv",
+        "data/seed/GoodsReceipts.csv",
+        "data/seed/Materials.csv",
+        "data/seed/ProductBOM.csv",
+        "data/seed/Production.csv",
+        "data/seed/ProductionDetails.csv",
+        "data/seed/Products.csv",
+        "data/seed/PurchaseOrderDetails.csv",
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/QualityInspections.csv",
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/SupplierShipmentDetails.csv",
+        "data/seed/SupplierShipments.csv",
+        "data/seed/Suppliers.csv",
+        "data/seed/Warehouses.csv"
+      ],
+      "reference_method": "核对16个CSV表头集合与semantic catalog的limitations。",
+      "turns": [
+        {
+          "input": "项目当前是否包含设备故障、产线、工序和销售订单数据？能否据此直接分析设备故障导致生产延误的原因？",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "数据范围",
+                "required_facts": [
+                  "当前数据集缺少设备故障或停机、产线、工序和销售订单数据。",
+                  "可以读取生产日期和数量，但当前证据不足以认定设备故障导致了生产延误。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D01",
+      "category": "基础数据查询",
+      "title": "产品记录总数",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "对CSV数据行计数。",
+      "turns": [
+        {
+          "input": "查询Products表的产品记录总数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "产品总数",
+                "columns": [
+                  "product_count"
+                ],
+                "row_count": 1,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_count": 16
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D02",
+      "category": "基础数据查询",
+      "title": "产品明细与固定排序",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "按整数product_id升序取前5条。",
+      "turns": [
+        {
+          "input": "按 product_id 升序列出前5个产品，显示产品ID、编码、名称、类别、标准成本和销售价格。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前5个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "18827.23",
+                    "selling_price": "25228.49"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "14741.67",
+                    "selling_price": "19753.84"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_code": "PRD-004",
+                    "product_name": "Canal S2 Max Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "29386.99",
+                    "selling_price": "39378.57"
+                  },
+                  {
+                    "product_id": 5,
+                    "product_code": "PRD-005",
+                    "product_name": "Sina Air 14 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "22462.35",
+                    "selling_price": "28751.81"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D03",
+      "category": "基础数据查询",
+      "title": "类别过滤与价格排序",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "类别原文精确匹配Smartphone，按Decimal售价、整数ID排序。",
+      "turns": [
+        {
+          "input": "列出product_category为Smartphone的全部产品，按selling_price升序、并列时product_id升序，显示产品ID、名称、类别和售价。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "手机产品",
+                "columns": [
+                  "product_id",
+                  "product_name",
+                  "product_category",
+                  "selling_price"
+                ],
+                "row_count": 4,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 3,
+                    "product_name": "Canal S2 Phone",
+                    "product_category": "Smartphone",
+                    "selling_price": "19753.84"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_name": "Nile X1 Pro Phone",
+                    "product_category": "Smartphone",
+                    "selling_price": "25228.49"
+                  },
+                  {
+                    "product_id": 1,
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "selling_price": "31644.01"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_name": "Canal S2 Max Phone",
+                    "product_category": "Smartphone",
+                    "selling_price": "39378.57"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D04",
+      "category": "基础数据查询",
+      "title": "类别分组计数（取值已统一）",
+      "source_files": [
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "Counter按原始字符串分组，全部记录计数合计80。",
+      "turns": [
+        {
+          "input": "按Materials.material_category原始文本分组统计材料记录数，列出全部类别及各自记录数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "材料原始类别计数",
+                "columns": [
+                  "material_category",
+                  "material_count"
+                ],
+                "row_count": 8,
+                "ordered": false,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "material_category": "Battery and Power",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "Camera Audio and Sensors",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "Display",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "Enclosure and Mechanical",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "Memory and Storage",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "PCB and Connectivity",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "Packaging and Accessories",
+                    "material_count": 10
+                  },
+                  {
+                    "material_category": "Processing",
+                    "material_count": 10
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "8种取值各10条",
+              "记录数合计80"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D05",
+      "category": "基础数据查询",
+      "title": "供应商订单排名",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "在订单单头按order_date过滤后按supplier_id计数，再关联供应商名称。",
+      "turns": [
+        {
+          "input": "按 PurchaseOrders.order_date 统计2025年上半年各供应商的采购订单数量，数量降序、并列时 supplier_id 升序，取前5名，显示供应商ID、名称和订单数量。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "供应商采购订单数量排名",
+                "columns": [
+                  "supplier_id",
+                  "supplier_name",
+                  "order_count"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D06",
+      "category": "基础数据查询",
+      "title": "月度订单数量",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv"
+      ],
+      "reference_method": "按order_date的YYYY-MM分组，并补齐1至6月。",
+      "turns": [
+        {
+          "input": "按下单日期统计2025年上半年每月采购订单数量，显示月份和订单数量，月份用 YYYY-MM 表示并升序排列，缺失月份补0。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "上半年每月采购订单数量",
+                "columns": [
+                  "month",
+                  "order_count"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D07",
+      "category": "基础数据查询",
+      "title": "产品产量排名与日期解析",
+      "source_files": [
+        "data/seed/Production.csv",
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "按actual_end_date（ISO日期）入期，汇总production_quantity。",
+      "turns": [
+        {
+          "input": "以 Production.actual_end_date 为时间条件，统计2025年上半年各产品的 production_quantity 合计，按合计降序、并列时 product_id 升序取前5名，显示产品ID、名称和实际产量合计。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "实际产量前5名产品",
+                "columns": [
+                  "product_id",
+                  "product_name",
+                  "production_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 16,
+                    "product_name": "Delta Sound Pro",
+                    "production_quantity": 747731
+                  },
+                  {
+                    "product_id": 15,
+                    "product_name": "Canal Pods",
+                    "production_quantity": 737762
+                  },
+                  {
+                    "product_id": 13,
+                    "product_name": "Nile Buds Lite",
+                    "production_quantity": 602901
+                  },
+                  {
+                    "product_id": 14,
+                    "product_name": "Nile Buds Pro",
+                    "production_quantity": 503491
+                  },
+                  {
+                    "product_id": 12,
+                    "product_name": "Sina Health Watch",
+                    "production_quantity": 445806
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D08",
+      "category": "基础数据查询",
+      "title": "产品BOM明细",
+      "source_files": [
+        "data/seed/ProductBOM.csv",
+        "data/seed/Materials.csv",
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "过滤product_id=1，以material_id关联材料，按material_id升序。",
+      "turns": [
+        {
+          "input": "查询产品PRD-001（Nile X1 Phone）的BOM，按material_id升序显示材料ID、材料名称、quantity_required和uom。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "PRD-001物料清单",
+                "columns": [
+                  "material_id",
+                  "material_name",
+                  "quantity_required",
+                  "uom"
+                ],
+                "row_count": 10,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "material_id": 4,
+                    "material_name": "Laptop Processor B",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 16,
+                    "material_name": "Laptop OLED Display 14",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 28,
+                    "material_name": "SSD Module 512GB",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 29,
+                    "material_name": "SSD Module 1TB",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 40,
+                    "material_name": "Antenna Module",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 42,
+                    "material_name": "Phone Battery 5000mAh",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 52,
+                    "material_name": "Wide Camera Module 12MP",
+                    "quantity_required": 2,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 54,
+                    "material_name": "Laptop Webcam Module",
+                    "quantity_required": 2,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 66,
+                    "material_name": "Smartwatch Strap",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  },
+                  {
+                    "material_id": 78,
+                    "material_name": "Protective Packaging Insert",
+                    "quantity_required": 1,
+                    "uom": "Piece"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D09",
+      "category": "基础数据查询",
+      "title": "采购明细金额汇总",
+      "source_files": [
+        "data/seed/PurchaseOrderDetails.csv",
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "按订单下单日过滤，直接汇总明细total_amount，最终保留2位小数。",
+      "turns": [
+        {
+          "input": "按订单下单日期统计2025年上半年各供应商采购明细total_amount合计，金额降序、并列时supplier_id升序取前三名，显示供应商ID、名称和金额合计，金额保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "采购明细金额前三名",
+                "columns": [
+                  "supplier_id",
+                  "supplier_name",
+                  "total_amount"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [
+                  "金额的币种和含税口径未由源文件提供。"
+                ],
+                "rows": [
+                  {
+                    "supplier_id": 11,
+                    "supplier_name": "Al Sharqia Industrial Electronics",
+                    "total_amount": "23822313504.61"
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "total_amount": "17258198901.81"
+                  },
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "total_amount": "12173290662.86"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D10",
+      "category": "基础数据查询",
+      "title": "库存差值及低值排序",
+      "source_files": [
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "按题设定义用Decimal逐行相减，过滤仓库后排序。",
+      "turns": [
+        {
+          "input": "按库存快照查询 warehouse_id=1 的原材料，暂将可用数量定义为 quantity_on_hand 减 quantity_reserved，按可用数量升序、并列时 material_id 升序取5项，显示材料ID、名称、现存量、预留量和可用数量，数量保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "仓库可用数量最低的5种材料",
+                "columns": [
+                  "material_id",
+                  "material_name",
+                  "quantity_on_hand",
+                  "quantity_reserved",
+                  "available_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "material_id": 31,
+                    "material_name": "Main PCB Phone",
+                    "quantity_on_hand": "41311.56",
+                    "quantity_reserved": "1652.26",
+                    "available_quantity": "39659.30"
+                  },
+                  {
+                    "material_id": 16,
+                    "material_name": "Laptop OLED Display 14",
+                    "quantity_on_hand": "46554.05",
+                    "quantity_reserved": "1861.96",
+                    "available_quantity": "44692.09"
+                  },
+                  {
+                    "material_id": 79,
+                    "material_name": "Warranty Card",
+                    "quantity_on_hand": "49158.56",
+                    "quantity_reserved": "1966.18",
+                    "available_quantity": "47192.38"
+                  },
+                  {
+                    "material_id": 76,
+                    "material_name": "Laptop Power Cable",
+                    "quantity_on_hand": "56547.81",
+                    "quantity_reserved": "2262.07",
+                    "available_quantity": "54285.74"
+                  },
+                  {
+                    "material_id": 43,
+                    "material_name": "Laptop Battery 50Wh",
+                    "quantity_on_hand": "60546.15",
+                    "quantity_reserved": "2422.05",
+                    "available_quantity": "58124.10"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D11",
+      "category": "基础数据查询",
+      "title": "日期比较与延期天数",
+      "source_files": [
+        "data/seed/SupplierShipments.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "逐发货单计算actual_arrival_date减expected_arrival_date的日数，先过滤正差值再排序。",
+      "turns": [
+        {
+          "input": "列出预计到货日在2025年上半年、实际到货日晚于预计到货日的发货单，按两日期相差的天数降序、并列时shipment_id升序取5张，显示发货单ID、编码、供应商名称、预计到货日、实际到货日及相差天数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "到货日期差值前5单",
+                "columns": [
+                  "shipment_id",
+                  "shipment_code",
+                  "supplier_name",
+                  "expected_arrival_date",
+                  "actual_arrival_date",
+                  "delay_days"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "shipment_id": 1119,
+                    "shipment_code": "SSH-01119",
+                    "supplier_name": "New Cairo Device Parts",
+                    "expected_arrival_date": "2025-01-20",
+                    "actual_arrival_date": "2025-01-31",
+                    "delay_days": 11
+                  },
+                  {
+                    "shipment_id": 1744,
+                    "shipment_code": "SSH-01744",
+                    "supplier_name": "October Electronic Distribution",
+                    "expected_arrival_date": "2025-04-24",
+                    "actual_arrival_date": "2025-05-05",
+                    "delay_days": 11
+                  },
+                  {
+                    "shipment_id": 2037,
+                    "shipment_code": "SSH-02037",
+                    "supplier_name": "October Electronic Distribution",
+                    "expected_arrival_date": "2025-03-30",
+                    "actual_arrival_date": "2025-04-10",
+                    "delay_days": 11
+                  },
+                  {
+                    "shipment_id": 2197,
+                    "shipment_code": "SSH-02197",
+                    "supplier_name": "October Electronic Distribution",
+                    "expected_arrival_date": "2025-01-14",
+                    "actual_arrival_date": "2025-01-25",
+                    "delay_days": 11
+                  },
+                  {
+                    "shipment_id": 1267,
+                    "shipment_code": "SSH-01267",
+                    "supplier_name": "October Electronic Distribution",
+                    "expected_arrival_date": "2025-05-19",
+                    "actual_arrival_date": "2025-05-29",
+                    "delay_days": 10
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D12",
+      "category": "基础数据查询",
+      "title": "明确日期范围的空结果",
+      "source_files": [
+        "data/seed/Production.csv"
+      ],
+      "reference_method": "按actual_end_date筛选2026年1月，匹配行数为0。",
+      "turns": [
+        {
+          "input": "查询实际完工日期在2026年1月的生产工单，按production_id升序列出工单ID、工单编码、产品ID和实际产量，最多5条。",
+          "expected": {
+            "outcome": "empty_result",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "2026年1月完工工单",
+                "columns": [
+                  "production_id",
+                  "production_order_code",
+                  "product_id",
+                  "production_quantity"
+                ],
+                "row_count": 0,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": []
+              },
+              {
+                "type": "text",
+                "label": "空结果说明",
+                "required_facts": [
+                  "该日期条件下没有匹配的生产工单。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D13",
+      "category": "基础数据查询",
+      "title": "收货数量按月汇总",
+      "source_files": [
+        "data/seed/GoodsReceipts.csv",
+        "data/seed/GoodsReceiptDetails.csv"
+      ],
+      "reference_method": "按收货单receipt_date入期，将每条收货明细只计入一次。",
+      "turns": [
+        {
+          "input": "按GoodsReceipts.receipt_date统计2025年上半年各月收货明细的received_quantity、accepted_quantity、rejected_quantity合计，显示月份和三种数量，按月份升序。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "每月收货数量",
+                "columns": [
+                  "month",
+                  "received_quantity",
+                  "accepted_quantity",
+                  "rejected_quantity"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2025-01",
+                    "received_quantity": 15303027,
+                    "accepted_quantity": 15180151,
+                    "rejected_quantity": 122876
+                  },
+                  {
+                    "month": "2025-02",
+                    "received_quantity": 13303610,
+                    "accepted_quantity": 13113955,
+                    "rejected_quantity": 189655
+                  },
+                  {
+                    "month": "2025-03",
+                    "received_quantity": 13512250,
+                    "accepted_quantity": 13409583,
+                    "rejected_quantity": 102667
+                  },
+                  {
+                    "month": "2025-04",
+                    "received_quantity": 14410635,
+                    "accepted_quantity": 14289469,
+                    "rejected_quantity": 121166
+                  },
+                  {
+                    "month": "2025-05",
+                    "received_quantity": 13304709,
+                    "accepted_quantity": 13224379,
+                    "rejected_quantity": 80330
+                  },
+                  {
+                    "month": "2025-06",
+                    "received_quantity": 11399310,
+                    "accepted_quantity": 11307180,
+                    "rejected_quantity": 92130
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D14",
+      "category": "基础数据查询",
+      "title": "检验结果分组统计",
+      "source_files": [
+        "data/seed/QualityInspections.csv"
+      ],
+      "reference_method": "按inspection_date筛选后分组计数并求和defect_quantity。",
+      "turns": [
+        {
+          "input": "按inspection_date筛选2025年上半年的来料检验记录，按inspection_result分组，显示检验结果、记录数和defect_quantity合计，按检验结果英文名升序。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "检验结果统计",
+                "columns": [
+                  "inspection_result",
+                  "inspection_count",
+                  "defect_quantity"
+                ],
+                "row_count": 2,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "inspection_result": "Partial Acceptance",
+                    "inspection_count": 393,
+                    "defect_quantity": 708824
+                  },
+                  {
+                    "inspection_result": "Passed",
+                    "inspection_count": 1641,
+                    "defect_quantity": 0
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D15",
+      "category": "基础数据查询",
+      "title": "生产用料成本多表汇总",
+      "source_files": [
+        "data/seed/Production.csv",
+        "data/seed/ProductionDetails.csv",
+        "data/seed/ProductBOM.csv",
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "按工单实际完工日和product_id=1过滤，再经bom_id确定材料，汇总用料明细total_material_cost。",
+      "turns": [
+        {
+          "input": "查询产品ID为1、实际完工日在2025年上半年的工单，按材料汇总ProductionDetails.total_material_cost，金额降序、并列时material_id升序取前5名，显示材料ID、名称和成本合计，保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "产品1用料成本前5名",
+                "columns": [
+                  "material_id",
+                  "material_name",
+                  "total_material_cost"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [
+                  "金额的币种和含税口径未由源文件提供。"
+                ],
+                "rows": [
+                  {
+                    "material_id": 29,
+                    "material_name": "SSD Module 1TB",
+                    "total_material_cost": "1236025142.50"
+                  },
+                  {
+                    "material_id": 52,
+                    "material_name": "Wide Camera Module 12MP",
+                    "total_material_cost": "1234699907.38"
+                  },
+                  {
+                    "material_id": 16,
+                    "material_name": "Laptop OLED Display 14",
+                    "total_material_cost": "1162863483.18"
+                  },
+                  {
+                    "material_id": 28,
+                    "material_name": "SSD Module 512GB",
+                    "total_material_cost": "1076214602.99"
+                  },
+                  {
+                    "material_id": 54,
+                    "material_name": "Laptop Webcam Module",
+                    "total_material_cost": "940580063.99"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "D16",
+      "category": "基础数据查询",
+      "title": "收货明细追溯采购行",
+      "source_files": [
+        "data/seed/GoodsReceiptDetails.csv",
+        "data/seed/GoodsReceipts.csv",
+        "data/seed/SupplierShipmentDetails.csv",
+        "data/seed/SupplierShipments.csv",
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "从gr_id=1的明细分别通过shipment_detail_id和收货单shipment_id追溯采购行及采购单。",
+      "turns": [
+        {
+          "input": "追溯gr_id=1的收货明细，按gr_detail_id升序显示收货明细ID、采购单ID、采购明细ID、材料ID、材料名称以及GoodsReceiptDetails.received_quantity。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "收货单1采购追溯",
+                "columns": [
+                  "gr_detail_id",
+                  "po_id",
+                  "po_detail_id",
+                  "material_id",
+                  "material_name",
+                  "received_quantity"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "gr_detail_id": 1,
+                    "po_id": 1,
+                    "po_detail_id": 1,
+                    "material_id": 1,
+                    "material_name": "Mobile Processor A",
+                    "received_quantity": 72300
+                  },
+                  {
+                    "gr_detail_id": 2,
+                    "po_id": 1,
+                    "po_detail_id": 2,
+                    "material_id": 6,
+                    "material_name": "Smartwatch Controller B",
+                    "received_quantity": 100950
+                  },
+                  {
+                    "gr_detail_id": 3,
+                    "po_id": 1,
+                    "po_detail_id": 3,
+                    "material_id": 11,
+                    "material_name": "OLED Phone Display 6.1",
+                    "received_quantity": 156830
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "I01",
+      "category": "结果交互",
+      "title": "订单排名柱状图",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "图表沿用前一轮标准表的5个名称和数量。",
+      "turns": [
+        {
+          "input": "按 PurchaseOrders.order_date 统计2025年上半年各供应商的采购订单数量，数量降序、并列时 supplier_id 升序，取前5名，显示供应商ID、名称和订单数量。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "供应商采购订单数量排名",
+                "columns": [
+                  "supplier_id",
+                  "supplier_name",
+                  "order_count"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "把刚才的前5名结果画成竖向柱状图，横轴为供应商名称，纵轴为订单数量，顺序沿用刚才的排名。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "chart",
+                "label": "供应商订单数量柱状图",
+                "chart_type": "bar",
+                "category_field": "supplier_name",
+                "value_field": "order_count",
+                "data": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ],
+                "point_count": 5,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "orientation": "vertical"
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "I02",
+      "category": "结果交互",
+      "title": "月度订单折线图",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv"
+      ],
+      "reference_method": "折线图依次使用1至6月的6个数量。",
+      "turns": [
+        {
+          "input": "按下单日期统计2025年上半年每月采购订单数量，显示月份和订单数量，月份用 YYYY-MM 表示并升序排列，缺失月份补0。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "上半年每月采购订单数量",
+                "columns": [
+                  "month",
+                  "order_count"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "将刚才的每月采购订单数量画成折线图，横轴月份升序，纵轴订单数量，展示全部6个月。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "chart",
+                "label": "月度订单趋势",
+                "chart_type": "line",
+                "category_field": "month",
+                "value_field": "order_count",
+                "data": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ],
+                "point_count": 6,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "I03",
+      "category": "结果交互",
+      "title": "基于结果制作派生表",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "仅对前一轮5条产品数据逐行计算售价减标准成本并排序。",
+      "turns": [
+        {
+          "input": "按 product_id 升序列出前5个产品，显示产品ID、编码、名称、类别、标准成本和销售价格。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前5个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "18827.23",
+                    "selling_price": "25228.49"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "14741.67",
+                    "selling_price": "19753.84"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_code": "PRD-004",
+                    "product_name": "Canal S2 Max Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "29386.99",
+                    "selling_price": "39378.57"
+                  },
+                  {
+                    "product_id": 5,
+                    "product_code": "PRD-005",
+                    "product_name": "Sina Air 14 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "22462.35",
+                    "selling_price": "28751.81"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "仅基于刚才这5个产品制作一张新表，显示产品名称、标准成本、售价和售价减标准成本的差额，按差额降序，金额保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "五个产品售价成本差额",
+                "columns": [
+                  "product_name",
+                  "standard_cost",
+                  "selling_price",
+                  "price_cost_difference"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [
+                  "金额的币种和含税口径未由源文件提供。",
+                  "本题差额按售价减标准成本定义，源文件没有提供净利润口径。"
+                ],
+                "rows": [
+                  {
+                    "product_name": "Canal S2 Max Phone",
+                    "standard_cost": "29386.99",
+                    "selling_price": "39378.57",
+                    "price_cost_difference": "9991.58"
+                  },
+                  {
+                    "product_name": "Nile X1 Phone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01",
+                    "price_cost_difference": "8029.08"
+                  },
+                  {
+                    "product_name": "Nile X1 Pro Phone",
+                    "standard_cost": "18827.23",
+                    "selling_price": "25228.49",
+                    "price_cost_difference": "6401.26"
+                  },
+                  {
+                    "product_name": "Sina Air 14 Laptop",
+                    "standard_cost": "22462.35",
+                    "selling_price": "28751.81",
+                    "price_cost_difference": "6289.46"
+                  },
+                  {
+                    "product_name": "Canal S2 Phone",
+                    "standard_cost": "14741.67",
+                    "selling_price": "19753.84",
+                    "price_cost_difference": "5012.17"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "I04",
+      "category": "结果交互",
+      "title": "解读产量排名",
+      "source_files": [
+        "data/seed/Production.csv",
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "读取前5名表的首行与末行，直接相减。",
+      "turns": [
+        {
+          "input": "以 Production.actual_end_date 为时间条件，统计2025年上半年各产品的 production_quantity 合计，按合计降序、并列时 product_id 升序取前5名，显示产品ID、名称和实际产量合计。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "实际产量前5名产品",
+                "columns": [
+                  "product_id",
+                  "product_name",
+                  "production_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 16,
+                    "product_name": "Delta Sound Pro",
+                    "production_quantity": 747731
+                  },
+                  {
+                    "product_id": 15,
+                    "product_name": "Canal Pods",
+                    "production_quantity": 737762
+                  },
+                  {
+                    "product_id": 13,
+                    "product_name": "Nile Buds Lite",
+                    "production_quantity": 602901
+                  },
+                  {
+                    "product_id": 14,
+                    "product_name": "Nile Buds Pro",
+                    "production_quantity": 503491
+                  },
+                  {
+                    "product_id": 12,
+                    "product_name": "Sina Health Watch",
+                    "production_quantity": 445806
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "解读刚才这份前5名结果，说明第一名和第五名分别是谁、产量各是多少，以及第一名比第五名多多少。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前5名首尾比较",
+                "columns": [
+                  "first_product",
+                  "first_quantity",
+                  "fifth_product",
+                  "fifth_quantity",
+                  "difference"
+                ],
+                "row_count": 1,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "first_product": "Delta Sound Pro",
+                    "first_quantity": 747731,
+                    "fifth_product": "Sina Health Watch",
+                    "fifth_quantity": 445806,
+                    "difference": 301925
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "比较对象为这份前5名表的第一名与第五名"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "I05",
+      "category": "结果交互",
+      "title": "库存结果报告",
+      "source_files": [
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "报告表格与前轮5项一致，最低值由表首行给出。",
+      "turns": [
+        {
+          "input": "按库存快照查询 warehouse_id=1 的原材料，暂将可用数量定义为 quantity_on_hand 减 quantity_reserved，按可用数量升序、并列时 material_id 升序取5项，显示材料ID、名称、现存量、预留量和可用数量，数量保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "仓库可用数量最低的5种材料",
+                "columns": [
+                  "material_id",
+                  "material_name",
+                  "quantity_on_hand",
+                  "quantity_reserved",
+                  "available_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "material_id": 31,
+                    "material_name": "Main PCB Phone",
+                    "quantity_on_hand": "41311.56",
+                    "quantity_reserved": "1652.26",
+                    "available_quantity": "39659.30"
+                  },
+                  {
+                    "material_id": 16,
+                    "material_name": "Laptop OLED Display 14",
+                    "quantity_on_hand": "46554.05",
+                    "quantity_reserved": "1861.96",
+                    "available_quantity": "44692.09"
+                  },
+                  {
+                    "material_id": 79,
+                    "material_name": "Warranty Card",
+                    "quantity_on_hand": "49158.56",
+                    "quantity_reserved": "1966.18",
+                    "available_quantity": "47192.38"
+                  },
+                  {
+                    "material_id": 76,
+                    "material_name": "Laptop Power Cable",
+                    "quantity_on_hand": "56547.81",
+                    "quantity_reserved": "2262.07",
+                    "available_quantity": "54285.74"
+                  },
+                  {
+                    "material_id": 43,
+                    "material_name": "Laptop Battery 50Wh",
+                    "quantity_on_hand": "60546.15",
+                    "quantity_reserved": "2422.05",
+                    "available_quantity": "58124.10"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "把刚才5项结果整理为一份简短Markdown报告，包含统计时点、可用数量公式、完整5行表格和最低可用数量的材料说明。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "report",
+                "label": "仓库1低可用量材料报告",
+                "required_facts": [
+                  "库存快照时点为2025-12-31 18:00:00。",
+                  "可用数量按现存量减预留量计算。",
+                  "最低项为Main PCB Phone，可用数量39659.30。"
+                ],
+                "tables": [
+                  {
+                    "type": "table",
+                    "label": "仓库可用数量最低的5种材料",
+                    "columns": [
+                      "material_id",
+                      "material_name",
+                      "quantity_on_hand",
+                      "quantity_reserved",
+                      "available_quantity"
+                    ],
+                    "row_count": 5,
+                    "ordered": true,
+                    "reference_notes": [],
+                    "rows": [
+                      {
+                        "material_id": 31,
+                        "material_name": "Main PCB Phone",
+                        "quantity_on_hand": "41311.56",
+                        "quantity_reserved": "1652.26",
+                        "available_quantity": "39659.30"
+                      },
+                      {
+                        "material_id": 16,
+                        "material_name": "Laptop OLED Display 14",
+                        "quantity_on_hand": "46554.05",
+                        "quantity_reserved": "1861.96",
+                        "available_quantity": "44692.09"
+                      },
+                      {
+                        "material_id": 79,
+                        "material_name": "Warranty Card",
+                        "quantity_on_hand": "49158.56",
+                        "quantity_reserved": "1966.18",
+                        "available_quantity": "47192.38"
+                      },
+                      {
+                        "material_id": 76,
+                        "material_name": "Laptop Power Cable",
+                        "quantity_on_hand": "56547.81",
+                        "quantity_reserved": "2262.07",
+                        "available_quantity": "54285.74"
+                      },
+                      {
+                        "material_id": 43,
+                        "material_name": "Laptop Battery 50Wh",
+                        "quantity_on_hand": "60546.15",
+                        "quantity_reserved": "2422.05",
+                        "available_quantity": "58124.10"
+                      }
+                    ]
+                  }
+                ],
+                "limitations": [
+                  "当前报告使用单时点快照。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "I06",
+      "category": "结果交互",
+      "title": "产品类别饼图与占比",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "四类各4条，以16为分母计算占比。",
+      "turns": [
+        {
+          "input": "统计每个 product_category 的产品数量，按类别英文名升序，显示类别和产品数量。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "产品类别数量",
+                "columns": [
+                  "product_category",
+                  "product_count"
+                ],
+                "row_count": 4,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_category": "Earbuds",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "product_count": 4
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "根据刚才的类别数量制作饼图，标出类别名、数量和百分比。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "chart",
+                "label": "产品类别占比",
+                "chart_type": "pie",
+                "category_field": "product_category",
+                "value_field": "product_count",
+                "data": [
+                  {
+                    "product_category": "Earbuds",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "product_count": 4
+                  }
+                ],
+                "point_count": 4,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "percentages": [
+                  {
+                    "product_category": "Earbuds",
+                    "percentage": "25.00"
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "percentage": "25.00"
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "percentage": "25.00"
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "percentage": "25.00"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M01",
+      "category": "多需求",
+      "title": "概念解释与数据查询",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "概念按定义判断，产品数独立计数。",
+      "turns": [
+        {
+          "input": "先解释算术平均值，再查询Products中的产品记录总数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "平均值解释",
+                "required_facts": [
+                  "算术平均值等于数值总和除以数值个数。"
+                ],
+                "limitations": []
+              },
+              {
+                "type": "table",
+                "label": "产品总数",
+                "columns": [
+                  "product_count"
+                ],
+                "row_count": 1,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_count": 16
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "概念解释和产品总数两项均有答案"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M02",
+      "category": "多需求",
+      "title": "两类实体的独立明细",
+      "source_files": [
+        "data/seed/Products.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "分别按各自的整数ID排序取指定数量。",
+      "turns": [
+        {
+          "input": "分别列出product_id最小的前2个产品，以及supplier_id最小的前3个供应商，两张表都显示ID、编码和名称。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前2个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name"
+                ],
+                "row_count": 2,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone"
+                  }
+                ]
+              },
+              {
+                "type": "table",
+                "label": "前3个供应商",
+                "columns": [
+                  "supplier_id",
+                  "supplier_code",
+                  "supplier_name"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 1,
+                    "supplier_code": "SUP-001",
+                    "supplier_name": "Al Nile Electronic Components"
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_code": "SUP-002",
+                    "supplier_name": "Misr Advanced Circuits"
+                  },
+                  {
+                    "supplier_id": 3,
+                    "supplier_code": "SUP-003",
+                    "supplier_name": "Suez Tech Supplies"
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "产品表2行，供应商表3行，数量条件分别生效"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M03",
+      "category": "多需求",
+      "title": "企业关系解释与订单趋势表",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/SupplierShipments.csv",
+        "data/seed/GoodsReceipts.csv"
+      ],
+      "reference_method": "关系来自登记关系，月度数量来自订单单头日期计数。",
+      "turns": [
+        {
+          "input": "先解释采购订单单头经过哪些表关联到收货单，再按下单日期统计2025年上半年每月采购订单数量，月份升序，缺失月份补0。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "text",
+                "label": "采购单头到收货单的关系",
+                "required_facts": [
+                  "PurchaseOrders.po_id 关联 SupplierShipments.po_id。",
+                  "SupplierShipments.shipment_id 关联 GoodsReceipts.shipment_id。",
+                  "从采购单头到收货单的路径为 PurchaseOrders → SupplierShipments → GoodsReceipts。",
+                  "GoodsReceipts 的单头标识为 gr_id，收货日期字段为 receipt_date。"
+                ],
+                "limitations": []
+              },
+              {
+                "type": "table",
+                "label": "上半年每月采购订单数量",
+                "columns": [
+                  "month",
+                  "order_count"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M04",
+      "category": "多需求",
+      "title": "查询类别并绘图和解释",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "一次计数得到四类数量，图与解释使用同一结果。",
+      "turns": [
+        {
+          "input": "统计每个产品类别的数量，按类别英文名升序列出结果，再根据这份结果画饼图，并解释各类别占全部产品的比例。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "产品类别数量",
+                "columns": [
+                  "product_category",
+                  "product_count"
+                ],
+                "row_count": 4,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_category": "Earbuds",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "product_count": 4
+                  }
+                ]
+              },
+              {
+                "type": "chart",
+                "label": "产品类别占比",
+                "chart_type": "pie",
+                "category_field": "product_category",
+                "value_field": "product_count",
+                "data": [
+                  {
+                    "product_category": "Earbuds",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "product_count": 4
+                  }
+                ],
+                "point_count": 4,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "percentages": [
+                  {
+                    "product_category": "Earbuds",
+                    "percentage": "25.00"
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "percentage": "25.00"
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "percentage": "25.00"
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "percentage": "25.00"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "label": "类别占比解释",
+                "required_facts": [
+                  "共有4个类别，每类4个产品。",
+                  "总计16个产品，每个类别占25%。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M05",
+      "category": "多需求",
+      "title": "不同供应商与年份的条件隔离",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv"
+      ],
+      "reference_method": "按两个独立的supplier_id和order_date范围分别计数。",
+      "turns": [
+        {
+          "input": "分别统计supplier_id=1在2024年下单的采购订单数量，以及supplier_id=2在2025年下单的采购订单数量，明确标出各自供应商ID、年份和订单数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "独立条件统计",
+                "columns": [
+                  "supplier_id",
+                  "year",
+                  "order_count"
+                ],
+                "row_count": 2,
+                "ordered": false,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 1,
+                    "year": 2024,
+                    "order_count": 51
+                  },
+                  {
+                    "supplier_id": 2,
+                    "year": 2025,
+                    "order_count": 35
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M06",
+      "category": "多需求",
+      "title": "可回答需求与缺失数据并存",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "产品前3条可确定，设备故障数据缺失由表集合与limitations确认。",
+      "turns": [
+        {
+          "input": "列出product_id最小的前3个产品的ID、编码和名称，同时统计2025年上半年每台设备的故障次数。",
+          "expected": {
+            "outcome": "partial",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前3个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "label": "设备故障部分",
+                "required_facts": [
+                  "当前项目缺少设备及设备故障记录，无法从当前数据确定每台设备的故障次数。",
+                  "完成故障统计需要补充设备标识、故障时间等设备故障数据。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": [
+              "产品列表正常交付",
+              "设备故障部分明确说明数据缺口"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M07",
+      "category": "多需求",
+      "title": "两套数据与两张图的对应",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "分别计算月度订单数量与产品类别数量，逐图核对对应数据。",
+      "turns": [
+        {
+          "input": "按下单日期统计2025年上半年每月采购订单数量并画折线图，缺失月份补0；同时统计各产品类别的产品数量并画柱状图，类别按英文名升序。请同时展示两份数据表和两张图。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "上半年每月采购订单数量",
+                "columns": [
+                  "month",
+                  "order_count"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ]
+              },
+              {
+                "type": "chart",
+                "label": "每月采购订单",
+                "chart_type": "line",
+                "category_field": "month",
+                "value_field": "order_count",
+                "data": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ],
+                "point_count": 6,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ]
+              },
+              {
+                "type": "table",
+                "label": "产品类别数量",
+                "columns": [
+                  "product_category",
+                  "product_count"
+                ],
+                "row_count": 4,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_category": "Earbuds",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "product_count": 4
+                  }
+                ]
+              },
+              {
+                "type": "chart",
+                "label": "各类别产品数量",
+                "chart_type": "bar",
+                "category_field": "product_category",
+                "value_field": "product_count",
+                "data": [
+                  {
+                    "product_category": "Earbuds",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Laptop",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartphone",
+                    "product_count": 4
+                  },
+                  {
+                    "product_category": "Smartwatch",
+                    "product_count": 4
+                  }
+                ],
+                "point_count": 4,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "orientation": "vertical"
+              }
+            ],
+            "checks": [
+              "月度数据对应折线图，产品类别数据对应柱状图"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "M08",
+      "category": "多需求",
+      "title": "已有结果绘图与字段解释",
+      "source_files": [
+        "data/seed/Production.csv",
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "先固定实际产量前5名，再绘图并按字段字典解释数量。",
+      "turns": [
+        {
+          "input": "以 Production.actual_end_date 为时间条件，统计2025年上半年各产品的 production_quantity 合计，按合计降序、并列时 product_id 升序取前5名，显示产品ID、名称和实际产量合计。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "实际产量前5名产品",
+                "columns": [
+                  "product_id",
+                  "product_name",
+                  "production_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 16,
+                    "product_name": "Delta Sound Pro",
+                    "production_quantity": 747731
+                  },
+                  {
+                    "product_id": 15,
+                    "product_name": "Canal Pods",
+                    "production_quantity": 737762
+                  },
+                  {
+                    "product_id": 13,
+                    "product_name": "Nile Buds Lite",
+                    "production_quantity": 602901
+                  },
+                  {
+                    "product_id": 14,
+                    "product_name": "Nile Buds Pro",
+                    "production_quantity": 503491
+                  },
+                  {
+                    "product_id": 12,
+                    "product_name": "Sina Health Watch",
+                    "production_quantity": 445806
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "把刚才的前5名画成横向条形图，顺序沿用排名，再解释Production中的实际产量与计划量有什么区别。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "chart",
+                "label": "产量前5名横向图",
+                "chart_type": "bar",
+                "category_field": "product_name",
+                "value_field": "production_quantity",
+                "data": [
+                  {
+                    "product_id": 16,
+                    "product_name": "Delta Sound Pro",
+                    "production_quantity": 747731
+                  },
+                  {
+                    "product_id": 15,
+                    "product_name": "Canal Pods",
+                    "production_quantity": 737762
+                  },
+                  {
+                    "product_id": 13,
+                    "product_name": "Nile Buds Lite",
+                    "production_quantity": 602901
+                  },
+                  {
+                    "product_id": 14,
+                    "product_name": "Nile Buds Pro",
+                    "production_quantity": 503491
+                  },
+                  {
+                    "product_id": 12,
+                    "product_name": "Sina Health Watch",
+                    "production_quantity": 445806
+                  }
+                ],
+                "point_count": 5,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "orientation": "horizontal"
+              },
+              {
+                "type": "text",
+                "label": "实际产量与计划量",
+                "required_facts": [
+                  "planned_quantity 是生产工单计划数量。",
+                  "production_quantity 是生产工单记录的实际生产数量。"
+                ],
+                "limitations": [
+                  "原文件未确认 production_quantity 是否包含 rejected_quantity，解释实际产量时需保留此口径限制。"
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X01",
+      "category": "跨轮修改",
+      "title": "产品条数由5改2",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "第二轮只改变limit，保留全部输出字段和ID升序。",
+      "turns": [
+        {
+          "input": "按 product_id 升序列出前5个产品，显示产品ID、编码、名称、类别、标准成本和销售价格。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前5个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "18827.23",
+                    "selling_price": "25228.49"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "14741.67",
+                    "selling_price": "19753.84"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_code": "PRD-004",
+                    "product_name": "Canal S2 Max Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "29386.99",
+                    "selling_price": "39378.57"
+                  },
+                  {
+                    "product_id": 5,
+                    "product_code": "PRD-005",
+                    "product_name": "Sina Air 14 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "22462.35",
+                    "selling_price": "28751.81"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "产品只列前2个，其他要求沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前2个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 2,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "18827.23",
+                    "selling_price": "25228.49"
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "本轮产品明细为2行，字段和排序沿用前轮"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X02",
+      "category": "跨轮修改",
+      "title": "产量统计半年改季度",
+      "source_files": [
+        "data/seed/Production.csv",
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "将actual_end_date范围改为2025-04-01至2025-07-01，重算产品合计排名。",
+      "turns": [
+        {
+          "input": "以 Production.actual_end_date 为时间条件，统计2025年上半年各产品的 production_quantity 合计，按合计降序、并列时 product_id 升序取前5名，显示产品ID、名称和实际产量合计。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "实际产量前5名产品",
+                "columns": [
+                  "product_id",
+                  "product_name",
+                  "production_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 16,
+                    "product_name": "Delta Sound Pro",
+                    "production_quantity": 747731
+                  },
+                  {
+                    "product_id": 15,
+                    "product_name": "Canal Pods",
+                    "production_quantity": 737762
+                  },
+                  {
+                    "product_id": 13,
+                    "product_name": "Nile Buds Lite",
+                    "production_quantity": 602901
+                  },
+                  {
+                    "product_id": 14,
+                    "product_name": "Nile Buds Pro",
+                    "production_quantity": 503491
+                  },
+                  {
+                    "product_id": 12,
+                    "product_name": "Sina Health Watch",
+                    "production_quantity": 445806
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "将统计时间改为2025年第二季度，仍按实际完工日期筛选，其他要求沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "实际产量前5名产品",
+                "columns": [
+                  "product_id",
+                  "product_name",
+                  "production_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 16,
+                    "product_name": "Delta Sound Pro",
+                    "production_quantity": 418640
+                  },
+                  {
+                    "product_id": 13,
+                    "product_name": "Nile Buds Lite",
+                    "production_quantity": 377210
+                  },
+                  {
+                    "product_id": 15,
+                    "product_name": "Canal Pods",
+                    "production_quantity": 351213
+                  },
+                  {
+                    "product_id": 14,
+                    "product_name": "Nile Buds Pro",
+                    "production_quantity": 224299
+                  },
+                  {
+                    "product_id": 2,
+                    "product_name": "Nile X1 Pro Phone",
+                    "production_quantity": 215944
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X03",
+      "category": "跨轮修改",
+      "title": "供应商订单排名换年份",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "时间范围由2025上半年改为2024上半年，保留order_date与排名规则。",
+      "turns": [
+        {
+          "input": "按 PurchaseOrders.order_date 统计2025年上半年各供应商的采购订单数量，数量降序、并列时 supplier_id 升序，取前5名，显示供应商ID、名称和订单数量。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "供应商采购订单数量排名",
+                "columns": [
+                  "supplier_id",
+                  "supplier_name",
+                  "order_count"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "改查2024年上半年，其他要求沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "供应商采购订单数量排名",
+                "columns": [
+                  "supplier_id",
+                  "supplier_name",
+                  "order_count"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 6,
+                    "supplier_name": "Cairo Battery Systems",
+                    "order_count": 45
+                  },
+                  {
+                    "supplier_id": 9,
+                    "supplier_name": "Sinai Semiconductor Distribution",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 3,
+                    "supplier_name": "Suez Tech Supplies",
+                    "order_count": 40
+                  },
+                  {
+                    "supplier_id": 16,
+                    "supplier_name": "Tanta Packaging Industries",
+                    "order_count": 40
+                  },
+                  {
+                    "supplier_id": 5,
+                    "supplier_name": "Delta Display Solutions",
+                    "order_count": 39
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X04",
+      "category": "跨轮修改",
+      "title": "仅修改图表方向",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "三轮均使用2025上半年同一份5行排名，仅第三轮改变方向。",
+      "turns": [
+        {
+          "input": "按 PurchaseOrders.order_date 统计2025年上半年各供应商的采购订单数量，数量降序、并列时 supplier_id 升序，取前5名，显示供应商ID、名称和订单数量。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "供应商采购订单数量排名",
+                "columns": [
+                  "supplier_id",
+                  "supplier_name",
+                  "order_count"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "把刚才结果画成竖向柱状图，横轴供应商名称，纵轴订单数量，顺序沿用排名。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "chart",
+                "label": "供应商排名竖向图",
+                "chart_type": "bar",
+                "category_field": "supplier_name",
+                "value_field": "order_count",
+                "data": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ],
+                "point_count": 5,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "orientation": "vertical"
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "把刚才这张图改为横向条形图，数量和排名顺序沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "chart",
+                "label": "供应商排名横向图",
+                "chart_type": "bar",
+                "category_field": "supplier_name",
+                "value_field": "order_count",
+                "data": [
+                  {
+                    "supplier_id": 19,
+                    "supplier_name": "New Cairo Device Parts",
+                    "order_count": 44
+                  },
+                  {
+                    "supplier_id": 23,
+                    "supplier_name": "October Electronic Distribution",
+                    "order_count": 37
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_name": "Misr Advanced Circuits",
+                    "order_count": 35
+                  },
+                  {
+                    "supplier_id": 4,
+                    "supplier_name": "Canal Microelectronics",
+                    "order_count": 32
+                  },
+                  {
+                    "supplier_id": 12,
+                    "supplier_name": "Giza Smart Components",
+                    "order_count": 32
+                  }
+                ],
+                "point_count": 5,
+                "checks": [
+                  "类别标签与数值逐项对应",
+                  "展示全部预期数据点",
+                  "数值轴表达真实量级"
+                ],
+                "orientation": "horizontal"
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X05",
+      "category": "跨轮修改",
+      "title": "库存查询切换仓库",
+      "source_files": [
+        "data/seed/RawMaterialInventory.csv",
+        "data/seed/Materials.csv"
+      ],
+      "reference_method": "将warehouse_id由1改2，保留差值定义、字段、排序和5行限制。",
+      "turns": [
+        {
+          "input": "按库存快照查询 warehouse_id=1 的原材料，暂将可用数量定义为 quantity_on_hand 减 quantity_reserved，按可用数量升序、并列时 material_id 升序取5项，显示材料ID、名称、现存量、预留量和可用数量，数量保留两位小数。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "仓库可用数量最低的5种材料",
+                "columns": [
+                  "material_id",
+                  "material_name",
+                  "quantity_on_hand",
+                  "quantity_reserved",
+                  "available_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "material_id": 31,
+                    "material_name": "Main PCB Phone",
+                    "quantity_on_hand": "41311.56",
+                    "quantity_reserved": "1652.26",
+                    "available_quantity": "39659.30"
+                  },
+                  {
+                    "material_id": 16,
+                    "material_name": "Laptop OLED Display 14",
+                    "quantity_on_hand": "46554.05",
+                    "quantity_reserved": "1861.96",
+                    "available_quantity": "44692.09"
+                  },
+                  {
+                    "material_id": 79,
+                    "material_name": "Warranty Card",
+                    "quantity_on_hand": "49158.56",
+                    "quantity_reserved": "1966.18",
+                    "available_quantity": "47192.38"
+                  },
+                  {
+                    "material_id": 76,
+                    "material_name": "Laptop Power Cable",
+                    "quantity_on_hand": "56547.81",
+                    "quantity_reserved": "2262.07",
+                    "available_quantity": "54285.74"
+                  },
+                  {
+                    "material_id": 43,
+                    "material_name": "Laptop Battery 50Wh",
+                    "quantity_on_hand": "60546.15",
+                    "quantity_reserved": "2422.05",
+                    "available_quantity": "58124.10"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "将仓库改为warehouse_id=2，其他要求沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "仓库可用数量最低的5种材料",
+                "columns": [
+                  "material_id",
+                  "material_name",
+                  "quantity_on_hand",
+                  "quantity_reserved",
+                  "available_quantity"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "material_id": 31,
+                    "material_name": "Main PCB Phone",
+                    "quantity_on_hand": "41339.38",
+                    "quantity_reserved": "1653.78",
+                    "available_quantity": "39685.60"
+                  },
+                  {
+                    "material_id": 16,
+                    "material_name": "Laptop OLED Display 14",
+                    "quantity_on_hand": "49235.60",
+                    "quantity_reserved": "1969.62",
+                    "available_quantity": "47265.98"
+                  },
+                  {
+                    "material_id": 79,
+                    "material_name": "Warranty Card",
+                    "quantity_on_hand": "49562.37",
+                    "quantity_reserved": "1982.65",
+                    "available_quantity": "47579.72"
+                  },
+                  {
+                    "material_id": 76,
+                    "material_name": "Laptop Power Cable",
+                    "quantity_on_hand": "55914.15",
+                    "quantity_reserved": "2236.41",
+                    "available_quantity": "53677.74"
+                  },
+                  {
+                    "material_id": 43,
+                    "material_name": "Laptop Battery 50Wh",
+                    "quantity_on_hand": "60168.79",
+                    "quantity_reserved": "2406.55",
+                    "available_quantity": "57762.24"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X06",
+      "category": "跨轮修改",
+      "title": "多项需求中的局部修改",
+      "source_files": [
+        "data/seed/Products.csv",
+        "data/seed/Suppliers.csv"
+      ],
+      "reference_method": "第一轮两张明细表，第二轮只更新产品列表的行数。",
+      "turns": [
+        {
+          "input": "分别按ID升序列出前5个产品和前3个供应商，各显示ID、编码和名称。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前5个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_code": "PRD-004",
+                    "product_name": "Canal S2 Max Phone"
+                  },
+                  {
+                    "product_id": 5,
+                    "product_code": "PRD-005",
+                    "product_name": "Sina Air 14 Laptop"
+                  }
+                ]
+              },
+              {
+                "type": "table",
+                "label": "前3个供应商",
+                "columns": [
+                  "supplier_id",
+                  "supplier_code",
+                  "supplier_name"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "supplier_id": 1,
+                    "supplier_code": "SUP-001",
+                    "supplier_name": "Al Nile Electronic Components"
+                  },
+                  {
+                    "supplier_id": 2,
+                    "supplier_code": "SUP-002",
+                    "supplier_name": "Misr Advanced Circuits"
+                  },
+                  {
+                    "supplier_id": 3,
+                    "supplier_code": "SUP-003",
+                    "supplier_name": "Suez Tech Supplies"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "只把产品列表改成前3个，这轮只展示修改后的产品列表。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前3个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone"
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "本轮只展示3个产品的列表"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X07",
+      "category": "跨轮修改",
+      "title": "多轮排序与类别条件继承",
+      "source_files": [
+        "data/seed/Products.csv"
+      ],
+      "reference_method": "先ID排序5行，再全产品售价降序5行，最后按Laptop过滤并保留售价降序取3行。",
+      "turns": [
+        {
+          "input": "按 product_id 升序列出前5个产品，显示产品ID、编码、名称、类别、标准成本和销售价格。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "前5个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01"
+                  },
+                  {
+                    "product_id": 2,
+                    "product_code": "PRD-002",
+                    "product_name": "Nile X1 Pro Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "18827.23",
+                    "selling_price": "25228.49"
+                  },
+                  {
+                    "product_id": 3,
+                    "product_code": "PRD-003",
+                    "product_name": "Canal S2 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "14741.67",
+                    "selling_price": "19753.84"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_code": "PRD-004",
+                    "product_name": "Canal S2 Max Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "29386.99",
+                    "selling_price": "39378.57"
+                  },
+                  {
+                    "product_id": 5,
+                    "product_code": "PRD-005",
+                    "product_name": "Sina Air 14 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "22462.35",
+                    "selling_price": "28751.81"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "改按售价降序，售价相同时按product_id升序，仍列前5个，显示字段沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "售价最高的5个产品",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 5,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 14,
+                    "product_code": "PRD-014",
+                    "product_name": "Nile Buds Pro",
+                    "product_category": "Earbuds",
+                    "standard_cost": "28827.24",
+                    "selling_price": "40934.68"
+                  },
+                  {
+                    "product_id": 4,
+                    "product_code": "PRD-004",
+                    "product_name": "Canal S2 Max Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "29386.99",
+                    "selling_price": "39378.57"
+                  },
+                  {
+                    "product_id": 15,
+                    "product_code": "PRD-015",
+                    "product_name": "Canal Pods",
+                    "product_category": "Earbuds",
+                    "standard_cost": "23094.78",
+                    "selling_price": "32794.59"
+                  },
+                  {
+                    "product_id": 8,
+                    "product_code": "PRD-008",
+                    "product_name": "Delta Creator 16 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "25526.58",
+                    "selling_price": "32674.03"
+                  },
+                  {
+                    "product_id": 1,
+                    "product_code": "PRD-001",
+                    "product_name": "Nile X1 Phone",
+                    "product_category": "Smartphone",
+                    "standard_cost": "23614.93",
+                    "selling_price": "31644.01"
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "只看Laptop类别，数量改为前3个，其他要求沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "售价最高的3个Laptop",
+                "columns": [
+                  "product_id",
+                  "product_code",
+                  "product_name",
+                  "product_category",
+                  "standard_cost",
+                  "selling_price"
+                ],
+                "row_count": 3,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "product_id": 8,
+                    "product_code": "PRD-008",
+                    "product_name": "Delta Creator 16 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "25526.58",
+                    "selling_price": "32674.03"
+                  },
+                  {
+                    "product_id": 5,
+                    "product_code": "PRD-005",
+                    "product_name": "Sina Air 14 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "22462.35",
+                    "selling_price": "28751.81"
+                  },
+                  {
+                    "product_id": 6,
+                    "product_code": "PRD-006",
+                    "product_name": "Sina Pro 15 Laptop",
+                    "product_category": "Laptop",
+                    "standard_cost": "19782.23",
+                    "selling_price": "25321.25"
+                  }
+                ]
+              }
+            ],
+            "checks": [
+              "从完整Laptop类别数据筛选后排序取3条"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "X08",
+      "category": "跨轮修改",
+      "title": "时间范围改为空数据并补零",
+      "source_files": [
+        "data/seed/PurchaseOrders.csv"
+      ],
+      "reference_method": "将月份范围整体改为2026上半年，沿用缺失月份补0的要求。",
+      "turns": [
+        {
+          "input": "按下单日期统计2025年上半年每月采购订单数量，显示月份和订单数量，月份用 YYYY-MM 表示并升序排列，缺失月份补0。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "上半年每月采购订单数量",
+                "columns": [
+                  "month",
+                  "order_count"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2025-01",
+                    "order_count": 127
+                  },
+                  {
+                    "month": "2025-02",
+                    "order_count": 113
+                  },
+                  {
+                    "month": "2025-03",
+                    "order_count": 103
+                  },
+                  {
+                    "month": "2025-04",
+                    "order_count": 102
+                  },
+                  {
+                    "month": "2025-05",
+                    "order_count": 110
+                  },
+                  {
+                    "month": "2025-06",
+                    "order_count": 86
+                  }
+                ]
+              }
+            ],
+            "checks": []
+          }
+        },
+        {
+          "input": "年份改成2026年，仍统计上半年，其他要求沿用。",
+          "expected": {
+            "outcome": "answer",
+            "outputs": [
+              {
+                "type": "table",
+                "label": "上半年每月采购订单数量",
+                "columns": [
+                  "month",
+                  "order_count"
+                ],
+                "row_count": 6,
+                "ordered": true,
+                "reference_notes": [],
+                "rows": [
+                  {
+                    "month": "2026-01",
+                    "order_count": 0
+                  },
+                  {
+                    "month": "2026-02",
+                    "order_count": 0
+                  },
+                  {
+                    "month": "2026-03",
+                    "order_count": 0
+                  },
+                  {
+                    "month": "2026-04",
+                    "order_count": 0
+                  },
+                  {
+                    "month": "2026-05",
+                    "order_count": 0
+                  },
+                  {
+                    "month": "2026-06",
+                    "order_count": 0
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "label": "数据范围说明",
+                "required_facts": [
+                  "2026年上半年没有匹配的采购订单记录，按补0约定展示1至6月各0单。"
+                ],
+                "limitations": []
+              }
+            ],
+            "checks": []
+          }
+        }
+      ]
+    }
+  ]
+}

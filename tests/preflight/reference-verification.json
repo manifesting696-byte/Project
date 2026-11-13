@@ -1,0 +1,341 @@
+{
+  "snapshot_id": "4c21d53a83016f2e",
+  "dataset_rows": 69,
+  "fidelity": {
+    "tables": {
+      "FinishedGoodsInventory": {
+        "rows": 32,
+        "columns": 8,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "GoodsReceiptDetails": {
+        "rows": 6600,
+        "columns": 9,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "GoodsReceipts": {
+        "rows": 2200,
+        "columns": 7,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "Materials": {
+        "rows": 80,
+        "columns": 8,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "ProductBOM": {
+        "rows": 160,
+        "columns": 6,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "Production": {
+        "rows": 2600,
+        "columns": 10,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "ProductionDetails": {
+        "rows": 26000,
+        "columns": 9,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "Products": {
+        "rows": 16,
+        "columns": 8,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "PurchaseOrderDetails": {
+        "rows": 6600,
+        "columns": 10,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "PurchaseOrders": {
+        "rows": 2200,
+        "columns": 8,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "QualityInspections": {
+        "rows": 6600,
+        "columns": 12,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "RawMaterialInventory": {
+        "rows": 160,
+        "columns": 10,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "Suppliers": {
+        "rows": 25,
+        "columns": 13,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "SupplierShipmentDetails": {
+        "rows": 6600,
+        "columns": 7,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "SupplierShipments": {
+        "rows": 2200,
+        "columns": 10,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      },
+      "Warehouses": {
+        "rows": 4,
+        "columns": 8,
+        "mismatched_cells": 0,
+        "samples": [],
+        "ok": true,
+        "problems": []
+      }
+    },
+    "ok": true,
+    "mismatched_cells": 0
+  },
+  "structural": {
+    "checks": [
+      {
+        "check": "Materials 类别数（8 种规范取值）",
+        "sql": "SELECT COUNT(DISTINCT material_category) AS value FROM materials",
+        "expected": 8,
+        "actual": 8,
+        "ok": true
+      },
+      {
+        "check": "Materials 每类记录数一致（80/8=10）",
+        "sql": "SELECT MIN(c) AS value FROM (SELECT COUNT(*) c FROM materials GROUP BY material_category) t",
+        "expected": 10,
+        "actual": 10,
+        "ok": true
+      },
+      {
+        "check": "Suppliers 国家取值数（country 无区分度）",
+        "sql": "SELECT COUNT(DISTINCT country) AS value FROM suppliers",
+        "expected": 1,
+        "actual": 1,
+        "ok": true
+      },
+      {
+        "check": "Suppliers 城市取值数（city 可分组）",
+        "sql": "SELECT COUNT(DISTINCT city) AS value FROM suppliers",
+        "expected": 14,
+        "actual": 14,
+        "ok": true
+      },
+      {
+        "check": "Suppliers 地址取值数（8 个地址各被 2 家共用）",
+        "sql": "SELECT COUNT(DISTINCT address) AS value FROM suppliers",
+        "expected": 17,
+        "actual": 17,
+        "ok": true
+      },
+      {
+        "check": "Suppliers 粒度顺序 country < city < address < 行数",
+        "sql": "SELECT CASE WHEN COUNT(DISTINCT country) < COUNT(DISTINCT city) AND COUNT(DISTINCT city) < COUNT(DISTINCT address) AND COUNT(DISTINCT address) <= COUNT(*) THEN 1 ELSE 0 END AS value FROM suppliers",
+        "expected": 1,
+        "actual": 1,
+        "ok": true
+      },
+      {
+        "check": "Suppliers 供应商数",
+        "sql": "SELECT COUNT(*) AS value FROM suppliers",
+        "expected": 25,
+        "actual": 25,
+        "ok": true
+      },
+      {
+        "check": "日期列全部为 ISO（无斜杠残留）",
+        "sql": "SELECT COUNT(*) AS value FROM production WHERE start_date::text LIKE '%/%'",
+        "expected": 0,
+        "actual": 0,
+        "ok": true
+      }
+    ],
+    "ok": true
+  },
+  "reference_sql": {
+    "total_outputs": 83,
+    "sql_rederived": 62,
+    "llm_judged": 21,
+    "by_type": {
+      "text": {
+        "total": 21,
+        "sql_rederived": 1,
+        "llm_judged": 20
+      },
+      "table": {
+        "total": 52,
+        "sql_rederived": 52,
+        "llm_judged": 0
+      },
+      "chart": {
+        "total": 9,
+        "sql_rederived": 9,
+        "llm_judged": 0
+      },
+      "report": {
+        "total": 1,
+        "sql_rederived": 0,
+        "llm_judged": 1
+      }
+    },
+    "pending": []
+  },
+  "dictionary": {
+    "case": "K02",
+    "output_type": "text",
+    "facts_checked": 8,
+    "db_columns": 8,
+    "missing_fields": [],
+    "missing_meanings": [],
+    "ok": true
+  },
+  "row_membership": {
+    "checked": 14,
+    "ok": true,
+    "details": [
+      {
+        "id": "D02-T1",
+        "table": "products",
+        "rows": 5,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "D03-T1",
+        "table": "products",
+        "rows": 4,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "I03-T1",
+        "table": "products",
+        "rows": 5,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "M02-T1",
+        "table": "products",
+        "rows": 2,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "M02-T1",
+        "table": "suppliers",
+        "rows": 3,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "M06-T1",
+        "table": "products",
+        "rows": 3,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X01-T1",
+        "table": "products",
+        "rows": 5,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X01-T2",
+        "table": "products",
+        "rows": 2,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X06-T1",
+        "table": "products",
+        "rows": 5,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X06-T1",
+        "table": "suppliers",
+        "rows": 3,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X06-T2",
+        "table": "products",
+        "rows": 3,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X07-T1",
+        "table": "products",
+        "rows": 5,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X07-T2",
+        "table": "products",
+        "rows": 5,
+        "missing_rows": 0,
+        "ok": true
+      },
+      {
+        "id": "X07-T3",
+        "table": "products",
+        "rows": 3,
+        "missing_rows": 0,
+        "ok": true
+      }
+    ]
+  },
+  "ok": true
+}

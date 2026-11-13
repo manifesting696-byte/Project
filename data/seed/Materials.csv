@@ -14,10 +14,10 @@
 13,MAT-013,LCD Phone Display 6.5,Display,Display Module,Piece,0.127,Active
 14,MAT-014,Laptop IPS Display 14,Display,Display Module,Piece,0.065,Active
 15,MAT-015,Laptop IPS Display 15.6,Display,Display Module,Piece,0.12,Active
-16,MAT-016,Laptop OLED Display 14,Display ,Display Module,Piece,0.117,Active
+16,MAT-016,Laptop OLED Display 14,Display,Display Module,Piece,0.117,Active
 17,MAT-017,Smartwatch AMOLED Display 1.8,Display,Display Module,Piece,0.097,Active
 18,MAT-018,Smartwatch AMOLED Display 2.0,Display,Display Module,Piece,0.086,Active
-19,MAT-019,Touch Control Panel,display,Display Module,Piece,0.118,Active
+19,MAT-019,Touch Control Panel,Display,Display Module,Piece,0.118,Active
 20,MAT-020,Display Driver Module,Display,Display Module,Piece,0.121,Active
 21,MAT-021,RAM Module 4GB,Memory and Storage,Electronic Component,Piece,0.012,Active
 22,MAT-022,RAM Module 8GB,Memory and Storage,Electronic Component,Piece,0.008,Active
@@ -28,7 +28,7 @@
 27,MAT-027,Storage Module 256GB,Memory and Storage,Electronic Component,Piece,0.009,Active
 28,MAT-028,SSD Module 512GB,Memory and Storage,Electronic Component,Piece,0.012,Active
 29,MAT-029,SSD Module 1TB,Memory and Storage,Electronic Component,Piece,0.008,Active
-30,MAT-030,Flash Memory Controller,memory and storage,Electronic Component,Piece,0.008,Active
+30,MAT-030,Flash Memory Controller,Memory and Storage,Electronic Component,Piece,0.008,Active
 31,MAT-031,Main PCB Phone,PCB and Connectivity,Assembly Component,Piece,0.058,Active
 32,MAT-032,Main PCB Laptop,PCB and Connectivity,Assembly Component,Piece,0.044,Active
 33,MAT-033,Main PCB Smartwatch,PCB and Connectivity,Assembly Component,Piece,0.053,Active
@@ -57,10 +57,10 @@
 56,MAT-056,Microphone Module,Camera Audio and Sensors,Functional Module,Piece,0.034,Active
 57,MAT-057,Heart Rate Sensor,Camera Audio and Sensors,Functional Module,Piece,0.026,Active
 58,MAT-058,Motion Sensor,Camera Audio and Sensors,Functional Module,Piece,0.035,Active
-59,MAT-059,Noise Cancellation Microphone,camera audio and sensors,Functional Module,Piece,0.022,Active
+59,MAT-059,Noise Cancellation Microphone,Camera Audio and Sensors,Functional Module,Piece,0.022,Active
 60,MAT-060,Fingerprint Sensor,Camera Audio and Sensors,Functional Module,Piece,0.028,Active
-61,MAT-061,Phone Aluminum Frame,Enclosure and Mechanical ,Mechanical Component,Piece,0.202,Active
-62,MAT-062,Phone Back Cover,Enclosure and Mechanical ,Mechanical Component,Piece,0.204,Active
+61,MAT-061,Phone Aluminum Frame,Enclosure and Mechanical,Mechanical Component,Piece,0.202,Active
+62,MAT-062,Phone Back Cover,Enclosure and Mechanical,Mechanical Component,Piece,0.204,Active
 63,MAT-063,Laptop Aluminum Chassis,Enclosure and Mechanical,Mechanical Component,Piece,0.104,Active
 64,MAT-064,Laptop Keyboard Assembly,Enclosure and Mechanical,Mechanical Component,Piece,0.106,Active
 65,MAT-065,Smartwatch Aluminum Case,Enclosure and Mechanical,Mechanical Component,Piece,0.216,Active

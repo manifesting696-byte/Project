@@ -1,0 +1,812 @@
+{
+  "database_metadata": {
+    "backend": "postgres",
+    "source_id": null,
+    "snapshot_id": "4c21d53a83016f2e",
+    "catalog_version": "e2af95792784991e3668",
+    "catalog_revision": 0,
+    "unavailable_tables": [],
+    "semantic_version": "demo-1",
+    "tables": {
+      "finishedgoodsinventory": {
+        "rows": 32,
+        "primary_key": "finished_goods_inventory_id",
+        "columns": {
+          "finished_goods_inventory_id": {
+            "type": "INTEGER",
+            "meaning": "成品库存记录标识：成品库存记录的整数标识值。"
+          },
+          "warehouse_id": {
+            "type": "INTEGER",
+            "meaning": "仓库标识：仓库的整数标识值。"
+          },
+          "product_id": {
+            "type": "INTEGER",
+            "meaning": "产品标识：产品的整数标识值。"
+          },
+          "quantity_on_hand": {
+            "type": "INTEGER",
+            "meaning": "现存数量：库存记录中的现存数量。"
+          },
+          "quantity_reserved": {
+            "type": "INTEGER",
+            "meaning": "预留数量：库存记录中的预留数量。"
+          },
+          "reorder_point": {
+            "type": "INTEGER",
+            "meaning": "再订货点：库存记录中保存的再订货数量阈值。原文件未提供阈值计算规则。"
+          },
+          "safety_stock_level": {
+            "type": "INTEGER",
+            "meaning": "安全库存水平：库存记录中保存的安全库存数量。原文件未提供其计算规则。"
+          },
+          "last_updated_at": {
+            "type": "TIMESTAMP",
+            "meaning": "2025-12-31 18:00:00：32"
+          }
+        }
+      },
+      "goodsreceiptdetails": {
+        "rows": 6600,
+        "primary_key": "gr_detail_id",
+        "columns": {
+          "gr_detail_id": {
+            "type": "INTEGER",
+            "meaning": "收货明细标识：单条收货明细的整数标识值。"
+          },
+          "gr_id": {
+            "type": "INTEGER",
+            "meaning": "收货单标识：收货单的整数标识值。"
+          },
+          "shipment_detail_id": {
+            "type": "INTEGER",
+            "meaning": "供应商发货明细标识：单条供应商发货明细的整数标识值。"
+          },
+          "material_id": {
+            "type": "INTEGER",
+            "meaning": "原材料标识：原材料的整数标识值。"
+          },
+          "received_quantity": {
+            "type": "INTEGER",
+            "meaning": "收货数量：本行记录的收货数量。"
+          },
+          "accepted_quantity": {
+            "type": "INTEGER",
+            "meaning": "接收数量：本行记录的接收数量。"
+          },
+          "rejected_quantity": {
+            "type": "INTEGER",
+            "meaning": "拒收数量：本行记录的拒收数量。"
+          },
+          "inspection_status": {
+            "type": "TEXT",
+            "meaning": "`\"Partially Accepted\"`：1,307"
+          },
+          "batch_number": {
+            "type": "TEXT",
+            "meaning": "批次号：收货明细记录的批次文本编号，示例为 BAT-2403-000001。"
+          }
+        }
+      },
+      "goodsreceipts": {
+        "rows": 2200,
+        "primary_key": "gr_id",
+        "columns": {
+          "gr_id": {
+            "type": "INTEGER",
+            "meaning": "收货单标识：收货单的整数标识值。"
+          },
+          "gr_code": {
+            "type": "TEXT",
+            "meaning": "收货单编码：收货单业务编码，当前示例采用 GR- 加五位数字。"
+          },
+          "shipment_id": {
+            "type": "INTEGER",
+            "meaning": "供应商发货标识：供应商发货记录的整数标识值。"
+          },
+          "receipt_date": {
+            "type": "DATE",
+            "meaning": "2024-01-23：2,200"
+          },
+          "received_by": {
+            "type": "TEXT",
+            "meaning": "收货人：收货业务记录中的操作人员姓名。"
+          },
+          "quality_check_status": {
+            "type": "TEXT",
+            "meaning": "`\"Completed\"`：2,200"
+          },
+          "total_received_value": {
+            "type": "NUMERIC",
+            "meaning": "收货总金额：收货单记录的总金额；原文件未提供币种和独立税额字段。"
+          }
+        }
+      },
+      "materials": {
+        "rows": 80,
+        "primary_key": "material_id",
+        "columns": {
+          "material_id": {
+            "type": "INTEGER",
+            "meaning": "原材料标识：原材料的整数标识值。"
+          },
+          "material_code": {
+            "type": "TEXT",
+            "meaning": "原材料编码：原材料的业务编码，当前示例采用 MAT- 加三位数字。"
+          },
+          "material_name": {
+            "type": "TEXT",
+            "meaning": "原材料名称：原材料、零部件或包装物的名称。"
+          },
+          "material_category": {
+            "type": "TEXT",
+            "meaning": "`\"Processing\"`：10"
+          },
+          "material_type": {
+            "type": "TEXT",
+            "meaning": "`\"Packaging Material\"`：10"
+          },
+          "uom": {
+            "type": "TEXT",
+            "meaning": "`\"Piece\"`：80"
+          },
+          "unit_weight": {
+            "type": "NUMERIC",
+            "meaning": "单位重量：记录单个材料单位的重量数值；原文件未说明重量单位。"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Active\"`：80"
+          }
+        }
+      },
+      "productbom": {
+        "rows": 160,
+        "primary_key": "bom_id",
+        "columns": {
+          "bom_id": {
+            "type": "INTEGER",
+            "meaning": "物料清单条目标识：单条物料清单配置的整数标识值。"
+          },
+          "product_id": {
+            "type": "INTEGER",
+            "meaning": "产品标识：产品的整数标识值。"
+          },
+          "material_id": {
+            "type": "INTEGER",
+            "meaning": "原材料标识：原材料的整数标识值。"
+          },
+          "quantity_required": {
+            "type": "INTEGER",
+            "meaning": "`\"2\"`：16"
+          },
+          "uom": {
+            "type": "TEXT",
+            "meaning": "`\"Piece\"`：160"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Active\"`：160"
+          }
+        }
+      },
+      "production": {
+        "rows": 2600,
+        "primary_key": "production_id",
+        "columns": {
+          "production_id": {
+            "type": "INTEGER",
+            "meaning": "生产工单标识：生产工单的整数标识值。"
+          },
+          "production_order_code": {
+            "type": "TEXT",
+            "meaning": "生产工单编码：生产工单业务编码，当前示例采用 PROD- 加五位数字。"
+          },
+          "product_id": {
+            "type": "INTEGER",
+            "meaning": "产品标识：产品的整数标识值。"
+          },
+          "planned_quantity": {
+            "type": "INTEGER",
+            "meaning": "计划生产数量：生产工单记录的计划数量。"
+          },
+          "start_date": {
+            "type": "DATE",
+            "meaning": "2024-04-03：2,600"
+          },
+          "expected_end_date": {
+            "type": "DATE",
+            "meaning": "2024-04-07：2,600"
+          },
+          "actual_end_date": {
+            "type": "DATE",
+            "meaning": "2024-04-07：2,600"
+          },
+          "production_quantity": {
+            "type": "INTEGER",
+            "meaning": "实际生产数量：生产工单记录的实际生产数量。原文件未明确说明该数量是否包含拒收数量。"
+          },
+          "rejected_quantity": {
+            "type": "INTEGER",
+            "meaning": "拒收数量：生产工单记录的拒收数量。该字段与实际生产数量之间的包含关系未由原文件说明。"
+          },
+          "production_status": {
+            "type": "TEXT",
+            "meaning": "`\"Completed\"`：2,600"
+          }
+        }
+      },
+      "productiondetails": {
+        "rows": 26000,
+        "primary_key": "production_detail_id",
+        "columns": {
+          "production_detail_id": {
+            "type": "INTEGER",
+            "meaning": "生产用料明细标识：单条生产用料明细的整数标识值。"
+          },
+          "production_id": {
+            "type": "INTEGER",
+            "meaning": "生产工单标识：生产工单的整数标识值。"
+          },
+          "bom_id": {
+            "type": "INTEGER",
+            "meaning": "物料清单条目标识：单条物料清单配置的整数标识值。"
+          },
+          "raw_inventory_id": {
+            "type": "INTEGER",
+            "meaning": "原料库存记录标识：原料库存记录的整数标识值。"
+          },
+          "actual_consumed_quantity": {
+            "type": "NUMERIC",
+            "meaning": "实际消耗数量：生产明细记录的实际材料消耗数量，可包含小数。原文件未提供独立的领料时间和计算口径说明。"
+          },
+          "return_quantity": {
+            "type": "INTEGER",
+            "meaning": "`\"0\"`：26,000"
+          },
+          "scrap_quantity": {
+            "type": "NUMERIC",
+            "meaning": "报废数量：生产明细记录的材料报废数量，可包含小数。"
+          },
+          "unit_cost": {
+            "type": "NUMERIC",
+            "meaning": "单位成本：本行记录的单位材料成本；原文件未提供币种。"
+          },
+          "total_material_cost": {
+            "type": "NUMERIC",
+            "meaning": "材料总成本：生产用料明细记录的材料总成本；原文件未提供币种及成本组成说明。"
+          }
+        }
+      },
+      "products": {
+        "rows": 16,
+        "primary_key": "product_id",
+        "columns": {
+          "product_id": {
+            "type": "INTEGER",
+            "meaning": "产品标识：产品的整数标识值。"
+          },
+          "product_code": {
+            "type": "TEXT",
+            "meaning": "产品编码：产品的业务编码，当前示例采用 PRD- 加三位数字。"
+          },
+          "product_name": {
+            "type": "TEXT",
+            "meaning": "产品名称：产品名称，包含产品系列、型号或产品种类的文字。"
+          },
+          "product_category": {
+            "type": "TEXT",
+            "meaning": "`\"Earbuds\"`：4"
+          },
+          "uom": {
+            "type": "TEXT",
+            "meaning": "`\"Piece\"`：16"
+          },
+          "standard_cost": {
+            "type": "NUMERIC",
+            "meaning": "标准成本：记录产品的标准成本数值；原文件未提供成本组成和币种。"
+          },
+          "selling_price": {
+            "type": "NUMERIC",
+            "meaning": "销售价格：记录产品的销售价格数值；原文件未提供币种及含税口径。"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Active\"`：16"
+          }
+        }
+      },
+      "purchaseorderdetails": {
+        "rows": 6600,
+        "primary_key": "po_detail_id",
+        "columns": {
+          "po_detail_id": {
+            "type": "INTEGER",
+            "meaning": "采购明细标识：单条采购明细的整数标识值。"
+          },
+          "po_id": {
+            "type": "INTEGER",
+            "meaning": "采购订单标识：采购订单的整数标识值。"
+          },
+          "pr_detail_id": {
+            "type": "INTEGER",
+            "meaning": "请购明细标识：采购明细中记录的请购明细整数标识值。"
+          },
+          "material_id": {
+            "type": "INTEGER",
+            "meaning": "原材料标识：原材料的整数标识值。"
+          },
+          "ordered_quantity": {
+            "type": "INTEGER",
+            "meaning": "订购数量：采购明细中记录的订购数量。"
+          },
+          "unit_price": {
+            "type": "NUMERIC",
+            "meaning": "采购单价：采购明细中记录的单位采购价格；原文件未提供币种及含税口径。"
+          },
+          "discount_percentage": {
+            "type": "INTEGER",
+            "meaning": "`\"5\"`：633"
+          },
+          "expected_delivery_date": {
+            "type": "DATE",
+            "meaning": "2024-01-22：6,600"
+          },
+          "total_amount": {
+            "type": "NUMERIC",
+            "meaning": "采购明细金额：本条采购明细记录的金额；原文件未提供币种和独立税额字段。"
+          },
+          "line_status": {
+            "type": "TEXT",
+            "meaning": "`\"Closed\"`：6,600"
+          }
+        }
+      },
+      "purchaseorders": {
+        "rows": 2200,
+        "primary_key": "po_id",
+        "columns": {
+          "po_id": {
+            "type": "INTEGER",
+            "meaning": "采购订单标识：采购订单的整数标识值。"
+          },
+          "po_code": {
+            "type": "TEXT",
+            "meaning": "采购订单编码：采购订单的业务编码，当前示例为 PO-年份-五位序号。"
+          },
+          "supplier_id": {
+            "type": "INTEGER",
+            "meaning": "供应商标识：供应商的整数标识值。"
+          },
+          "pr_id": {
+            "type": "INTEGER",
+            "meaning": "请购单标识：采购订单中记录的请购单整数标识值。"
+          },
+          "order_date": {
+            "type": "DATE",
+            "meaning": "2024-01-03：2,200"
+          },
+          "expected_delivery_date": {
+            "type": "DATE",
+            "meaning": "2024-01-22：2,200"
+          },
+          "payment_terms": {
+            "type": "TEXT",
+            "meaning": "`\"30% Advance - 70% Net 30\"`：450"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Closed\"`：2,200"
+          }
+        }
+      },
+      "qualityinspections": {
+        "rows": 6600,
+        "primary_key": "inspection_id",
+        "columns": {
+          "inspection_id": {
+            "type": "INTEGER",
+            "meaning": "检验记录标识：单条检验记录的整数标识值。"
+          },
+          "gr_detail_id": {
+            "type": "INTEGER",
+            "meaning": "收货明细标识：单条收货明细的整数标识值。"
+          },
+          "inspection_date": {
+            "type": "DATE",
+            "meaning": "2024-01-23：6,600"
+          },
+          "inspection_type": {
+            "type": "TEXT",
+            "meaning": "`\"Incoming Material Inspection\"`：6,600"
+          },
+          "inspected_quantity": {
+            "type": "INTEGER",
+            "meaning": "受检数量：该次检验记录的受检数量。"
+          },
+          "passed_quantity": {
+            "type": "INTEGER",
+            "meaning": "通过数量：该次检验记录的通过数量。"
+          },
+          "inspection_result": {
+            "type": "TEXT",
+            "meaning": "`\"Partial Acceptance\"`：1,307"
+          },
+          "defect_quantity": {
+            "type": "INTEGER",
+            "meaning": "缺陷数量：该次检验记录的缺陷数量。"
+          },
+          "defect_reason": {
+            "type": "TEXT",
+            "meaning": "`\"Damaged connector\"`：255"
+          },
+          "corrective_action": {
+            "type": "TEXT",
+            "meaning": "`\"Rejected quantity isolated\"`：419"
+          },
+          "reinspection_required": {
+            "type": "INTEGER",
+            "meaning": "`\"1\"`：324"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Completed\"`：6,600"
+          }
+        }
+      },
+      "rawmaterialinventory": {
+        "rows": 160,
+        "primary_key": "raw_inventory_id",
+        "columns": {
+          "raw_inventory_id": {
+            "type": "INTEGER",
+            "meaning": "原料库存记录标识：原料库存记录的整数标识值。"
+          },
+          "warehouse_id": {
+            "type": "INTEGER",
+            "meaning": "仓库标识：仓库的整数标识值。"
+          },
+          "material_id": {
+            "type": "INTEGER",
+            "meaning": "原材料标识：原材料的整数标识值。"
+          },
+          "quantity_on_hand": {
+            "type": "NUMERIC",
+            "meaning": "现存数量：库存记录中的现存数量。"
+          },
+          "quantity_reserved": {
+            "type": "NUMERIC",
+            "meaning": "预留数量：库存记录中的预留数量。"
+          },
+          "reorder_point": {
+            "type": "INTEGER",
+            "meaning": "再订货点：库存记录中保存的再订货数量阈值。原文件未提供阈值计算规则。"
+          },
+          "safety_stock_level": {
+            "type": "INTEGER",
+            "meaning": "安全库存水平：库存记录中保存的安全库存数量。原文件未提供其计算规则。"
+          },
+          "max_inventory_level": {
+            "type": "INTEGER",
+            "meaning": "最大库存水平：原料库存记录中保存的最大库存数量。原文件未提供其计算规则。"
+          },
+          "unit_cost": {
+            "type": "NUMERIC",
+            "meaning": "单位成本：本行记录的单位材料成本；原文件未提供币种。"
+          },
+          "last_updated_at": {
+            "type": "TIMESTAMP",
+            "meaning": "2025-12-31 18:00:00：160"
+          }
+        }
+      },
+      "suppliers": {
+        "rows": 25,
+        "primary_key": "supplier_id",
+        "columns": {
+          "supplier_id": {
+            "type": "INTEGER",
+            "meaning": "供应商标识：供应商的整数标识值。"
+          },
+          "supplier_code": {
+            "type": "TEXT",
+            "meaning": "供应商编码：供应商的业务编码，当前示例采用 SUP- 加三位数字。"
+          },
+          "supplier_name": {
+            "type": "TEXT",
+            "meaning": "供应商名称：供应商名称。"
+          },
+          "supplier_type": {
+            "type": "TEXT",
+            "meaning": "`\"Materials Supplier\"`：3"
+          },
+          "supplier_category": {
+            "type": "TEXT",
+            "meaning": "`\"Industrial Wholesaler\"`：1"
+          },
+          "country": {
+            "type": "TEXT",
+            "meaning": "`\"Egypt\"`：25"
+          },
+          "city": {
+            "type": "TEXT",
+            "meaning": "城市或地区：城市或行政地区名称，原值使用英文。"
+          },
+          "address": {
+            "type": "TEXT",
+            "meaning": "地址：供应商地址文字；分隔符后的连续空格已统一为单个空格。"
+          },
+          "contact_person": {
+            "type": "TEXT",
+            "meaning": "联系人：供应商联系人姓名。"
+          },
+          "phone": {
+            "type": "INTEGER",
+            "meaning": "联系电话：联系电话的原始文本，包含开头的 0。"
+          },
+          "email": {
+            "type": "TEXT",
+            "meaning": "电子邮箱：联系人或供应商使用的电子邮箱地址。"
+          },
+          "payment_terms": {
+            "type": "TEXT",
+            "meaning": "`\"30% Advance - 70% Net 30\"`：5"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Active\"`：25"
+          }
+        }
+      },
+      "suppliershipmentdetails": {
+        "rows": 6600,
+        "primary_key": "shipment_detail_id",
+        "columns": {
+          "shipment_detail_id": {
+            "type": "INTEGER",
+            "meaning": "供应商发货明细标识：单条供应商发货明细的整数标识值。"
+          },
+          "shipment_id": {
+            "type": "INTEGER",
+            "meaning": "供应商发货标识：供应商发货记录的整数标识值。"
+          },
+          "po_detail_id": {
+            "type": "INTEGER",
+            "meaning": "采购明细标识：单条采购明细的整数标识值。"
+          },
+          "material_id": {
+            "type": "INTEGER",
+            "meaning": "原材料标识：原材料的整数标识值。"
+          },
+          "received_quantity": {
+            "type": "INTEGER",
+            "meaning": "收货数量：供应商发货明细中记录的收货数量。"
+          },
+          "accepted_quantity": {
+            "type": "INTEGER",
+            "meaning": "接收数量：供应商发货明细中记录的接收数量。"
+          },
+          "rejected_quantity": {
+            "type": "INTEGER",
+            "meaning": "拒收数量：供应商发货明细中记录的拒收数量。"
+          }
+        }
+      },
+      "suppliershipments": {
+        "rows": 2200,
+        "primary_key": "shipment_id",
+        "columns": {
+          "shipment_id": {
+            "type": "INTEGER",
+            "meaning": "供应商发货标识：供应商发货记录的整数标识值。"
+          },
+          "shipment_code": {
+            "type": "TEXT",
+            "meaning": "供应商发货编码：供应商发货的业务编码，当前示例采用 SSH- 加五位数字。"
+          },
+          "po_id": {
+            "type": "INTEGER",
+            "meaning": "采购订单标识：采购订单的整数标识值。"
+          },
+          "supplier_id": {
+            "type": "INTEGER",
+            "meaning": "供应商标识：供应商的整数标识值。"
+          },
+          "supplier_reference": {
+            "type": "TEXT",
+            "meaning": "供应商参考编号：发货记录中的供应商参考编号，保留原始文本。"
+          },
+          "ship_date": {
+            "type": "DATE",
+            "meaning": "2024-01-06：2,200"
+          },
+          "expected_arrival_date": {
+            "type": "DATE",
+            "meaning": "2024-01-22：2,200"
+          },
+          "actual_arrival_date": {
+            "type": "DATE",
+            "meaning": "2024-01-22：2,200"
+          },
+          "total_shipment_value": {
+            "type": "NUMERIC",
+            "meaning": "发货总金额：本次供应商发货记录的货物总金额；原文件未提供币种。"
+          },
+          "shipping_cost": {
+            "type": "NUMERIC",
+            "meaning": "运输费用：本次供应商发货记录的运输费用；原文件未提供币种和计费规则。"
+          }
+        }
+      },
+      "warehouses": {
+        "rows": 4,
+        "primary_key": "warehouse_id",
+        "columns": {
+          "warehouse_id": {
+            "type": "INTEGER",
+            "meaning": "仓库标识：仓库的整数标识值。"
+          },
+          "warehouse_code": {
+            "type": "TEXT",
+            "meaning": "仓库编码：仓库业务编码，当前值包括 WH-RM 和 WH-FG 两种前缀。"
+          },
+          "warehouse_name": {
+            "type": "TEXT",
+            "meaning": "仓库名称：仓库名称。"
+          },
+          "warehouse_type": {
+            "type": "TEXT",
+            "meaning": "`\"Finished Goods\"`：2"
+          },
+          "country": {
+            "type": "TEXT",
+            "meaning": "`\"Egypt\"`：4"
+          },
+          "city": {
+            "type": "TEXT",
+            "meaning": "城市或地区：城市或行政地区名称，原值使用英文。"
+          },
+          "location_description": {
+            "type": "TEXT",
+            "meaning": "位置描述：仓库所在工业区、服务区或其他位置的文字描述；连续空格已统一。"
+          },
+          "status": {
+            "type": "TEXT",
+            "meaning": "`\"Active\"`：4"
+          }
+        }
+      }
+    },
+    "relations": [
+      {
+        "from": "finishedgoodsinventory.warehouse_id",
+        "to": "warehouses.warehouse_id"
+      },
+      {
+        "from": "finishedgoodsinventory.product_id",
+        "to": "products.product_id"
+      },
+      {
+        "from": "productbom.product_id",
+        "to": "products.product_id"
+      },
+      {
+        "from": "productbom.material_id",
+        "to": "materials.material_id"
+      },
+      {
+        "from": "production.product_id",
+        "to": "products.product_id"
+      },
+      {
+        "from": "productiondetails.production_id",
+        "to": "production.production_id"
+      },
+      {
+        "from": "productiondetails.bom_id",
+        "to": "productbom.bom_id"
+      },
+      {
+        "from": "productiondetails.raw_inventory_id",
+        "to": "rawmaterialinventory.raw_inventory_id"
+      },
+      {
+        "from": "purchaseorders.supplier_id",
+        "to": "suppliers.supplier_id"
+      },
+      {
+        "from": "purchaseorderdetails.po_id",
+        "to": "purchaseorders.po_id"
+      },
+      {
+        "from": "purchaseorderdetails.material_id",
+        "to": "materials.material_id"
+      },
+      {
+        "from": "rawmaterialinventory.warehouse_id",
+        "to": "warehouses.warehouse_id"
+      },
+      {
+        "from": "rawmaterialinventory.material_id",
+        "to": "materials.material_id"
+      },
+      {
+        "from": "suppliershipments.supplier_id",
+        "to": "suppliers.supplier_id"
+      },
+      {
+        "from": "suppliershipments.po_id",
+        "to": "purchaseorders.po_id"
+      },
+      {
+        "from": "goodsreceipts.shipment_id",
+        "to": "suppliershipments.shipment_id"
+      },
+      {
+        "from": "goodsreceiptdetails.gr_id",
+        "to": "goodsreceipts.gr_id"
+      },
+      {
+        "from": "goodsreceiptdetails.material_id",
+        "to": "materials.material_id"
+      },
+      {
+        "from": "qualityinspections.gr_detail_id",
+        "to": "goodsreceiptdetails.gr_detail_id"
+      },
+      {
+        "from": "suppliershipmentdetails.shipment_id",
+        "to": "suppliershipments.shipment_id"
+      },
+      {
+        "from": "suppliershipmentdetails.po_detail_id",
+        "to": "purchaseorderdetails.po_detail_id"
+      },
+      {
+        "from": "suppliershipmentdetails.material_id",
+        "to": "materials.material_id"
+      },
+      {
+        "from": "goodsreceiptdetails.shipment_detail_id",
+        "to": "suppliershipmentdetails.shipment_detail_id"
+      }
+    ],
+    "metrics": {},
+    "unapproved_metrics": [
+      {
+        "id": "on_time_rate",
+        "name": "到货准时率",
+        "status": "candidate"
+      },
+      {
+        "id": "average_delay_days",
+        "name": "平均延期天数",
+        "status": "candidate"
+      },
+      {
+        "id": "rejection_rate",
+        "name": "来料拒收率",
+        "status": "candidate"
+      },
+      {
+        "id": "shipment_cohort_rejection_rate",
+        "name": "发货队列来料拒收率",
+        "status": "candidate"
+      }
+    ],
+    "limitations": [
+      "缺少设备停机、产线、工序和销售订单数据",
+      "原料和成品库存只有 2025-12-31 快照",
+      "金额币种未知",
+      "生产良率口径未确认",
+      "无法从收货批次追溯至生产工单"
+    ]
+  },
+  "available_capabilities": {
+    "Supervisor": "本轮请求识别、完整 RequestSpec 与初始 Task 计划同次生成、执行重规划、交付验收及回答；不能执行业务 SQL",
+    "SemanticAgent": "绑定已发布指标、表字段、粒度、时间与登记关系；返回轻量绑定，不创建伪数据产物",
+    "QueryAgent": "依据语义绑定查询只读业务库，输出 table Artifact",
+    "AnalysisAgent": "读取并精确计算已有 Artifact，输出 text Artifact 或派生 table Artifact；新底层数据需建议 Supervisor 规划",
+    "PresentationAgent": "读取已有结果，制作 table、chart 或 Markdown report；保存真实映射、颜色与来源"
+  }
+}

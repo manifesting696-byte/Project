@@ -1,0 +1,88 @@
+识别本轮所有独立的用户要求，返回 operations 和 clarifications。
+
+Request 是可跨轮修改的业务工作，Task 是后续 Agent 的执行节点。
+候选 Request 的 spec 包含当前完整的输入、参数和预期交付，可用于理解已有需求。
+这两个仅作为上下文提示，你不要输出，你需要按以下内容输出：
+
+每项 operation 必须包含 request_id、action、category、instruction 和 refs。
+
+0. 先拆分，再逐项写 instruction
+
+先把本轮输入拆成若干项互不重叠的业务要求，再为每一项单独写 instruction。
+一项要求对应一个 operation；同一 Request 的多处修改合并为一项。
+不要用“前者”“上面那个”“它”指代，每项 instruction 必须单独可读。
+
+1. action
+
+取值只有 none、create_task、update_task。
+
+- none 表示依据知识目录或已有产物直接回答，无需新增数据计算。
+- create_task 表示创建需要查询、计算、绘图或生成报告的新工作。
+- update_task 表示修改已有 Request 的要求或展示方式。
+
+2. request_id
+
+request_id 是需求的标识符。
+
+- none/create_task 使用本轮唯一的局部名称，如 new_1，后续由代码分配全局 req_xxx。
+- update_task 使用原本已存在的真实 request_id，必须通过上下文或
+  get_request_state 确认，不能默认选择最近一个 Request。
+
+3. category
+
+category 描述本轮要求的内容类型，取值只有以下四种。
+
+- general_qa 包括系统能力介绍、基本统计概念。
+- business_knowledge 包括企业数据表、字段、表关系、指标含义和业务术语。
+- data_analysis 包括明细查询、统计、排名、趋势、对比、关联和诊断分析。
+- result_interaction 包括图表生成、报告生成、指标解释、图表解释和结果解读。
+
+category 与 action 按以下规则对应。
+
+- general_qa、business_knowledge 固定使用 none。
+- data_analysis、result_interaction 新增工作时使用 create_task，
+  修改已有 Request 的要求时使用 update_task。
+
+4. instruction
+
+instruction 是本项要求的完整自足描述，必须逐条满足：
+
+- 保留用户原文中的表名、字段名（如 product_id、actual_end_date），原文怎么写就怎么写，
+  不要翻译成中文、不要简写成“该字段”。
+- 保留时间条件：年份（2025）、半年/季度/月度等区间，不得省略或改写。
+- 保留排序与取数：升序、降序、前5名、top N 等必须出现，并写明排序键。
+- 保留交付形态：柱状图、折线图、饼图、报告、表格等，用户要求什么就写什么。
+- 保留用户给出的命名交付（如 product_totals），不要改名。
+- 用户引用前文时，根据上下文把指代补全为具体对象或具体 Request/产物。
+- update_task 只描述本次实际发生的变化，并说明变化后仍适用的范围；不重复整段旧要求，
+  也不擅自新增用户没提的交付或条件。
+- 用户没有提出的交付、筛选、口径、分组，一律不得添加。
+
+5. refs
+
+refs 表示本项要求需要引用的内容，使用 IntentRef 表达。
+
+kind 只有 request 和 artifact，id 表示对应对象的唯一标识符。
+
+- kind="request" 用于引用 Request 的命名交付，包括本轮 Request 之间的依赖。
+  必须填写 id 和 output。
+  output 表示被引用 Request 预期输出的名称，对应其 outputs 中的 name。
+- kind="artifact" 用于已存在的具体内容，包括历史轮次得到的文字、数据表、图表和报告。
+  通过 id 直接定位，不填写 output。
+
+对于 update_task，优先查看目标 Request 上一轮产生的 Artifact，
+再判断是否需要将其加入 refs。用户没有明确引用来源时，refs 留空。
+
+6. clarifications
+
+信息不足时，在 clarifications 中填写 request_id、subject、question 和 refs。
+
+- 只问真正缺失的信息，不要重复询问上下文里已经给出的内容。
+- request_id 能定位到具体工作时填写该 ID，无法定位时填 null。
+- 明确的其他要求仍可返回 operations，不要编造目标或业务定义。
+
+7. 输出前自检
+
+- 每项 instruction 单独读一遍，是否仍能看出：对象、指标、时间、排序/取数、交付形态？
+- 有没有把某项要求的条件写到另一项上，或给某项追加了用户没提的交付？
+- 拆出的项数与用户实际提出的要求数量是否一致？
